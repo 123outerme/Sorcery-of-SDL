@@ -17,13 +17,13 @@ int main(int argc, char* args[])
 {
 	//Start up SDL and create window
 	sprite player;
-	initSprite(&player, 0, 0, 64, 17);
+	initSprite(&player, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, 17);
 
-	int succeeded = init();
-	if (succeeded == 0)
+	int succeeded = init(&player);
+	if (!succeeded)
     {
         mainLoop(&player);
-        printf("Ended at %d, %d", player.x, player.y);
+        printf("Ended at %d, %d underneath a tile of index %d in map id %f", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
         sprite sprites[1] = {&player};
         cleanSprites(sprites, 1);
         closeSDL();

@@ -6,7 +6,19 @@
 #define checkSKRight currentKeyStates[SDL_SCANCODE_RIGHT]
 #define checkSKSpace currentKeyStates[SDL_SCANCODE_SPACE]
 
+#define TILE_ID_TREE 8
+#define TILE_ID_LAVA 9
+#define TILE_ID_BOULDER 10
 #define TILE_ID_DOOR 22
+#define TILE_ID_WINDOW 23
+#define TILE_ID_LIT_WINDOW 24
+#define TILE_ID_COUNTER_TOP 27
+#define TILE_ID_HOUSE_BACK_WALL 28
+#define TILE_ID_BAD_WOOD_FLOOR 29
+#define TILE_ID_DARKNESS 127
+#define ARRAY_OF_MAP_IDS_ALT  {iPart(player->mapScreen), 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
+#define ARRAY_OF_MAP_IDS {iPart(playerSprite->mapScreen), 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
+#define SIZE_OF_MAP_ARRAY 57
 
 void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 {
@@ -23,7 +35,7 @@ void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 	spr->movementLocked = false;
 }
 
-int init()
+int init(sprite* player)
 {
     int done = 0;
     SDL_Init(SDL_INIT_VIDEO);
@@ -71,16 +83,19 @@ int init()
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderSetLogicalSize(mainRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
                 SDL_RenderClear(mainRenderer);
-                loadTTFont("Texas-Instruments-TI-84_X.ttf", &mainFont, 64);
-                loadTTFont("Texas-Instruments-TI-84_X.ttf", &smallFont, 32);
+                loadTTFont("Texas-Instruments-TI-84_X.ttf", &mainFont, 36);
+                loadTTFont("Texas-Instruments-TI-84_X.ttf", &smallFont, 24);
                 if (!mainFont || !smallFont)
                 {
                     printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "smallFont", TTF_GetError());
                     return -3;
                 }
                 else
-                    loadMapFile("maps.txt", tilemap, 1, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-                    if (tilemap[0][0] == -1)
+                {
+                    double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
+                    int map = checkArrayForVal(player->mapScreen, arrayOfMaps, SIZE_OF_MAP_ARRAY);
+                    loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+                    if (tilemap[0][0] == -1 || map == -1)
                     {
                         printf("Tilemap could not load! Error code 5.");
                         return 5;
@@ -95,6 +110,7 @@ int init()
                         }
                         else;
                     }
+                }
             }
         }
     }
@@ -151,66 +167,44 @@ int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlen
     return wh;
 }
 
-void loadMapFile(char* filePath, int* array, const int lineNum, const int y, const int x)
+void loadMapFile(char* filePath, int** array, const int lineNum, const int y, const int x)
 {
 	FILE* filePtr;
 	filePtr = fopen(filePath,"r");
 	if (!filePtr)
 	{
 		printf("Error opening file!\n");
-		*array = -1;
+		*array = (int*) 0;
 	}
 	else
 	{
-		int numsC = 0, numsR = 0,  i = 0, flag = 0;
-		char c;
-		char thisLine[1024];
-		for(int p = 0; p <= lineNum; p++)
-			fgets(thisLine, 1024, filePtr);
-		//printf("%s\n\n", thisLine);
-		while (i != 1023)
-			{
-				if (thisLine[i] != '[')
-					break;
-				i++;
-				//printf("%d\n", i);
-			}
-			i--;
-			c = thisLine[i];
-			//printf("thisLine[%d] = %c\n", i, c);
-		while (flag < 3)
+		int numsC = 0, numsR = 0,  i, num;
+		int sameArray[y][x];
+		char thisLine[601], substring[3];
+		for(int p = 0; p < lineNum + 1; p++)
+			fgets(thisLine, 602, filePtr);
+		//printf("%s\n", thisLine);
+		for(i = 0; i < 600; i += 2)
 		{
-			if (flag > 0)
-				flag--;
-			c = thisLine[i++];
-			//printf("thisLine[%d] = %c\n", i, c);
-			if (c == ',' || c == '[')
-			{
-				//fseek(filePtr, i++, SEEK_SET);
-				sscanf(thisLine + i++, "%d", array + numsR++ + numsC * x);
-				//printf("^");
-				flag = 0;
-			}
-			if (c == ']')
+			sprintf(substring, "%.*s", 2, thisLine + i);
+			//*(array + numsR++ + numsC * x)
+			num = (int)strtol(substring, NULL, 16);
+			sameArray[numsC][numsR++] = num;
+			//printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
+			if (numsR > x - 1)
 			{
 				numsC++;
 				numsR = 0;
-				flag += 2;
-
 			}
-			//printf("nums[%d][%d]\n", numsC, numsR);
+			//printf("%d\n", num);
 		}
-		//for(int dy = 0; dy < y; dy++)
-		//{
-		//	for(int dx = 0; dx < x; dx++)
-		//	{
-		//		printf("%d,", *(array + dx + dy * x));
-		//	}
-		//	printf("\n");
-		//}
-		//printf("nums[%d][%d]\n", numsC, numsR);
-		fclose(filePtr);
+		for(int dy = 0; dy < y; dy++)
+		{
+			for(int dx = 0; dx < x; dx++)
+				*(array + dx + dy * x) = sameArray[dy][dx];
+		}
 	}
+	fclose(filePtr);
 }
 
 void drawGame(sprite* player)
@@ -232,20 +226,21 @@ void drawTilemap(int startX, int startY, int endX, int endY)
             drawTile(tilemap[dy][dx], dx, dy, TILE_SIZE);
         SDL_Delay(20);
     }
-
+    SDL_RenderPresent(mainRenderer);
 }
 
 void drawTile(int id, int tileX, int tileY, int width)
 {
     //printf("%d , %d\n", id  / 8, (id % 8));
-    SDL_RenderCopy(mainRenderer, tilesetTexture, &((SDL_Rect){.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect){.x = tileX * width, .y = tileY * width, .w = width, .h = width}));
+    SDL_RenderCopy(mainRenderer, tilesetTexture, &((SDL_Rect){.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}),
+                   &((SDL_Rect){.x = tileX * width, .y = tileY * width, .w = width, .h = width}));
 
     //SDL_RenderPresent(mainRenderer);
 }
 
 void drawTextBox(char* input)
 {
-    //36 letters per line/5 lines at 64pt font
+    //36 letters per line/5 lines at 36pt font
     SDL_SetRenderDrawColor(mainRenderer, 0x51, 0x51, 0x51, 0xFF);
     SDL_Rect rect = {.y = 17 * SCREEN_HEIGHT / 32, .w = SCREEN_WIDTH, .h = 15 * SCREEN_HEIGHT / 32};
     SDL_RenderFillRect(mainRenderer, &rect);
@@ -254,14 +249,10 @@ void drawTextBox(char* input)
     int* wh;
     wh = loadTextTexture(input, &txtTexture, (SDL_Color){0, 0, 0}, true);
     //printf("%d * %d \n", *wh, *(wh + 1));
-    const SDL_Rect* txtRect = &((SDL_Rect){.x =  SCREEN_WIDTH / 64, .y = 9 * SCREEN_HEIGHT / 16, .w = *wh,
-                                           .h = *(wh + 1) > 7 * SCREEN_HEIGHT / 16 ? 320 : *(wh + 1)});
-    const SDL_Rect* boundRect = &((SDL_Rect) {.w = *wh, .h = *(wh + 1) > 7 * SCREEN_HEIGHT / 16 ? 320 : *(wh + 1)});
-    SDL_RenderCopy(mainRenderer, txtTexture, boundRect, txtRect);
+    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect) {.w = *wh, .h = *(wh + 1) > 7 * SCREEN_HEIGHT / 16 ? 320 : *(wh + 1)}),
+                   &((SDL_Rect){.x =  SCREEN_WIDTH / 64, .y = 9 * SCREEN_HEIGHT / 16, .w = *wh, .h = *(wh + 1) > 7 * SCREEN_HEIGHT / 16 ? 320 : *(wh + 1)}));
     SDL_free(&rect);
-    SDL_free(&txtRect);
     SDL_DestroyTexture(txtTexture);
-    SDL_free(&boundRect);
 }
 
 void mainLoop(sprite* playerSprite)
@@ -283,8 +274,7 @@ void mainLoop(sprite* playerSprite)
         if (frame == 0)
             press = checkKeyPress(playerSprite);
 
-        if (press)
-            frame++;
+        frame+= press;
 
         if (frame % 7 == 0)
         {
@@ -301,8 +291,7 @@ bool checkKeyPress(sprite* playerSprite)
     const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
     if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight)
     {
-        drawTile(tilemap[playerSprite->y / TILE_SIZE][playerSprite->x / TILE_SIZE],
-                 playerSprite->x / TILE_SIZE, playerSprite->y / TILE_SIZE, TILE_SIZE);
+        drawTile(tilemap[playerSprite->y / TILE_SIZE][playerSprite->x / TILE_SIZE], playerSprite->x / TILE_SIZE, playerSprite->y / TILE_SIZE, TILE_SIZE);
         if (playerSprite->y > 0 && checkSKUp)
             playerSprite->y-= TILE_SIZE;
         if (playerSprite->y < SCREEN_HEIGHT - playerSprite->h && checkSKDown)
@@ -311,31 +300,70 @@ bool checkKeyPress(sprite* playerSprite)
             playerSprite->x-= TILE_SIZE;
         if (playerSprite->x < SCREEN_WIDTH - playerSprite->w && checkSKRight)
             playerSprite->x+= TILE_SIZE;
-        if (tilemap[playerSprite->y / TILE_SIZE][playerSprite->x / TILE_SIZE] == TILE_ID_DOOR)
+        int thisTile = tilemap[playerSprite->y / TILE_SIZE][playerSprite->x / TILE_SIZE];
+        checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
+        if (thisTile == TILE_ID_DOOR || !playerSprite->x || playerSprite->y == TILE_SIZE || playerSprite->x == SCREEN_WIDTH - TILE_SIZE || playerSprite->y == SCREEN_HEIGHT - TILE_SIZE)
         {
-            int map = 0;
-            if (fPart(playerSprite->mapScreen))
+            drawTile(playerSprite->tileIndex, playerSprite->x / playerSprite->w, playerSprite->y / playerSprite->w, playerSprite->w);
+            SDL_RenderPresent(mainRenderer);
+            if (thisTile == TILE_ID_DOOR)
             {
-                playerSprite->mapScreen = iPart(playerSprite->mapScreen);
-                playerSprite->overworldX = playerSprite->x;
-                playerSprite->overworldY = playerSprite->y;
-                playerSprite->x = 576;
-                playerSprite->y = 576;
+                int map;
+                if (fPart(playerSprite->mapScreen))
+                {
+                    playerSprite->lastScreen = playerSprite->mapScreen;
+                    playerSprite->mapScreen = iPart(playerSprite->mapScreen);
+                    playerSprite->overworldX = playerSprite->x;
+                    playerSprite->overworldY = playerSprite->y;
+                    playerSprite->x = 288;
+                    playerSprite->y = 384;
+                }
+                else
+                {
+                    playerSprite->mapScreen = playerSprite->lastScreen;
+                    playerSprite->x = playerSprite->overworldX;
+                    playerSprite->y = playerSprite->overworldY + TILE_SIZE;
+                    //map = (int) 10 * fPart(playerSprite->mapScreen) + iPart(playerSprite->mapScreen - 1) * 8;
+                }
+                double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
+                map = checkArrayForVal(playerSprite->mapScreen, arrayOfMaps, SIZE_OF_MAP_ARRAY);
+                loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+                drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
             }
             else
             {
-                playerSprite->mapScreen = playerSprite->lastScreen;
-                playerSprite->x = playerSprite->overworldX;
-                playerSprite->y = playerSprite->overworldY + TILE_SIZE;
-                map = (int) 10 * fPart(playerSprite->mapScreen) + iPart(playerSprite->mapScreen - 1) * 8;
-                //map = 1;
+                if (!playerSprite->x)
+                {
+                    playerSprite->x = SCREEN_WIDTH - (2 * TILE_SIZE);
+                    if (fPart((10 * fPart(playerSprite->mapScreen))) > 0)
+                        playerSprite->mapScreen = playerSprite->mapScreen - .01;
+
+                }
+                if (playerSprite->y == TILE_SIZE)
+                {
+                    playerSprite->y = SCREEN_HEIGHT - (2 * TILE_SIZE);
+                    if(iPart(10 * fPart(playerSprite->mapScreen)) > 0)
+                        playerSprite->mapScreen = playerSprite->mapScreen - .1;
+                }
+                if (playerSprite->x == SCREEN_WIDTH - TILE_SIZE)
+                {
+                    playerSprite->x = (2 * TILE_SIZE);
+                    if (10 * fPart( 10 * fPart(playerSprite->mapScreen)) < 9)
+                        playerSprite->mapScreen = playerSprite->mapScreen + .01;
+
+                }
+                if (playerSprite->y == SCREEN_HEIGHT - TILE_SIZE)
+                {
+                    playerSprite->y = TILE_SIZE * 2;
+                    if (iPart(10 * fPart(playerSprite->mapScreen)) < 9)
+                        playerSprite->mapScreen = playerSprite->mapScreen + .1;
+                }
+                double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
+                int map = checkArrayForVal(playerSprite->mapScreen, arrayOfMaps, SIZE_OF_MAP_ARRAY);
+                //(int) 10 * fPart(playerSprite->mapScreen) + iPart(playerSprite->mapScreen - 1) * 8
+                loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+                drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
             }
-            loadMapFile("maps.txt", tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-            drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
-        }
-        if (!playerSprite->x|| !playerSprite->y || playerSprite->x == SCREEN_WIDTH - TILE_SIZE || playerSprite->y == SCREEN_HEIGHT - TILE_SIZE)
-        {
-            printf("wee!");
         }
     }
 
@@ -349,6 +377,18 @@ bool checkKeyPress(sprite* playerSprite)
     if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace)
             return true;
         return false;
+}
+
+bool checkCollision(sprite* player, int tileID, int moveX, int moveY)
+{
+    if (tileID == TILE_ID_DARKNESS || tileID == TILE_ID_TREE || tileID == TILE_ID_WINDOW || tileID == TILE_ID_LIT_WINDOW
+        || tileID == TILE_ID_COUNTER_TOP || tileID == TILE_ID_HOUSE_BACK_WALL || tileID == TILE_ID_BAD_WOOD_FLOOR)
+    {
+        player->x = player->x - moveX * TILE_SIZE;
+        player->y = player->y - moveY * TILE_SIZE;
+        return true;
+    }
+    return false;
 }
 
 void cleanSprites(sprite* sprites[], size_t elems)
@@ -370,7 +410,7 @@ void closeSDL()
     SDL_Quit();
 }
 
-char * toString(int value, char * result)
+char* toString(int value, char * result)
 {
     if (value == 0)
         return 0;
@@ -404,4 +444,26 @@ int pwrOf10(int power)
 		i--;
 	}
 	return val;
+}
+
+int checkArrayForVal(double value, double* array, size_t arraySize)
+{
+	bool found = -1;
+	for(int i = 0; i < arraySize; i++)
+	{
+	    //printf("%i  -> %f == %f: %d\n", i, value, *(array + i), value == *(array + i));
+		if (absFloat(value - *(array + i)) < .01)
+		{
+			found = i;
+			break;
+		}
+	}
+	return found;
+}
+
+double absFloat(double val)
+{
+    if (val < 0)
+        val *= -1;
+    return val;
 }

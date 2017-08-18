@@ -20,17 +20,18 @@
 #include <string.h>        //This is included for strncat
 #include <stdlib.h>        //This is included for calloc
 #include <math.h>          //This is included for log10
-//#include "version.h"
+#include "version.h"
 
 #define bool char
 #define false 0
 #define true 1
 #define windowName "Sorcery of SDL"
 #define TILESET_NAME "SOUVUTU0.png"
+#define MAP_DATA_NAME "map.txt"
 #define FRAMERATE 60
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 768
-#define TILE_SIZE 64
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+#define TILE_SIZE 32
 #define WIDTH_IN_TILES SCREEN_WIDTH / TILE_SIZE
 #define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
 
@@ -66,12 +67,15 @@ void drawTile();
 void drawTextBox();
 void mainLoop();
 bool checkKeyPress();
-void cleanSprites();
+bool checkCollision();
+void cleanSprites(sprite* sprites[], size_t elems);
 void closeSDL();
 
-char* toString();
-int digits();
-int pwrOf10();
+char* toString(int value, char * result);
+int digits(int num);
+int pwrOf10(int power);
+int checkArrayForVal(double value, double* array, size_t arraySize);
+double absFloat(double val);
 
 SDL_Window* mainWindow;
 SDL_Surface* mainScreen;
