@@ -62,6 +62,8 @@ void drawGame();
 void mainLoop();
 
 int init();
+bool startGame(sprite* player, bool newSave);
+bool confirmMenu();
 bool loadIMG();
 bool loadTTFont();
 int* loadTextTexture();
@@ -70,6 +72,7 @@ void loadSpriteData(sprite* spr, char* filePath, bool forceNew);
 void loadMapFile();
 void drawTilemap();
 void drawTile();
+void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render);
 void drawTextBox();
 bool checkKeyPress();
 bool checkCollision();

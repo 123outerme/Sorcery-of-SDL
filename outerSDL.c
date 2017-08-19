@@ -22,7 +22,7 @@
 #define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 57
 
-int init(sprite* player)
+int init()
 {
     int done = 0;
     SDL_Init(SDL_INIT_VIDEO);
@@ -79,31 +79,92 @@ int init(sprite* player)
                 }
                 else
                 {
-                    loadSpriteData(player, SAVE_DATA_NAME, false);
-                    double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
-                    printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
-                    int map = checkArrayForVal(player->worldNum + (double)(player->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
-                    loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-                    if (tilemap[0][0] == -1 || map == -1)
+                    loadIMG(TILESET_NAME, &tilesetTexture);
+                    if (!tilesetTexture)
                     {
-                        printf("Tilemap could not load! Error code 5. Extra info: %d", map);
-                        return 5;
+                        printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
+                        return 6;
                     }
-                    else
-                    {
-                        loadIMG(TILESET_NAME, &tilesetTexture);
-                        if (!tilesetTexture)
-                        {
-                            printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
-                            return 6;
-                        }
-                        else;
-                    }
+                    else;
                 }
             }
         }
     }
     return done;
+}
+
+bool startGame(sprite* player, bool newSave)
+{
+    if (newSave)
+        newSave = confirmMenu();
+    loadSpriteData(player, SAVE_DATA_NAME, newSave);
+    double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
+    //printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
+    int map = checkArrayForVal(player->worldNum + (double)(player->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+    loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    if (tilemap[0][0] == -1 || map == -1)
+    {
+        printf("Tilemap could not load! Error code 5. Extra info: %d", map);
+        return 5;
+    }
+    return 0;
+}
+
+bool confirmMenu()
+{
+sprite cursor;
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR);
+    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    //foreground text
+    drawText("ARE YOU SURE?", 9 * SCREEN_WIDTH / 64, 4 * SCREEN_HEIGHT / 64, 55 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+
+    drawText("YES", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+    drawText("NO", 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+
+    SDL_Event e;
+    bool quit = false;
+    bool selection = 0;
+    //While application is running
+    while(!quit)
+    {
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+        //Handle events on queue
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+                quit = true;
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                //Select surfaces based on key press
+                switch(e.key.keysym.sym)
+                {
+                    case SDLK_UP:
+                        if (cursor.y > 5 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
+                    break;
+
+                    case SDLK_DOWN:
+                        if (cursor.y < 6 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                    break;
+
+                    case SDLK_SPACE:
+                        selection = !(cursor.y / TILE_SIZE - 5);
+                        quit = true;
+                    break;
+
+                    default:
+                    break;
+                }
+            }
+        }
+        drawTile(cursor.tileIndex, cursor.x / TILE_SIZE, cursor.y / TILE_SIZE, TILE_SIZE);
+        SDL_RenderPresent(mainRenderer);
+    }
+    return selection;
 }
 
 bool loadIMG(char* imgPath, SDL_Texture** dest)
@@ -305,7 +366,7 @@ bool checkKeyPress(sprite* playerSprite)
             SDL_RenderPresent(mainRenderer);
             if (thisTile == TILE_ID_DOOR)
             {
-                if (fPart(playerSprite->mapScreen))
+                if (playerSprite->mapScreen)
                 {
                     playerSprite->lastScreen = playerSprite->mapScreen;
                     playerSprite->mapScreen = 0;

@@ -16,10 +16,10 @@
 #define TILE_ID_CURSOR 16
 #define TILE_ID_PLAYER 17
 
-#define MENU_QUIT 0
 #define MENU_NEW_SAVE 1
 #define MENU_LOAD_SAVE 2
 #define MENU_HELP 3
+#define MENU_QUIT 4
 
 //10208C (hex) / 16, 32, 140 (integers) -> dark blue color
 
@@ -27,14 +27,18 @@ int main(int argc, char* args[])
 {
 	//Start up SDL and create window
 	sprite player;
-	int succeeded = init(&player);
+	int succeeded = init();
 	if (!succeeded)
     {
-        mainMenu();
-        mainLoop(&player);
-        printf("Ended at %d, %d underneath a tile of index %d in map id %f\n", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
-        savePlayerData(&player, SAVE_DATA_NAME);
-        //printf("Ended at %d, %d underneath a tile of index %d in map id %f\n", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
+        int selection = mainMenu();
+        if (selection < MENU_HELP)
+        {
+            succeeded = startGame(&player, selection == MENU_NEW_SAVE);
+            mainLoop(&player);
+            printf("Ended at %d, %d underneath a tile of index %d in map id %f\n", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
+            savePlayerData(&player, SAVE_DATA_NAME);
+            //printf("Ended at %d, %d underneath a tile of index %d in map id %f\n", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
+        }
         closeSDL();
 	}
 	return succeeded;
@@ -51,22 +55,58 @@ int mainMenu()
     //foreground text
     drawText("Sorcery of Uvutu", 9 * SCREEN_WIDTH / 64, 4 * SCREEN_HEIGHT / 64, 55 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
 
-    drawText("NEW GAME", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (TILE_SIZE - 5) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText("LOAD GAME", 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, (TILE_SIZE - 6) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText("HELP", 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, (TILE_SIZE - 7) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText("QUIT", 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, (TILE_SIZE - 8) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText(FULLVERSION_STRING, 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, (TILE_SIZE - 10) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
+    drawText("NEW GAME", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+    drawText("LOAD GAME", 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+    drawText("HELP", 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, (HEIGHT_IN_TILES - 7) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+    drawText("QUIT", 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, (HEIGHT_IN_TILES - 8) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+    drawText(FULLVERSION_STRING, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
 
-    int i = 1;
-    while(i)
+    SDL_Event e;
+    bool quit = false;
+    int selection = -1;
+    //While application is running
+    while(!quit)
     {
-        i = 0;
-        drawTile(cursor.tileIndex, cursor.x / TILE_SIZE, cursor.y / TILE_SIZE, cursor.w);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+        //Handle events on queue
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+            {
+                quit = true;
+                selection = MENU_QUIT;
+            }
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                //Select surfaces based on key press
+                switch(e.key.keysym.sym)
+                {
+                    case SDLK_UP:
+                        if (cursor.y > 5 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
+                    break;
+
+                    case SDLK_DOWN:
+                        if (cursor.y < 8 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                    break;
+
+                    case SDLK_SPACE:
+                        selection = cursor.y / TILE_SIZE - 4;
+                        quit = true;
+                    break;
+
+                    default:
+                    break;
+                }
+            }
+        }
+        drawTile(cursor.tileIndex, cursor.x / TILE_SIZE, cursor.y / TILE_SIZE, TILE_SIZE);
         SDL_RenderPresent(mainRenderer);
     }
-
-    SDL_Delay(2000);
-    return MENU_LOAD_SAVE;
+    return selection;
 }
 
 void drawGame(sprite* player)
