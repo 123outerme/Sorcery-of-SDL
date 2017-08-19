@@ -18,8 +18,8 @@
 #define TILE_ID_HOUSE_BACK_WALL 28
 #define TILE_ID_BAD_WOOD_FLOOR 29
 #define TILE_ID_DARKNESS 127
-#define ARRAY_OF_MAP_IDS_ALT  {iPart(player->mapScreen), 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
-#define ARRAY_OF_MAP_IDS {iPart(playerSprite->mapScreen), 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
+#define ARRAY_OF_MAP_IDS_ALT  {player->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
+#define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 57
 
 int init(sprite* player)
@@ -308,7 +308,7 @@ bool checkKeyPress(sprite* playerSprite)
                 if (fPart(playerSprite->mapScreen))
                 {
                     playerSprite->lastScreen = playerSprite->mapScreen;
-                    playerSprite->mapScreen = iPart(playerSprite->mapScreen);
+                    playerSprite->mapScreen = 0;
                     playerSprite->overworldX = playerSprite->x;
                     playerSprite->overworldY = playerSprite->y;
                     playerSprite->x = 9 * TILE_SIZE;
@@ -327,27 +327,27 @@ bool checkKeyPress(sprite* playerSprite)
                 if (!playerSprite->x)
                 {
                     playerSprite->x = SCREEN_WIDTH - (2 * TILE_SIZE);
-                    if (iPart(playerSprite->mapScreen) > 0)
+                    if (fPart(playerSprite->mapScreen) > 0)
                         playerSprite->mapScreen = playerSprite->mapScreen - .1;
 
                 }
                 if (playerSprite->y == TILE_SIZE)
                 {
                     playerSprite->y = SCREEN_HEIGHT - (2 * TILE_SIZE);
-                    if (fPart(playerSprite->mapScreen) > 0)
+                    if (iPart(playerSprite->mapScreen) > 0)
                         playerSprite->mapScreen = playerSprite->mapScreen - 1;
                 }
                 if (playerSprite->x == SCREEN_WIDTH - TILE_SIZE)
                 {
                     playerSprite->x = TILE_SIZE;
-                    if (iPart(playerSprite->mapScreen) < 9)
+                    if (10 * fPart(playerSprite->mapScreen) < 9)
                         playerSprite->mapScreen = playerSprite->mapScreen + .1;
 
                 }
                 if (playerSprite->y == SCREEN_HEIGHT - TILE_SIZE)
                 {
                     playerSprite->y = TILE_SIZE * 2;
-                    if (10 * fPart(playerSprite->mapScreen) < 9)
+                    if (iPart(playerSprite->mapScreen) < 9)
                         playerSprite->mapScreen = playerSprite->mapScreen + 1;
                 }
             }

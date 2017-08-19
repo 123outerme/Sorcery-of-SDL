@@ -42,19 +42,19 @@
 
 typedef struct
 {
-    int x;
-    int y;
-    int w;
-    int h;
-    int tileIndex;
-    int steps;
-    SDL_Rect* clipRect;
-    int worldNum;
-    double mapScreen;
-    double lastScreen;
-    int overworldX;
-    int overworldY;
-    bool movementLocked;
+    int x;  //
+    int y;  //
+    int w;  //
+    int h;  //
+    int tileIndex;  //
+    int steps; //
+    SDL_Rect* clipRect;  // 16? bytes (4 ints)
+    int worldNum;  //
+    double mapScreen;  //8 bytes
+    double lastScreen;  // 8 bytes
+    int overworldX;  //
+    int overworldY;  //
+    bool movementLocked;  // 1 byte
 } sprite;
 
 int mainMenu();
