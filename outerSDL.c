@@ -9,6 +9,8 @@
 #define TILE_ID_TREE 8
 #define TILE_ID_LAVA 9
 #define TILE_ID_BOULDER 10
+#define TILE_ID_CURSOR 16
+#define TILE_ID_PLAYER 17
 #define TILE_ID_DOOR 22
 #define TILE_ID_WINDOW 23
 #define TILE_ID_LIT_WINDOW 24
@@ -19,8 +21,6 @@
 #define ARRAY_OF_MAP_IDS_ALT  {iPart(player->mapScreen), 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define ARRAY_OF_MAP_IDS {iPart(playerSprite->mapScreen), 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 57
-
-//10208C (hex) / 16, 32, 140 (integers) -> dark blue color
 
 int init(sprite* player)
 {
@@ -79,12 +79,14 @@ int init(sprite* player)
                 }
                 else
                 {
+                    loadSpriteData(player, SAVE_DATA_NAME, false);
                     double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
-                    int map = checkArrayForVal(player->mapScreen, arrayOfMaps, SIZE_OF_MAP_ARRAY);
+                    printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
+                    int map = checkArrayForVal(player->worldNum + (double)(player->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
                     loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
                     if (tilemap[0][0] == -1 || map == -1)
                     {
-                        printf("Tilemap could not load! Error code 5.");
+                        printf("Tilemap could not load! Error code 5. Extra info: %d", map);
                         return 5;
                     }
                     else
@@ -95,8 +97,7 @@ int init(sprite* player)
                             printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
                             return 6;
                         }
-                        else
-                            loadSpriteData(player, SAVE_DATA_NAME);
+                        else;
                     }
                 }
             }
@@ -164,40 +165,41 @@ void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 	spr->tileIndex = tileIndex;
 	spr->steps = 0;
 	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * size, .y = (tileIndex % 8) * size, .w = size, .h = size});
-	spr->mapScreen = 1.1;
-	spr->lastScreen = 1.1;
+	spr->worldNum = 1;
+	spr->mapScreen = 1.0;
+	spr->lastScreen = 1.0;
 	spr->overworldX = x;
 	spr->overworldY = y;
 	spr->movementLocked = false;
 }
 
-void loadSpriteData(sprite* spr, char* filePath)
+void loadSpriteData(sprite* spr, char* filePath, bool forceNew)
 {
     char* buffer;
     readLine(filePath, 0, &buffer);
-    if (!strncmp(buffer, "0", 1))
+    if (!strncmp(buffer, "0", 1) || forceNew)
 	{
-	    initSprite(spr, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, 17);
+	    initSprite(spr, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
 	}
 	else
 	{
-        //initSprite(spr, 0, 0, TILE_SIZE, 17);
         spr->x = strtol(readLine(filePath, 0, &buffer), NULL, 10);
         spr->y = strtol(readLine(filePath, 1, &buffer), NULL, 10);
         spr->w = strtol(readLine(filePath, 2, &buffer), NULL, 10);
         spr->h = spr->w;
-        spr->tileIndex = 17;
+        spr->tileIndex = TILE_ID_PLAYER;
         spr->steps = strtol(readLine(filePath, 3, &buffer), NULL, 10);
         spr->clipRect = &((SDL_Rect){.x = (spr->tileIndex / 8) * spr->w, .y = (spr->tileIndex % 8) * spr->w, .w = spr->w, .h = spr->w});
-        spr->overworldX = strtol(readLine(filePath, 4, &buffer), NULL, 10);
-        spr->overworldY = strtol(readLine(filePath, 5, &buffer), NULL, 10);
-        spr->movementLocked = (bool) strtol(readLine(filePath, 6, &buffer), NULL, 10);
-        spr->mapScreen = strtol(readLine(filePath, 7, &buffer), NULL, 10) / 100.0;
-        spr->lastScreen = strtol(readLine(filePath, 8, &buffer), NULL, 10) / 100.0;
+        spr->worldNum = strtol(readLine(filePath, 4, &buffer), NULL, 10);
+        spr->mapScreen = (double) strtol(readLine(filePath, 5, &buffer), NULL, 10) / 10.0;
+        spr->lastScreen = (double) strtol(readLine(filePath, 6, &buffer), NULL, 10) / 10.0;
+        spr->overworldX = strtol(readLine(filePath, 7, &buffer), NULL, 10);
+        spr->overworldY = strtol(readLine(filePath, 8, &buffer), NULL, 10);
+        spr->movementLocked = false;
 	}
 }
 
-void loadMapFile(char* filePath, int** array, const int lineNum, const int y, const int x)
+void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x)
 {
 	FILE* filePtr;
 	filePtr = fopen(filePath,"r");
@@ -237,16 +239,6 @@ void loadMapFile(char* filePath, int** array, const int lineNum, const int y, co
 	fclose(filePtr);
 }
 
-void drawGame(sprite* player)
-{
-    //SDL_RenderClear(mainRenderer);
-    drawTile(player->tileIndex, player->x / player->w, player->y / player->w, player->w);
-    //SDL_BlitScaled(player->sprSurface, NULL, mainScreen, playerRect);
-    if (textBoxOn)
-        drawTextBox("Hello world. I would like to tell you a story today. Once there was a programmer who hated things, so he made me.");
-    SDL_RenderPresent(mainRenderer);
-}
-
 void drawTilemap(int startX, int startY, int endX, int endY)
 {
     //printf("");
@@ -268,6 +260,18 @@ void drawTile(int id, int tileX, int tileY, int width)
     //SDL_RenderPresent(mainRenderer);
 }
 
+void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render)
+{
+    SDL_Texture* txtTexture = NULL;
+    int* wh;
+    wh = loadTextTexture(input, &txtTexture, color, true);
+    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect){.w = *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}),
+                                             &((SDL_Rect){.x =  x, .y = y, .w = *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}));
+    if (render)
+        SDL_RenderPresent(mainRenderer);
+    SDL_DestroyTexture(txtTexture);
+}
+
 void drawTextBox(char* input)
 {
     //36 letters per line/5 lines at 36pt font
@@ -276,44 +280,7 @@ void drawTextBox(char* input)
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 69 * SCREEN_HEIGHT / 128, .w = SCREEN_WIDTH, .w = 126 * SCREEN_WIDTH / 128, .h = 58 * SCREEN_HEIGHT / 128}));
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_Texture* txtTexture = NULL;
-    int* wh;
-    wh = loadTextTexture(input, &txtTexture, (SDL_Color){0, 0, 0}, true);
-    //printf("%d * %d \n", *wh, *(wh + 1));
-    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect){.w = *wh, .h = *(wh + 1) > 27 * SCREEN_HEIGHT / 64 ? 27 * SCREEN_HEIGHT / 64 : *(wh + 1)}),
-                   &((SDL_Rect){.x =  SCREEN_WIDTH / 64, .y = 37 * SCREEN_HEIGHT / 64, .w = *wh, .h = *(wh + 1) > 27 * SCREEN_HEIGHT / 64 ? 27 * SCREEN_HEIGHT / 64 : *(wh + 1)}));
-    SDL_DestroyTexture(txtTexture);
-}
-
-void mainLoop(sprite* playerSprite)
-{
-    bool quit = false;
-    SDL_Event e;
-    int frame = 0;
-    bool press = false;
-    drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
-
-    while(!quit)    //this is the literal main loop right here
-    {
-        drawGame(playerSprite);
-        while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
-        {
-            if (e.type == SDL_QUIT)
-                quit = true;
-        }
-        if (frame == 0)
-            press = checkKeyPress(playerSprite);
-
-        frame+= press;
-
-        if (frame % 7 == 0)
-        {
-            frame = 0;
-            press = false;
-        }
-
-        SDL_Delay((1000 / FRAMERATE));
-    }
+    drawText(input, SCREEN_WIDTH / 64, 37 * SCREEN_HEIGHT / 64, 27 * SCREEN_HEIGHT / 64, (SDL_Color){0, 0, 0}, true);
 }
 
 bool checkKeyPress(sprite* playerSprite)
@@ -338,7 +305,6 @@ bool checkKeyPress(sprite* playerSprite)
             SDL_RenderPresent(mainRenderer);
             if (thisTile == TILE_ID_DOOR)
             {
-                int map;
                 if (fPart(playerSprite->mapScreen))
                 {
                     playerSprite->lastScreen = playerSprite->mapScreen;
@@ -355,45 +321,40 @@ bool checkKeyPress(sprite* playerSprite)
                     playerSprite->y = playerSprite->overworldY + TILE_SIZE;
                     //map = (int) 10 * fPart(playerSprite->mapScreen) + iPart(playerSprite->mapScreen - 1) * 8;
                 }
-                double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
-                map = checkArrayForVal(playerSprite->mapScreen, arrayOfMaps, SIZE_OF_MAP_ARRAY);
-                loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-                drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
             }
             else
             {
                 if (!playerSprite->x)
                 {
                     playerSprite->x = SCREEN_WIDTH - (2 * TILE_SIZE);
-                    if (fPart((10 * fPart(playerSprite->mapScreen))) > 0)
-                        playerSprite->mapScreen = playerSprite->mapScreen - .01;
+                    if (iPart(playerSprite->mapScreen) > 0)
+                        playerSprite->mapScreen = playerSprite->mapScreen - .1;
 
                 }
                 if (playerSprite->y == TILE_SIZE)
                 {
                     playerSprite->y = SCREEN_HEIGHT - (2 * TILE_SIZE);
-                    if(iPart(10 * fPart(playerSprite->mapScreen)) > 0)
-                        playerSprite->mapScreen = playerSprite->mapScreen - .1;
+                    if (fPart(playerSprite->mapScreen) > 0)
+                        playerSprite->mapScreen = playerSprite->mapScreen - 1;
                 }
                 if (playerSprite->x == SCREEN_WIDTH - TILE_SIZE)
                 {
-                    playerSprite->x = (2 * TILE_SIZE);
-                    if (10 * fPart( 10 * fPart(playerSprite->mapScreen)) < 9)
-                        playerSprite->mapScreen = playerSprite->mapScreen + .01;
+                    playerSprite->x = TILE_SIZE;
+                    if (iPart(playerSprite->mapScreen) < 9)
+                        playerSprite->mapScreen = playerSprite->mapScreen + .1;
 
                 }
                 if (playerSprite->y == SCREEN_HEIGHT - TILE_SIZE)
                 {
                     playerSprite->y = TILE_SIZE * 2;
-                    if (iPart(10 * fPart(playerSprite->mapScreen)) < 9)
-                        playerSprite->mapScreen = playerSprite->mapScreen + .1;
+                    if (10 * fPart(playerSprite->mapScreen) < 9)
+                        playerSprite->mapScreen = playerSprite->mapScreen + 1;
                 }
-                double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
-                int map = checkArrayForVal(playerSprite->mapScreen, arrayOfMaps, SIZE_OF_MAP_ARRAY);
-                //(int) 10 * fPart(playerSprite->mapScreen) + iPart(playerSprite->mapScreen - 1) * 8
-                loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-                drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
             }
+            double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
+            int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+            loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
         }
     }
 
@@ -424,17 +385,18 @@ bool checkCollision(sprite* player, int tileID, int moveX, int moveY)
 
 void savePlayerData(sprite* player, char* filePath)
 {
-    char* buffer;
+    char* buffer = "";
     createFile(filePath);
     writeLine(filePath, toString(player->x, buffer));
     writeLine(filePath, toString(player->y, buffer));
     writeLine(filePath, toString(player->w, buffer));
     writeLine(filePath, toString(player->steps, buffer));
+    writeLine(filePath, toString(player->worldNum, buffer));
+    printf("%f <->> %f / %d <<-> %d", 10 * 1.21, 10 * player->mapScreen, (int) (10 * player->mapScreen), (int) (1.21 * 10));
+    writeLine(filePath, toString((int) (10 * player->mapScreen), buffer));
+    writeLine(filePath, toString((int) (10 * player->lastScreen), buffer));
     writeLine(filePath, toString(player->overworldX, buffer));
     writeLine(filePath, toString(player->overworldY, buffer));
-    writeLine(filePath, toString((int) player->movementLocked, buffer));
-    writeLine(filePath, toString(100 * player->mapScreen, buffer));
-    writeLine(filePath, toString(100 * player->lastScreen, buffer));
 }
 
 void cleanSprites(sprite* sprites[], size_t elems)

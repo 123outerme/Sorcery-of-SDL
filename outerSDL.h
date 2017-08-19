@@ -49,6 +49,7 @@ typedef struct
     int tileIndex;
     int steps;
     SDL_Rect* clipRect;
+    int worldNum;
     double mapScreen;
     double lastScreen;
     int overworldX;
@@ -56,18 +57,20 @@ typedef struct
     bool movementLocked;
 } sprite;
 
-void initSprite();
+int mainMenu();
+void drawGame();
+void mainLoop();
+
 int init();
 bool loadIMG();
 bool loadTTFont();
 int* loadTextTexture();
+void initSprite();
+void loadSpriteData(sprite* spr, char* filePath, bool forceNew);
 void loadMapFile();
-void drawGame();
-void drawPlayer();
 void drawTilemap();
 void drawTile();
 void drawTextBox();
-void mainLoop();
 bool checkKeyPress();
 bool checkCollision();
 void savePlayerData(sprite* player, char* filePath);
