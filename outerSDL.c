@@ -20,20 +20,7 @@
 #define ARRAY_OF_MAP_IDS {iPart(playerSprite->mapScreen), 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 57
 
-void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
-{
-    spr->x = x;
-	spr->y = y;
-	spr->w = size;
-	spr->h = size;
-	spr->mapScreen = 1.1;
-	spr->lastScreen = 1.1;
-	spr->overworldX = x;
-	spr->overworldY = y;
-	spr->tileIndex = tileIndex;
-	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * size, .y = (tileIndex % 8) * size, .w = size, .h = size});
-	spr->movementLocked = false;
-}
+//10208C (hex) / 16, 32, 140 (integers) -> dark blue color
 
 int init(sprite* player)
 {
@@ -83,7 +70,7 @@ int init(sprite* player)
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderSetLogicalSize(mainRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
                 SDL_RenderClear(mainRenderer);
-                loadTTFont("Texas-Instruments-TI-84_X.ttf", &mainFont, 36);
+                loadTTFont("Texas-Instruments-TI-84_X.ttf", &mainFont, 52);
                 loadTTFont("Texas-Instruments-TI-84_X.ttf", &smallFont, 24);
                 if (!mainFont || !smallFont)
                 {
@@ -108,7 +95,8 @@ int init(sprite* player)
                             printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
                             return 6;
                         }
-                        else;
+                        else
+                            loadSpriteData(player, SAVE_DATA_NAME);
                     }
                 }
             }
@@ -150,7 +138,7 @@ int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlen
         txtSurface = TTF_RenderText_Blended_Wrapped(mainFont, text, color, 63 * SCREEN_WIDTH / 64);
     else
     {
-        SDL_Color color2 = {81, 81, 81};
+        SDL_Color color2 = {181, 182, 173};
         txtSurface = TTF_RenderText(smallFont, text, color, color2);
     }
     *dest = SDL_CreateTextureFromSurface(mainRenderer, txtSurface);
@@ -165,6 +153,48 @@ int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlen
     }
     SDL_FreeSurface(txtSurface);
     return wh;
+}
+
+void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
+{
+    spr->x = x;
+	spr->y = y;
+	spr->w = size;
+	spr->h = size;
+	spr->tileIndex = tileIndex;
+	spr->steps = 0;
+	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * size, .y = (tileIndex % 8) * size, .w = size, .h = size});
+	spr->mapScreen = 1.1;
+	spr->lastScreen = 1.1;
+	spr->overworldX = x;
+	spr->overworldY = y;
+	spr->movementLocked = false;
+}
+
+void loadSpriteData(sprite* spr, char* filePath)
+{
+    char* buffer;
+    readLine(filePath, 0, &buffer);
+    if (!strncmp(buffer, "0", 1))
+	{
+	    initSprite(spr, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, 17);
+	}
+	else
+	{
+        //initSprite(spr, 0, 0, TILE_SIZE, 17);
+        spr->x = strtol(readLine(filePath, 0, &buffer), NULL, 10);
+        spr->y = strtol(readLine(filePath, 1, &buffer), NULL, 10);
+        spr->w = strtol(readLine(filePath, 2, &buffer), NULL, 10);
+        spr->h = spr->w;
+        spr->tileIndex = 17;
+        spr->steps = strtol(readLine(filePath, 3, &buffer), NULL, 10);
+        spr->clipRect = &((SDL_Rect){.x = (spr->tileIndex / 8) * spr->w, .y = (spr->tileIndex % 8) * spr->w, .w = spr->w, .h = spr->w});
+        spr->overworldX = strtol(readLine(filePath, 4, &buffer), NULL, 10);
+        spr->overworldY = strtol(readLine(filePath, 5, &buffer), NULL, 10);
+        spr->movementLocked = (bool) strtol(readLine(filePath, 6, &buffer), NULL, 10);
+        spr->mapScreen = strtol(readLine(filePath, 7, &buffer), NULL, 10) / 100.0;
+        spr->lastScreen = strtol(readLine(filePath, 8, &buffer), NULL, 10) / 100.0;
+	}
 }
 
 void loadMapFile(char* filePath, int** array, const int lineNum, const int y, const int x)
@@ -241,17 +271,17 @@ void drawTile(int id, int tileX, int tileY, int width)
 void drawTextBox(char* input)
 {
     //36 letters per line/5 lines at 36pt font
-    SDL_SetRenderDrawColor(mainRenderer, 0x51, 0x51, 0x51, 0xFF);
-    SDL_Rect rect = {.y = 17 * SCREEN_HEIGHT / 32, .w = SCREEN_WIDTH, .h = 15 * SCREEN_HEIGHT / 32};
-    SDL_RenderFillRect(mainRenderer, &rect);
+    SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.y = 17 * SCREEN_HEIGHT / 32, .w = SCREEN_WIDTH, .h = 15 * SCREEN_HEIGHT / 32}));
+    SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 69 * SCREEN_HEIGHT / 128, .w = SCREEN_WIDTH, .w = 126 * SCREEN_WIDTH / 128, .h = 58 * SCREEN_HEIGHT / 128}));
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_Texture* txtTexture = NULL;
     int* wh;
     wh = loadTextTexture(input, &txtTexture, (SDL_Color){0, 0, 0}, true);
     //printf("%d * %d \n", *wh, *(wh + 1));
-    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect) {.w = *wh, .h = *(wh + 1) > 7 * SCREEN_HEIGHT / 16 ? 320 : *(wh + 1)}),
-                   &((SDL_Rect){.x =  SCREEN_WIDTH / 64, .y = 9 * SCREEN_HEIGHT / 16, .w = *wh, .h = *(wh + 1) > 7 * SCREEN_HEIGHT / 16 ? 320 : *(wh + 1)}));
-    SDL_free(&rect);
+    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect){.w = *wh, .h = *(wh + 1) > 27 * SCREEN_HEIGHT / 64 ? 27 * SCREEN_HEIGHT / 64 : *(wh + 1)}),
+                   &((SDL_Rect){.x =  SCREEN_WIDTH / 64, .y = 37 * SCREEN_HEIGHT / 64, .w = *wh, .h = *(wh + 1) > 27 * SCREEN_HEIGHT / 64 ? 27 * SCREEN_HEIGHT / 64 : *(wh + 1)}));
     SDL_DestroyTexture(txtTexture);
 }
 
@@ -289,7 +319,7 @@ void mainLoop(sprite* playerSprite)
 bool checkKeyPress(sprite* playerSprite)
 {
     const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
-    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight)
+    if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight))
     {
         drawTile(tilemap[playerSprite->y / TILE_SIZE][playerSprite->x / TILE_SIZE], playerSprite->x / TILE_SIZE, playerSprite->y / TILE_SIZE, TILE_SIZE);
         if (playerSprite->y > 0 && checkSKUp)
@@ -315,8 +345,8 @@ bool checkKeyPress(sprite* playerSprite)
                     playerSprite->mapScreen = iPart(playerSprite->mapScreen);
                     playerSprite->overworldX = playerSprite->x;
                     playerSprite->overworldY = playerSprite->y;
-                    playerSprite->x = 288;
-                    playerSprite->y = 384;
+                    playerSprite->x = 9 * TILE_SIZE;
+                    playerSprite->y = 12 * TILE_SIZE;
                 }
                 else
                 {
@@ -369,7 +399,8 @@ bool checkKeyPress(sprite* playerSprite)
 
     if (checkSKSpace)
     {
-            textBoxOn = !textBoxOn;
+        textBoxOn = !textBoxOn;
+        playerSprite->movementLocked = !playerSprite->movementLocked;
         if (!textBoxOn)
             drawTilemap(0, 6, WIDTH_IN_TILES, HEIGHT_IN_TILES);
     }
@@ -391,13 +422,27 @@ bool checkCollision(sprite* player, int tileID, int moveX, int moveY)
     return false;
 }
 
+void savePlayerData(sprite* player, char* filePath)
+{
+    char* buffer;
+    createFile(filePath);
+    writeLine(filePath, toString(player->x, buffer));
+    writeLine(filePath, toString(player->y, buffer));
+    writeLine(filePath, toString(player->w, buffer));
+    writeLine(filePath, toString(player->steps, buffer));
+    writeLine(filePath, toString(player->overworldX, buffer));
+    writeLine(filePath, toString(player->overworldY, buffer));
+    writeLine(filePath, toString((int) player->movementLocked, buffer));
+    writeLine(filePath, toString(100 * player->mapScreen, buffer));
+    writeLine(filePath, toString(100 * player->lastScreen, buffer));
+}
+
 void cleanSprites(sprite* sprites[], size_t elems)
 {
+    //not working
     for(int i = 0; i < elems; i++)
-    {
-        sprites[i] = &((sprite){.x = 0, .y = 0, .w = 0, .h = 0, .tileIndex = 0, .mapScreen = 0, .lastScreen = 0,
+        sprites[i] = &((sprite){.x = 0, .y = 0, .w = 0, .h = 0, .tileIndex = 0, .steps = 0, .clipRect = NULL, .mapScreen = 0, .lastScreen = 0,
                        .overworldX = 0, .overworldY = 0, .movementLocked = false});
-    }
 }
 
 void closeSDL()
@@ -413,7 +458,7 @@ void closeSDL()
 char* toString(int value, char * result)
 {
     if (value == 0)
-        return 0;
+        return "0";
 	int digit = digits(value);
 	//printf("digit = %d\n", digit);
 	result = calloc(digit + 1, sizeof(char));
@@ -466,4 +511,51 @@ double absFloat(double val)
     if (val < 0)
         val *= -1;
     return val;
+}
+
+int createFile(char* filePath)
+{
+	FILE* filePtr;
+	filePtr = fopen(filePath,"w");
+	if (!filePtr)
+	{
+		printf("Error opening file!\n");
+		return -1;
+	}
+	else
+		return 0;
+}
+
+int writeLine(char* filePath, char* stuff)
+{
+	FILE* filePtr;
+	filePtr = fopen(filePath,"a+");
+	if (!filePtr)
+	{
+		printf("Error opening file!\n");
+		return -1;
+	}
+	else
+	{
+		fprintf(filePtr, "%s\n", stuff);
+		return 0;
+	}
+}
+
+char* readLine(char* filePath, int lineNum, char** output)
+{
+	FILE* filePtr = fopen(filePath,"r");
+	if (!filePtr)
+		return 0;
+	else
+	{
+	static char thisLine[512];
+	for(int p = 0; p <= lineNum; p++)
+		fgets(thisLine, 512, filePtr);
+	//printf("%s @ %d\n", thisLine, thisLine);
+	*output = thisLine;
+	//printf("%s @ %d\n", output, output);
+	fclose(filePtr);
+	return thisLine;
+	}
 }

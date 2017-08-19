@@ -17,15 +17,15 @@ int main(int argc, char* args[])
 {
 	//Start up SDL and create window
 	sprite player;
-	initSprite(&player, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, 17);
-
 	int succeeded = init(&player);
 	if (!succeeded)
     {
         mainLoop(&player);
-        printf("Ended at %d, %d underneath a tile of index %d in map id %f", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
+        printf("Ended at %d, %d underneath a tile of index %d in map id %f\n", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
         sprite sprites[1] = {&player};
+        savePlayerData(&player, SAVE_DATA_NAME);
         cleanSprites(sprites, 1);
+        //printf("Ended at %d, %d underneath a tile of index %d in map id %f\n", player.x, player.y, tilemap[player.y / TILE_SIZE][player.x / TILE_SIZE], player.mapScreen);
         closeSDL();
 	}
 	return succeeded;
