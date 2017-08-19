@@ -95,9 +95,7 @@ int init()
 
 bool startGame(sprite* player, bool newSave)
 {
-    if (newSave)
-        newSave = confirmMenu();
-    loadSpriteData(player, SAVE_DATA_NAME, newSave);
+    loadSpriteData(player, SAVE_DATA_NAME, newSave ? confirmMenu() : newSave);
     double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
     //printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
     int map = checkArrayForVal(player->worldNum + (double)(player->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
@@ -237,8 +235,7 @@ void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 void loadSpriteData(sprite* spr, char* filePath, bool forceNew)
 {
     char* buffer;
-    readLine(filePath, 0, &buffer);
-    if (!strncmp(buffer, "0", 1) || forceNew)
+    if (!readLine(filePath, 0, &buffer) || forceNew)
 	{
 	    initSprite(spr, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
 	}
