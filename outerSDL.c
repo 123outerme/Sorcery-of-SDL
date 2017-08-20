@@ -21,7 +21,6 @@
 #define ARRAY_OF_MAP_IDS_ALT  {player->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 57
-
 int init()
 {
     int done = 0;
@@ -110,7 +109,7 @@ bool startGame(sprite* player, bool newSave)
 
 bool confirmMenu()
 {
-sprite cursor;
+    sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR);
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
@@ -197,10 +196,7 @@ int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlen
     if (isBlended)
         txtSurface = TTF_RenderText_Blended_Wrapped(mainFont, text, color, 63 * SCREEN_WIDTH / 64);
     else
-    {
-        SDL_Color color2 = {181, 182, 173};
-        txtSurface = TTF_RenderText(smallFont, text, color, color2);
-    }
+        txtSurface = TTF_RenderText(smallFont, text, color, ((SDL_Color) {181, 182, 173}));
     *dest = SDL_CreateTextureFromSurface(mainRenderer, txtSurface);
     if (!*dest)
     {
@@ -217,6 +213,7 @@ int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlen
 
 void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 {
+    inputName(spr);  //custom text input routine to get spr->name
     spr->x = x;
 	spr->y = y;
 	spr->w = size;
@@ -230,23 +227,26 @@ void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 	spr->overworldX = x;
 	spr->overworldY = y;
 	spr->movementLocked = false;
+
 }
 
 void loadSpriteData(sprite* spr, char* filePath, bool forceNew)
 {
     char* buffer;
-    if (!readLine(filePath, 0, &buffer) || forceNew)
+    if (!checkFile(filePath) || forceNew)
 	{
 	    initSprite(spr, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
 	}
 	else
 	{
-        spr->x = strtol(readLine(filePath, 0, &buffer), NULL, 10);
-        spr->y = strtol(readLine(filePath, 1, &buffer), NULL, 10);
-        spr->w = strtol(readLine(filePath, 2, &buffer), NULL, 10);
+        spr->name = readLine(filePath, 0, &buffer);
+        spr->name = removeNewline(spr->name, SPRITE_NAME_LIMIT + 1);
+        spr->x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
+        spr->y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
+        spr->w = strtol(readLine(filePath, 3, &buffer), NULL, 10);
         spr->h = spr->w;
         spr->tileIndex = TILE_ID_PLAYER;
-        spr->steps = strtol(readLine(filePath, 3, &buffer), NULL, 10);
+        spr->steps = 0;
         spr->clipRect = &((SDL_Rect){.x = (spr->tileIndex / 8) * spr->w, .y = (spr->tileIndex % 8) * spr->w, .w = spr->w, .h = spr->w});
         spr->worldNum = strtol(readLine(filePath, 4, &buffer), NULL, 10);
         spr->mapScreen = (double) strtol(readLine(filePath, 5, &buffer), NULL, 10) / 10.0;
@@ -254,7 +254,13 @@ void loadSpriteData(sprite* spr, char* filePath, bool forceNew)
         spr->overworldX = strtol(readLine(filePath, 7, &buffer), NULL, 10);
         spr->overworldY = strtol(readLine(filePath, 8, &buffer), NULL, 10);
         spr->movementLocked = false;
+        //name, x, y, w, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 	}
+}
+
+void inputName(sprite* spr)
+{
+    spr->name = "STEVO";
 }
 
 void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x)
@@ -332,13 +338,13 @@ void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render)
 
 void drawTextBox(char* input)
 {
-    //36 letters per line/5 lines at 36pt font
+    //25 letters per line/5 lines at 52pt font
     SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
-    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.y = 17 * SCREEN_HEIGHT / 32, .w = SCREEN_WIDTH, .h = 15 * SCREEN_HEIGHT / 32}));
+    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.y = 8.5 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 8.5) * TILE_SIZE}));
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
-    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 69 * SCREEN_HEIGHT / 128, .w = SCREEN_WIDTH, .w = 126 * SCREEN_WIDTH / 128, .h = 58 * SCREEN_HEIGHT / 128}));
+    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 8.65 * TILE_SIZE, .w = SCREEN_WIDTH, .w = 126 * SCREEN_WIDTH / 128, .h = (HEIGHT_IN_TILES - 8.75) * TILE_SIZE}));
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    drawText(input, SCREEN_WIDTH / 64, 37 * SCREEN_HEIGHT / 64, 27 * SCREEN_HEIGHT / 64, (SDL_Color){0, 0, 0}, true);
+    drawText(input, SCREEN_WIDTH / 64, 8.75 * TILE_SIZE, (HEIGHT_IN_TILES - 8.25) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
 }
 
 bool checkKeyPress(sprite* playerSprite)
@@ -413,15 +419,16 @@ bool checkKeyPress(sprite* playerSprite)
             int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
             loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+            drawHUD(playerSprite);
         }
     }
 
-    if (checkSKSpace)
+    if (checkSKSpace && playerSprite->x == 9 * TILE_SIZE && playerSprite->y == 6 * TILE_SIZE)
     {
         textBoxOn = !textBoxOn;
         playerSprite->movementLocked = !playerSprite->movementLocked;
         if (!textBoxOn)
-            drawTilemap(0, 6, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+            drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES);
     }
 
     if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace)
@@ -445,12 +452,11 @@ void savePlayerData(sprite* player, char* filePath)
 {
     char* buffer = "";
     createFile(filePath);
+    writeLine(filePath, player->name);
     writeLine(filePath, toString(player->x, buffer));
     writeLine(filePath, toString(player->y, buffer));
     writeLine(filePath, toString(player->w, buffer));
-    writeLine(filePath, toString(player->steps, buffer));
     writeLine(filePath, toString(player->worldNum, buffer));
-    printf("%f <->> %f / %d <<-> %d", 10 * 1.21, 10 * player->mapScreen, (int) (10 * player->mapScreen), (int) (1.21 * 10));
     writeLine(filePath, toString((int) (10 * player->mapScreen), buffer));
     writeLine(filePath, toString((int) (10 * player->lastScreen), buffer));
     writeLine(filePath, toString(player->overworldX, buffer));
@@ -470,6 +476,7 @@ void closeSDL()
     TTF_CloseFont(mainFont);
     TTF_CloseFont(smallFont);
 	SDL_DestroyTexture(tilesetTexture);
+	SDL_FreeSurface(mainScreen);
     SDL_DestroyWindow(mainWindow);
     SDL_DestroyRenderer(mainRenderer);
     SDL_Quit();
@@ -511,6 +518,51 @@ int pwrOf10(int power)
 	return val;
 }
 
+void readStringInput(char* str, int limit)
+{
+	printf("Enter a string (Limit of %d characters): ", limit);
+	//get input using a getc() loop and terminate upon a newline
+	int i = 0;
+	char c;
+	while (i < limit)
+	{
+		c = getc(stdin);
+		if (c == '\n')
+			break;
+		str[i] = c;
+		i++;
+
+	}
+	if (i >= limit)
+		i = limit;
+	str = realloc(str, sizeof(char[i + 1]));
+	str[i] = '\0';
+	//this works when i < limit because apparently you can just increase the size of arrays
+	//by storing a new value at [dim + 1]
+}
+void freeThisMem(int ** x)
+{
+	free(*x);
+	*x = NULL;
+}
+
+char* removeNewline(char input[], size_t length)
+{
+    static char sansNewline[20];
+    int i;
+    length = strlen(input);
+    for(i = 0; i < length - 1; i++)
+    {
+        if (input[i] == '\n')
+            break;
+        sansNewline[i] = input[i];
+        //printf("%c\n", sansNewline[i]);
+    }
+    sansNewline[i] = '\0';
+    //printf("%s at %d\n", sansNewline, sansNewline);
+    return sansNewline;
+}
+
 int checkArrayForVal(double value, double* array, size_t arraySize)
 {
 	bool found = -1;
@@ -546,10 +598,18 @@ int createFile(char* filePath)
 		return 0;
 }
 
+bool checkFile(char* filePath)
+{
+    FILE* filePtr = fopen(filePath,"r");
+	if (!filePtr)
+		return false;
+    return true;
+}
+
 int writeLine(char* filePath, char* stuff)
 {
 	FILE* filePtr;
-	filePtr = fopen(filePath,"a+");
+	filePtr = fopen(filePath,"a");
 	if (!filePtr)
 	{
 		printf("Error opening file!\n");
@@ -570,6 +630,7 @@ char* readLine(char* filePath, int lineNum, char** output)
 	else
 	{
 	static char thisLine[512];
+	fseek(filePtr, 0, SEEK_SET);
 	for(int p = 0; p <= lineNum; p++)
 		fgets(thisLine, 512, filePtr);
 	//printf("%s @ %d\n", thisLine, thisLine);

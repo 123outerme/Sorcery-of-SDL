@@ -40,8 +40,11 @@
 #define iPart(x) ((int) x)
 #define fPart(x) (x - iPart(x))
 
+#define SPRITE_NAME_LIMIT 6
+
 typedef struct
 {
+    char* name;  //6 bytes?
     int x;  //
     int y;  //
     int w;  //
@@ -57,37 +60,44 @@ typedef struct
     bool movementLocked;  // 1 byte
 } sprite;
 
-int mainMenu();
-void drawGame();
-void mainLoop();
+int mainMenu();  //main menu code
+int helpMenu();  //displays help menu
+void drawGame();  //draws overworld stuff
+void mainLoop();  //does main overworld loop
+void drawHUD(sprite* player);  //draws HUD in overworld
 
-int init();
-bool startGame(sprite* player, bool newSave);
-bool confirmMenu();
-bool loadIMG();
-bool loadTTFont();
-int* loadTextTexture();
-void initSprite();
-void loadSpriteData(sprite* spr, char* filePath, bool forceNew);
-void loadMapFile();
-void drawTilemap();
-void drawTile();
-void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render);
-void drawTextBox();
-bool checkKeyPress();
-bool checkCollision();
-void savePlayerData(sprite* player, char* filePath);
-void cleanSprites(sprite* sprites[], size_t elems);
-void closeSDL();
+int init();  //inits SDL and necessary game systems
+bool startGame(sprite* player, bool newSave);  //inits player sprite, tilemap
+bool confirmMenu();  //draws a confirm menu to ensure player selection is desired
+bool loadIMG();  //loads an image from a file into a texture
+bool loadTTFont();  //loads a .ttf file into an SDL font
+int* loadTextTexture();  //loads a texture from inputted text
+void initSprite();  //initializes a new sprite
+void loadSpriteData(sprite* spr, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
+void inputName();  //gets the name of the sprite by prompting player
+void loadMapFile();  //loads a map from a file
+void drawTilemap();  //draws a tilemap to the screen
+void drawTile();  //draws a tile to the screen
+void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render);  //draws text to the screen
+void drawTextBox();  //draws the NPC text box
+bool checkKeyPress();  //checks if a key was pressed and acts accordingly if so
+bool checkCollision();  //checks if player has collided with a solid tile
+void savePlayerData(sprite* player, char* filePath);  //saves sprite data to a file
+void cleanSprites(sprite* sprites[], size_t elems);  //doesn't work; cleans sprite data from multiple sprites
+void closeSDL();  //closes out SDL and necessary game systems
 
-char* toString(int value, char * result);
-int digits(int num);
-int pwrOf10(int power);
-int checkArrayForVal(double value, double* array, size_t arraySize);
-double absFloat(double val);
-int createFile(char* filePath);
-int writeLine(char* filePath, char* stuff);
-char* readLine(char* filePath, int lineNum, char** output);
+char* toString(int value, char * result);  //turns inputted int into a string
+int digits(int num);  //gets the number of digits an int has
+int pwrOf10(int power);  //gets input ^ 10
+void readStringInput(char* str, int limit);  //gets string input from the console, letter-by-letter
+void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls its pointer.
+char* removeNewline(char input[], size_t length);  //removes the \n character from a string
+int checkArrayForVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float
+double absFloat(double val);  //gets the absolute value of a float
+int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
+bool checkFile(char* filePath);  //checks if a file exists
+int writeLine(char* filePath, char* stuff);  //appends a line to a file
+char* readLine(char* filePath, int lineNum, char** output);  //reads a certain line from a file
 
 
 SDL_Window* mainWindow;
