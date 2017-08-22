@@ -40,40 +40,62 @@
 #define iPart(x) ((int) x)
 #define fPart(x) (x - iPart(x))
 
-#define SPRITE_NAME_LIMIT 6
+#define PLAYER_NAME_LIMIT 6
+
+#define KEYPRESS_RETURN_MENU 2
+#define KEYPRESS_RETURN_BATTLE 3
 
 typedef struct
 {
-    char* name;  //6 bytes?
     int x;  //
     int y;  //
     int w;  //
     int h;  //
     int tileIndex;  //
-    int steps; //
     SDL_Rect* clipRect;  // 16? bytes (4 ints)
+    //x, y, w, h, tileIndex, and clipRect
+} sprite;
+
+typedef struct {
+    sprite spr;
+    char* name;  //6 bytes?
+    int level;  //
+    int experience;
+    int HP;  //
+    int maxHP;  //
+    int attack;  //
+    int speed;  //
+    int statPts;  //
+    int move1;  //
+    int move2;  //
+    int move3;  //
+    int move4;  //
+    int steps;  //
     int worldNum;  //
     double mapScreen;  //8 bytes
     double lastScreen;  // 8 bytes
     int overworldX;  //
     int overworldY;  //
     bool movementLocked;  // 1 byte
-} sprite;
+} player;
 
-int mainMenu();  //main menu code
-int helpMenu();  //displays help menu
-void drawGame();  //draws overworld stuff
-void mainLoop();  //does main overworld loop
-void drawHUD(sprite* player);  //draws HUD in overworld
+void drawGame(player* player);  //draws overworld stuff
+int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, Uint8 rBG, Uint8 gBG, Uint8 bBG, SDL_Color textColor, bool border, bool showVersion);  //menu
+int aWallOfText(char* title, char* text, bool showHelpInfo);
+int mainLoop(player* playerSprite);  //does main overworld loop
+void drawHUD(player* player);  //draws HUD in overworld
+int showStats(player* player);  //opens stats display
+int showItems(player* player);  //shows list of player items
+bool doBattle(player* player);  //does a battle
 
 int init();  //inits SDL and necessary game systems
-bool startGame(sprite* player, bool newSave);  //inits player sprite, tilemap
-bool confirmMenu();  //draws a confirm menu to ensure player selection is desired
+bool startGame(player* player, bool newSave);  //inits player sprite, tilemap
 bool loadIMG();  //loads an image from a file into a texture
 bool loadTTFont();  //loads a .ttf file into an SDL font
 int* loadTextTexture();  //loads a texture from inputted text
-void initSprite();  //initializes a new sprite
-void loadSpriteData(sprite* spr, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
+void initSprite(sprite* spr, int x, int y, int size, int tileIndex);  //initializes a new sprite
+void initPlayer(player* player, int x, int y, int size, int tileIndex);  //initializes a new player
+void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void inputName();  //gets the name of the sprite by prompting player
 void loadMapFile();  //loads a map from a file
 void drawTilemap();  //draws a tilemap to the screen
@@ -82,8 +104,7 @@ void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render)
 void drawTextBox();  //draws the NPC text box
 bool checkKeyPress();  //checks if a key was pressed and acts accordingly if so
 bool checkCollision();  //checks if player has collided with a solid tile
-void savePlayerData(sprite* player, char* filePath);  //saves sprite data to a file
-void cleanSprites(sprite* sprites[], size_t elems);  //doesn't work; cleans sprite data from multiple sprites
+void savePlayerData(player* player, char* filePath);  //saves sprite data to a file
 void closeSDL();  //closes out SDL and necessary game systems
 
 char* toString(int value, char * result);  //turns inputted int into a string

@@ -5,6 +5,7 @@
 #define checkSKLeft currentKeyStates[SDL_SCANCODE_LEFT]
 #define checkSKRight currentKeyStates[SDL_SCANCODE_RIGHT]
 #define checkSKSpace currentKeyStates[SDL_SCANCODE_SPACE]
+#define checkSKEsc currentKeyStates[SDL_SCANCODE_ESCAPE]
 
 #define TILE_ID_TREE 8
 #define TILE_ID_LAVA 9
@@ -92,9 +93,9 @@ int init()
     return done;
 }
 
-bool startGame(sprite* player, bool newSave)
+bool startGame(player* player, bool newSave)
 {
-    loadSpriteData(player, SAVE_DATA_NAME, newSave ? confirmMenu() : newSave);
+    loadPlayerData(player, SAVE_DATA_NAME, newSave ? 2 - aMenu("Are you sure you       want to start a new save?", "YES", "NO", " ", " ", " ", 2, 2, 0x10, 0x20, 0x8C, (SDL_Color){24, 195, 247}, false, false) : newSave);
     double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
     //printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
     int map = checkArrayForVal(player->worldNum + (double)(player->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
@@ -105,63 +106,6 @@ bool startGame(sprite* player, bool newSave)
         return 5;
     }
     return 0;
-}
-
-bool confirmMenu()
-{
-    sprite cursor;
-    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR);
-    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
-    SDL_RenderFillRect(mainRenderer, NULL);
-    //foreground text
-    drawText("ARE YOU SURE?", 9 * SCREEN_WIDTH / 64, 4 * SCREEN_HEIGHT / 64, 55 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
-
-    drawText("YES", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText("NO", 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-
-    SDL_Event e;
-    bool quit = false;
-    bool selection = 0;
-    //While application is running
-    while(!quit)
-    {
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
-        //Handle events on queue
-        while(SDL_PollEvent(&e) != 0)
-        {
-            //User requests quit
-            if(e.type == SDL_QUIT)
-                quit = true;
-            //User presses a key
-            else if(e.type == SDL_KEYDOWN)
-            {
-                //Select surfaces based on key press
-                switch(e.key.keysym.sym)
-                {
-                    case SDLK_UP:
-                        if (cursor.y > 5 * TILE_SIZE)
-                            cursor.y -= TILE_SIZE;
-                    break;
-
-                    case SDLK_DOWN:
-                        if (cursor.y < 6 * TILE_SIZE)
-                            cursor.y += TILE_SIZE;
-                    break;
-
-                    case SDLK_SPACE:
-                        selection = !(cursor.y / TILE_SIZE - 5);
-                        quit = true;
-                    break;
-
-                    default:
-                    break;
-                }
-            }
-        }
-        drawTile(cursor.tileIndex, cursor.x / TILE_SIZE, cursor.y / TILE_SIZE, TILE_SIZE);
-        SDL_RenderPresent(mainRenderer);
-    }
-    return selection;
 }
 
 bool loadIMG(char* imgPath, SDL_Texture** dest)
@@ -213,54 +157,81 @@ int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlen
 
 void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 {
-    inputName(spr);  //custom text input routine to get spr->name
     spr->x = x;
 	spr->y = y;
 	spr->w = size;
 	spr->h = size;
 	spr->tileIndex = tileIndex;
-	spr->steps = 0;
 	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * size, .y = (tileIndex % 8) * size, .w = size, .h = size});
-	spr->worldNum = 1;
-	spr->mapScreen = 1.0;
-	spr->lastScreen = 1.0;
-	spr->overworldX = x;
-	spr->overworldY = y;
-	spr->movementLocked = false;
-
 }
 
-void loadSpriteData(sprite* spr, char* filePath, bool forceNew)
+void initPlayer(player* player, int x, int y, int size, int tileIndex)
 {
-    char* buffer;
+    inputName(player);  //custom text input routine to get spr->name
+    initSprite(&(player->spr), x, y, size, tileIndex);
+	player->level = 1;
+	player->experience = 0;
+	player->HP = 50;
+	player->maxHP = 50;
+	player->attack = 1;
+	player->speed = 1;
+	player->statPts = 0;
+	player->move1 = 32;
+	player->move2 = 0;
+	player->move3 = 0;
+	player->move4 = 0;
+	player->steps = 0;
+	player->worldNum = 1;
+	player->mapScreen = 1.0;
+	player->lastScreen = 1.0;
+	player->overworldX = x;
+	player->overworldY = y;
+	player->movementLocked = false;
+    //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
+}
+
+void loadPlayerData(player* player, char* filePath, bool forceNew)
+{
     if (!checkFile(filePath) || forceNew)
 	{
-	    initSprite(spr, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
+	    initPlayer(player, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
 	}
 	else
 	{
-        spr->name = readLine(filePath, 0, &buffer);
-        spr->name = removeNewline(spr->name, SPRITE_NAME_LIMIT + 1);
-        spr->x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
-        spr->y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
-        spr->w = strtol(readLine(filePath, 3, &buffer), NULL, 10);
-        spr->h = spr->w;
-        spr->tileIndex = TILE_ID_PLAYER;
-        spr->steps = 0;
-        spr->clipRect = &((SDL_Rect){.x = (spr->tileIndex / 8) * spr->w, .y = (spr->tileIndex % 8) * spr->w, .w = spr->w, .h = spr->w});
-        spr->worldNum = strtol(readLine(filePath, 4, &buffer), NULL, 10);
-        spr->mapScreen = (double) strtol(readLine(filePath, 5, &buffer), NULL, 10) / 10.0;
-        spr->lastScreen = (double) strtol(readLine(filePath, 6, &buffer), NULL, 10) / 10.0;
-        spr->overworldX = strtol(readLine(filePath, 7, &buffer), NULL, 10);
-        spr->overworldY = strtol(readLine(filePath, 8, &buffer), NULL, 10);
-        spr->movementLocked = false;
-        //name, x, y, w, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
+	    char* buffer;
+        player->name = readLine(filePath, 0, &buffer);
+        player->name = removeNewline(player->name, PLAYER_NAME_LIMIT + 1);
+        player->spr.x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
+        player->spr.y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
+        player->spr.w = strtol(readLine(filePath, 3, &buffer), NULL, 10);
+        player->spr.h = player->spr.w;
+        player->spr.tileIndex = TILE_ID_PLAYER;
+        player->level = strtol(readLine(filePath, 4, &buffer), NULL, 10);
+        player->experience = strtol(readLine(filePath, 5, &buffer), NULL, 10);
+        player->HP = strtol(readLine(filePath, 6, &buffer), NULL, 10);
+        player->maxHP = strtol(readLine(filePath, 7, &buffer), NULL, 10);
+        player->attack = strtol(readLine(filePath, 8, &buffer), NULL, 10);
+        player->speed = strtol(readLine(filePath, 9, &buffer), NULL, 10);
+        player->statPts = strtol(readLine(filePath, 10, &buffer), NULL, 10);
+        player->move1 = strtol(readLine(filePath, 11, &buffer), NULL, 10);
+        player->move2 = strtol(readLine(filePath, 12, &buffer), NULL, 10);
+        player->move3 = strtol(readLine(filePath, 13, &buffer), NULL, 10);
+        player->move4 = strtol(readLine(filePath, 14, &buffer), NULL, 10);
+        player->steps = 0;
+        player->spr.clipRect = &((SDL_Rect){.x = (player->spr.tileIndex / 8) * player->spr.w, .y = (player->spr.tileIndex % 8) * player->spr.w, .w = player->spr.w, .h = player->spr.w});
+        player->worldNum = strtol(readLine(filePath, 15, &buffer), NULL, 10);
+        player->mapScreen = (double) strtol(readLine(filePath, 16, &buffer), NULL, 10) / 10.0;
+        player->lastScreen = (double) strtol(readLine(filePath, 17, &buffer), NULL, 10) / 10.0;
+        player->overworldX = strtol(readLine(filePath, 18, &buffer), NULL, 10);
+        player->overworldY = strtol(readLine(filePath, 19, &buffer), NULL, 10);
+        player->movementLocked = false;
+        //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 	}
 }
 
-void inputName(sprite* spr)
+void inputName(player* player)
 {
-    spr->name = "STEVO";
+    player->name = "STEVO";
 }
 
 void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x)
@@ -343,29 +314,28 @@ void drawTextBox(char* input)
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.y = 8.5 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 8.5) * TILE_SIZE}));
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 8.65 * TILE_SIZE, .w = SCREEN_WIDTH, .w = 126 * SCREEN_WIDTH / 128, .h = (HEIGHT_IN_TILES - 8.75) * TILE_SIZE}));
-    SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     drawText(input, SCREEN_WIDTH / 64, 8.75 * TILE_SIZE, (HEIGHT_IN_TILES - 8.25) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
 }
 
-bool checkKeyPress(sprite* playerSprite)
+bool checkKeyPress(player* playerSprite)
 {
     const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
     if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight))
     {
-        drawTile(tilemap[playerSprite->y / TILE_SIZE][playerSprite->x / TILE_SIZE], playerSprite->x / TILE_SIZE, playerSprite->y / TILE_SIZE, TILE_SIZE);
-        if (playerSprite->y > 0 && checkSKUp)
-            playerSprite->y-= TILE_SIZE;
-        if (playerSprite->y < SCREEN_HEIGHT - playerSprite->h && checkSKDown)
-            playerSprite->y+= TILE_SIZE;
-        if (playerSprite->x > 0 && checkSKLeft)
-            playerSprite->x-= TILE_SIZE;
-        if (playerSprite->x < SCREEN_WIDTH - playerSprite->w && checkSKRight)
-            playerSprite->x+= TILE_SIZE;
-        int thisTile = tilemap[playerSprite->y / TILE_SIZE][playerSprite->x / TILE_SIZE];
+        drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x / TILE_SIZE, playerSprite->spr.y / TILE_SIZE, TILE_SIZE);
+        if (playerSprite->spr.y > 0 && checkSKUp)
+            playerSprite->spr.y -= TILE_SIZE;
+        if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
+            playerSprite->spr.y += TILE_SIZE;
+        if (playerSprite->spr.x > 0 && checkSKLeft)
+            playerSprite->spr.x -= TILE_SIZE;
+        if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
+            playerSprite->spr.x += TILE_SIZE;
+        int thisTile = tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
         checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
-        if (thisTile == TILE_ID_DOOR || !playerSprite->x || playerSprite->y == TILE_SIZE || playerSprite->x == SCREEN_WIDTH - TILE_SIZE || playerSprite->y == SCREEN_HEIGHT - TILE_SIZE)
+        if (thisTile == TILE_ID_DOOR || !playerSprite->spr.x || playerSprite->spr.y == TILE_SIZE || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
         {
-            drawTile(playerSprite->tileIndex, playerSprite->x / playerSprite->w, playerSprite->y / playerSprite->w, playerSprite->w);
+            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x / playerSprite->spr.w, playerSprite->spr.y / playerSprite->spr.w, playerSprite->spr.w);
             SDL_RenderPresent(mainRenderer);
             if (thisTile == TILE_ID_DOOR)
             {
@@ -373,44 +343,44 @@ bool checkKeyPress(sprite* playerSprite)
                 {
                     playerSprite->lastScreen = playerSprite->mapScreen;
                     playerSprite->mapScreen = 0;
-                    playerSprite->overworldX = playerSprite->x;
-                    playerSprite->overworldY = playerSprite->y;
-                    playerSprite->x = 9 * TILE_SIZE;
-                    playerSprite->y = 12 * TILE_SIZE;
+                    playerSprite->overworldX = playerSprite->spr.x;
+                    playerSprite->overworldY = playerSprite->spr.y;
+                    playerSprite->spr.x = 9 * TILE_SIZE;
+                    playerSprite->spr.y = 12 * TILE_SIZE;
                 }
                 else
                 {
                     playerSprite->mapScreen = playerSprite->lastScreen;
-                    playerSprite->x = playerSprite->overworldX;
-                    playerSprite->y = playerSprite->overworldY + TILE_SIZE;
+                    playerSprite->spr.x = playerSprite->overworldX;
+                    playerSprite->spr.y = playerSprite->overworldY + TILE_SIZE;
                     //map = (int) 10 * fPart(playerSprite->mapScreen) + iPart(playerSprite->mapScreen - 1) * 8;
                 }
             }
             else
             {
-                if (!playerSprite->x)
+                if (!playerSprite->spr.x)
                 {
-                    playerSprite->x = SCREEN_WIDTH - (2 * TILE_SIZE);
+                    playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
                     if (fPart(playerSprite->mapScreen) > 0)
                         playerSprite->mapScreen = playerSprite->mapScreen - .1;
 
                 }
-                if (playerSprite->y == TILE_SIZE)
+                if (playerSprite->spr.y == TILE_SIZE)
                 {
-                    playerSprite->y = SCREEN_HEIGHT - (2 * TILE_SIZE);
+                    playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
                     if (iPart(playerSprite->mapScreen) > 0)
                         playerSprite->mapScreen = playerSprite->mapScreen - 1;
                 }
-                if (playerSprite->x == SCREEN_WIDTH - TILE_SIZE)
+                if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE)
                 {
-                    playerSprite->x = TILE_SIZE;
+                    playerSprite->spr.x = TILE_SIZE;
                     if (10 * fPart(playerSprite->mapScreen) < 9)
                         playerSprite->mapScreen = playerSprite->mapScreen + .1;
 
                 }
-                if (playerSprite->y == SCREEN_HEIGHT - TILE_SIZE)
+                if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
                 {
-                    playerSprite->y = TILE_SIZE * 2;
+                    playerSprite->spr.y = TILE_SIZE * 2;
                     if (iPart(playerSprite->mapScreen) < 9)
                         playerSprite->mapScreen = playerSprite->mapScreen + 1;
                 }
@@ -423,52 +393,66 @@ bool checkKeyPress(sprite* playerSprite)
         }
     }
 
-    if (checkSKSpace && playerSprite->x == 9 * TILE_SIZE && playerSprite->y == 6 * TILE_SIZE)
+    if (checkSKSpace && fPart(playerSprite->mapScreen) == playerSprite->mapScreen && playerSprite->spr.x == 9 * TILE_SIZE && playerSprite->spr.y == 6 * TILE_SIZE)
     {
         textBoxOn = !textBoxOn;
         playerSprite->movementLocked = !playerSprite->movementLocked;
         if (!textBoxOn)
             drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+        SDL_Delay(75);
     }
 
-    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace)
+    if (checkSKEsc)
+    {
+        return KEYPRESS_RETURN_MENU;
+    }
+
+    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace || checkSKEsc)
             return true;
         return false;
 }
 
-bool checkCollision(sprite* player, int tileID, int moveX, int moveY)
+bool checkCollision(player* player, int tileID, int moveX, int moveY)
 {
-    if (tileID == TILE_ID_DARKNESS || tileID == TILE_ID_TREE || tileID == TILE_ID_WINDOW || tileID == TILE_ID_LIT_WINDOW
+    if (tileID == TILE_ID_DARKNESS || tileID == TILE_ID_TREE || tileID == TILE_ID_LAVA || tileID == TILE_ID_WINDOW || tileID == TILE_ID_LIT_WINDOW
         || tileID == TILE_ID_COUNTER_TOP || tileID == TILE_ID_HOUSE_BACK_WALL || tileID == TILE_ID_BAD_WOOD_FLOOR)
     {
-        player->x = player->x - moveX * TILE_SIZE;
-        player->y = player->y - moveY * TILE_SIZE;
+        player->spr.x -= moveX * TILE_SIZE;
+        player->spr.y -= moveY * TILE_SIZE;
         return true;
     }
     return false;
 }
 
-void savePlayerData(sprite* player, char* filePath)
+void savePlayerData(player* player, char* filePath)
 {
     char* buffer = "";
     createFile(filePath);
     writeLine(filePath, player->name);
-    writeLine(filePath, toString(player->x, buffer));
-    writeLine(filePath, toString(player->y, buffer));
-    writeLine(filePath, toString(player->w, buffer));
+    writeLine(filePath, toString(player->spr.x, buffer));
+    writeLine(filePath, toString(player->spr.y, buffer));
+    writeLine(filePath, toString(player->spr.w, buffer));
+    writeLine(filePath, toString(player->level, buffer));
+    writeLine(filePath, toString(player->experience, buffer));
+    writeLine(filePath, toString(player->HP, buffer));
+    writeLine(filePath, toString(player->maxHP, buffer));
+    writeLine(filePath, toString(player->attack, buffer));
+    writeLine(filePath, toString(player->speed, buffer));
+    writeLine(filePath, toString(player->statPts, buffer));
+    writeLine(filePath, toString(player->move1, buffer));
+    writeLine(filePath, toString(player->move2, buffer));
+    writeLine(filePath, toString(player->move3, buffer));
+    writeLine(filePath, toString(player->move4, buffer));
     writeLine(filePath, toString(player->worldNum, buffer));
     writeLine(filePath, toString((int) (10 * player->mapScreen), buffer));
     writeLine(filePath, toString((int) (10 * player->lastScreen), buffer));
     writeLine(filePath, toString(player->overworldX, buffer));
     writeLine(filePath, toString(player->overworldY, buffer));
-}
-
-void cleanSprites(sprite* sprites[], size_t elems)
-{
-    //not working
-    for(int i = 0; i < elems; i++)
-        sprites[i] = &((sprite){.x = 0, .y = 0, .w = 0, .h = 0, .tileIndex = 0, .steps = 0, .clipRect = NULL, .mapScreen = 0, .lastScreen = 0,
-                       .overworldX = 0, .overworldY = 0, .movementLocked = false});
+    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    drawText("Save completed.", 12 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+    SDL_RenderPresent(mainRenderer);
+    SDL_Delay(450);
 }
 
 void closeSDL()
