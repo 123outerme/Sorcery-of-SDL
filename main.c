@@ -33,8 +33,11 @@
 #define OVERWORLD_SAVE_RETURN 4
 #define OVERWORLD_QUIT 5
 
-//Todo for 8/20:
-//* Make world-sized tilemaps work (and smooth scrolling)
+#define OVERWORLD_MENU_PALETTE (SDL_Color){181, 182, 173}, (SDL_Color){181, 182, 173}, (SDL_Color){16, 32, 140}, (SDL_Color){16, 32, 140}
+
+#define ALL_ATTACKS "SLICESLASHBURN ROASTCRACKBREAKCHILLICE  FLOW SWEEPWHACKBASH STAB GASH SMASH     THORNVINE FLAREBLAZEROCK STONEFROSTHAIL STORMVOLT SMELLSTINKDARK EVIL ALPHAARROW"
+//Todo for 8/23:
+//* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
@@ -52,12 +55,12 @@ int main(int argc, char* args[])
         int selection = 0;
         do
         {
-            selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "HELP", "QUIT", " ", 4, selection, 0x10, 0x20, 0x8C, (SDL_Color){24, 195, 247}, false, true);
+            selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "HELP", "QUIT", " ", 4, selection, MAIN_MENU_PALETTE, false, true);
             if (selection == MENU_HELP)
-                selection = aWallOfText("Sorcery of Uvutu", "Arrow keys to move. ESC to enter menu. Use Spacebar to talk to people. Spacebar in the Menu to select an option. Critical Hits are marked by a RED X, and Weakness by a YELLOW +.", true);
+                selection = aWallOfText("Sorcery of Uvutu", "^<V> to move. Use ESC to enter menu. Spacebar to talk to people. Spacebar in the Menu to select an option. Critical Hits are marked by a RED X, and Weakness by a YELLOW +. See the README.", true);
         }
         while (selection == MENU_HELP);
-        if (selection < MENU_HELP)
+        if (selection < MENU_HELP && selection != ANYWHERE_QUIT)
         {
             succeeded = startGame(&player, selection == MENU_NEW_SAVE);
             int loopCode = LOOP_GOTO_MENU;
@@ -69,9 +72,9 @@ int main(int argc, char* args[])
                     loopCode = -2;
                     while (loopCode == OVERWORLD_STATS || loopCode == OVERWORLD_ITEMS || loopCode == -2)
                     {
-                        loopCode = aMenu(player.name, "BACK", "STATS", "ITEMS", "SAVE + CONTINUE", "SAVE + QUIT", 5, loopCode, 0xB5, 0xB6, 0xAD, (SDL_Color){16, 32, 140}, true, false);
+                        loopCode = aMenu(player.name, "BACK", "STATS", "ITEMS", "SAVE + CONTINUE", "SAVE + QUIT", 5, loopCode, OVERWORLD_MENU_PALETTE, true, false);
                         if (loopCode == OVERWORLD_SAVE_RETURN)
-                            savePlayerData(&player, SAVE_DATA_NAME);
+                            savePlayerData(&player, SAVE_FILE_NAME);
                         if (loopCode == OVERWORLD_STATS)
                             loopCode = showStats(&player);
                         if (loopCode == OVERWORLD_ITEMS)
@@ -85,7 +88,7 @@ int main(int argc, char* args[])
 
             }
             printf("Ended at %d, %d underneath a tile of index %d in map id %f\n", player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 10));
-            savePlayerData(&player, SAVE_DATA_NAME);
+            savePlayerData(&player, SAVE_FILE_NAME);
         }
         closeSDL();
 	}
@@ -96,11 +99,11 @@ void drawGame(player* player)
 {
     drawTile(player->spr.tileIndex, player->spr.x / player->spr.w, player->spr.y / player->spr.w, player->spr.w);
     if (textBoxOn)
-        drawTextBox("Hello world. I would like to tell you a story today. Once there was a programmer who hated things, so he made me.");
+        drawTextBox("Did you know that this is placeholder text? Me neither.");
     SDL_RenderPresent(mainRenderer);
 }
 
-int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, Uint8 rBG, Uint8 gBG, Uint8 bBG, SDL_Color textColor, bool border, bool showVersion)
+int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool showVersion)
 {
     if (curSelect < 1)
         curSelect = 1;
@@ -109,14 +112,14 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
     if (border)
         SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
     else
-        SDL_SetRenderDrawColor(mainRenderer, rBG, gBG, bBG, 0xFF);
+        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
-    SDL_SetRenderDrawColor(mainRenderer, rBG, gBG, bBG, 0xFF);
+    SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 1 * SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
     //background text (drawn first)
-    drawText(title, 21 * SCREEN_WIDTH / 128, 9 * SCREEN_HEIGHT / 128, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
+    drawText(title, 2 * TILE_SIZE + 3 * TILE_SIZE / 8, 9 * SCREEN_HEIGHT / 128, 119 * SCREEN_HEIGHT / 128, titleColorUnder, false);
     //foreground text
-    drawText(title, 10 * SCREEN_WIDTH / 64, 4 * SCREEN_HEIGHT / 64, 55 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+    drawText(title, 2 * TILE_SIZE + TILE_SIZE / 4, 4 * SCREEN_HEIGHT / 64, 55 * SCREEN_HEIGHT / 64, titleColorOver, false);
 
     drawText(opt1, 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
     drawText(opt2, 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
@@ -183,12 +186,9 @@ int aWallOfText(char* title, char* text, bool showHelpInfo)
     //foreground text
     drawText(title, 10 * SCREEN_WIDTH / 64, 0, SCREEN_HEIGHT, (SDL_Color){24, 162, 239}, false);
 
-    drawText(text, 0, 2 * TILE_SIZE, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){24, 195, 247}, !showHelpInfo);
+    drawText(text, 0, TILE_SIZE + TILE_SIZE / 2, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){24, 195, 247}, !showHelpInfo);
     if (showHelpInfo)
-    {
-        drawText("Made by Stephen Policelli", 0, 12 * TILE_SIZE, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-        drawText(FULLVERSION_STRING, TILE_SIZE, 14 * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
-    }
+        drawText("Made by Stephen Policelli", 0, 13 * TILE_SIZE, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
 
     SDL_Event e;
     bool quit = false;
@@ -278,37 +278,59 @@ int showStats(player* player)
 {
     int exitCode = OVERWORLD_STATS;
     char* buffer = "";
-
     SDL_RenderFillRect(mainRenderer, NULL);
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 1 * SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-    //background text (drawn first)
-    drawText("STATS", 21 * SCREEN_WIDTH / 128, 9 * SCREEN_HEIGHT / 128, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
     //foreground text
-    drawText("STATS", 10 * SCREEN_WIDTH / 64, 4 * SCREEN_HEIGHT / 64, 54 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+    drawText("STATS", 2 * TILE_SIZE + TILE_SIZE / 4, 4 * SCREEN_HEIGHT / 64, 54 * SCREEN_HEIGHT / 64, (SDL_Color){16, 32, 140}, false);
 
     drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, (HEIGHT_IN_TILES - 3) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
     drawText(player->name, 4 * TILE_SIZE + TILE_SIZE / 4, 4 * TILE_SIZE, (HEIGHT_IN_TILES - 4) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText("LVL:    XP:", 4 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(toString(player->level, buffer), 7 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText(toString(player->experience, buffer), 13 * TILE_SIZE, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-
-    drawText("HP:    /   ", 4 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(toString(player->HP, buffer), (9 - digits(player->HP)) * TILE_SIZE + 7 * TILE_SIZE / 8, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText(toString(player->maxHP, buffer), 10 * TILE_SIZE + 2 * TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-
-    drawText("ATK:    SPD:", 4 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, (HEIGHT_IN_TILES - 7) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(toString(player->attack, buffer), 7 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, (HEIGHT_IN_TILES - 7) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-    drawText(toString(player->speed, buffer), 13 * TILE_SIZE + TILE_SIZE / 2, 7 * TILE_SIZE, (HEIGHT_IN_TILES - 7) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-
-    drawText("STAT PTS=", 4 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, (HEIGHT_IN_TILES - 8) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(toString(player->statPts, buffer), 12 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, (HEIGHT_IN_TILES - 8) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
-
     drawTile(TILE_ID_CURSOR, 1, 3, TILE_SIZE);
     drawTile(TILE_ID_PLAYER, 2, 4, TILE_SIZE);
-    SDL_RenderPresent(mainRenderer);
+
+    drawText("LVL:    XP:", 4 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(toString(player->level, buffer), 8 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(player->experience, buffer), 15 * TILE_SIZE + TILE_SIZE / 8, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+
+    drawText("HP:    /   ", 4 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(toString(player->HP, buffer), (10 - digits(player->HP)) * TILE_SIZE + 7 * TILE_SIZE / 8, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(player->maxHP, buffer), 12 * TILE_SIZE + 2 * TILE_SIZE / 4, 6 * TILE_SIZE, (HEIGHT_IN_TILES - 6) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+
+    drawText("ATK:    SPD:", 4 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, (HEIGHT_IN_TILES - 7) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(toString(player->attack, buffer), 8 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, (HEIGHT_IN_TILES - 7) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(player->speed, buffer), 16 * TILE_SIZE + 5 * TILE_SIZE / 16, 7 * TILE_SIZE, (HEIGHT_IN_TILES - 7) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+
+    drawText("STAT PTS=", 4 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, (HEIGHT_IN_TILES - 8) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(toString(player->statPts, buffer), 13 * TILE_SIZE + TILE_SIZE / 8, 8 * TILE_SIZE, (HEIGHT_IN_TILES - 8) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+
+    char* allAttacks = ALL_ATTACKS, thisAttack[6] = "     \0";
+    if (player->move1)
+        {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 9 * TILE_SIZE, (HEIGHT_IN_TILES - 9) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move1, 12, 9, TILE_SIZE);
+        }
+    if (player->move2)
+        {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 10 * TILE_SIZE, (HEIGHT_IN_TILES - 10) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move2, 12, 10, TILE_SIZE);
+        }
+    if (player->move3)
+        {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move3, 12, 11, TILE_SIZE);
+        }
+    if (player->move4)
+        {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move4, 12, 12, TILE_SIZE);
+        }
+    drawText("^:", 4 * TILE_SIZE +  TILE_SIZE / 4, 9 * TILE_SIZE, (HEIGHT_IN_TILES - 9) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(">:", 4 * TILE_SIZE +  TILE_SIZE / 4, 10 * TILE_SIZE, (HEIGHT_IN_TILES - 10) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("V:", 4 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("<:", 4 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
 
     SDL_Event e;
     bool quit = false;

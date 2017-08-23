@@ -70,8 +70,8 @@ int init()
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderSetLogicalSize(mainRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
                 SDL_RenderClear(mainRenderer);
-                loadTTFont("Texas-Instruments-TI-84_X.ttf", &mainFont, 52);
-                loadTTFont("Texas-Instruments-TI-84_X.ttf", &smallFont, 24);
+                loadTTFont(FONT_FILE_NAME, &mainFont, 48);
+                loadTTFont(FONT_FILE_NAME, &smallFont, 20);
                 if (!mainFont || !smallFont)
                 {
                     printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "smallFont", TTF_GetError());
@@ -79,7 +79,7 @@ int init()
                 }
                 else
                 {
-                    loadIMG(TILESET_NAME, &tilesetTexture);
+                    loadIMG(TILESET_FILE_NAME, &tilesetTexture);
                     if (!tilesetTexture)
                     {
                         printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
@@ -95,11 +95,11 @@ int init()
 
 bool startGame(player* player, bool newSave)
 {
-    loadPlayerData(player, SAVE_DATA_NAME, newSave ? 2 - aMenu("Are you sure you       want to start a new save?", "YES", "NO", " ", " ", " ", 2, 2, 0x10, 0x20, 0x8C, (SDL_Color){24, 195, 247}, false, false) : newSave);
+    loadPlayerData(player, SAVE_FILE_NAME, newSave ? 2 - aMenu("Are you sure you       want to start a     new save?", "YES", "NO", " ", " ", " ", 2, 2, MAIN_MENU_PALETTE, false, false) : newSave);
     double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
     //printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
     int map = checkArrayForVal(player->worldNum + (double)(player->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
-    loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     if (tilemap[0][0] == -1 || map == -1)
     {
         printf("Tilemap could not load! Error code 5. Extra info: %d", map);
@@ -176,7 +176,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->attack = 1;
 	player->speed = 1;
 	player->statPts = 0;
-	player->move1 = 32;
+	player->move1 = 40;
 	player->move2 = 0;
 	player->move3 = 0;
 	player->move4 = 0;
@@ -309,7 +309,7 @@ void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render)
 
 void drawTextBox(char* input)
 {
-    //25 letters per line/5 lines at 52pt font
+    //19 letters per line/5 lines at 48pt font
     SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.y = 8.5 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 8.5) * TILE_SIZE}));
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
@@ -387,7 +387,7 @@ bool checkKeyPress(player* playerSprite)
             }
             double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
             int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
-            loadMapFile(MAP_DATA_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
             drawHUD(playerSprite);
         }
@@ -450,7 +450,7 @@ void savePlayerData(player* player, char* filePath)
     writeLine(filePath, toString(player->overworldY, buffer));
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
-    drawText("Save completed.", 12 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+    drawText("Save completed.", 9 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
     SDL_RenderPresent(mainRenderer);
     SDL_Delay(450);
 }

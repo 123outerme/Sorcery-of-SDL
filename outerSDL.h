@@ -26,9 +26,10 @@
 #define false 0
 #define true 1
 #define windowName "Sorcery of SDL"
-#define TILESET_NAME "SOUVUTU0.png"
-#define MAP_DATA_NAME "map.txt"
-#define SAVE_DATA_NAME "SAVUVUTU.txt"
+#define TILESET_FILE_NAME "SOUVUTU0.png"
+#define MAP_FILE_NAME "map.txt"
+#define SAVE_FILE_NAME "SAVUVUTU.txt"
+#define FONT_FILE_NAME "Px437_ITT_BIOS_X.ttf"
 #define FRAMERATE 60
 #define SCREEN_WIDTH TILE_SIZE * 20
 #define SCREEN_HEIGHT TILE_SIZE * 15
@@ -44,6 +45,7 @@
 
 #define KEYPRESS_RETURN_MENU 2
 #define KEYPRESS_RETURN_BATTLE 3
+#define MAIN_MENU_PALETTE (SDL_Color){16, 32, 140}, (SDL_Color){24, 65, 214}, (SDL_Color){24, 162, 239}, (SDL_Color){24, 195, 247}
 
 typedef struct
 {
@@ -80,7 +82,7 @@ typedef struct {
 } player;
 
 void drawGame(player* player);  //draws overworld stuff
-int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, Uint8 rBG, Uint8 gBG, Uint8 bBG, SDL_Color textColor, bool border, bool showVersion);  //menu
+int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool showVersion);  //menu
 int aWallOfText(char* title, char* text, bool showHelpInfo);
 int mainLoop(player* playerSprite);  //does main overworld loop
 void drawHUD(player* player);  //draws HUD in overworld
