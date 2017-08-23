@@ -1,0 +1,12 @@
+23 August 2017
+   released version 0.1.1 of SorcerySDL
+
+     Change log:
+        -Added: Custom string input (done in under 30 mins!)
+
+23 August 2017
+   released version 0.1.0 of NewTxtrTst
+
+     Change log:
+        -Added: Added status of v0.1
+

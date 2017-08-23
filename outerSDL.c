@@ -19,9 +19,8 @@
 #define TILE_ID_HOUSE_BACK_WALL 28
 #define TILE_ID_BAD_WOOD_FLOOR 29
 #define TILE_ID_DARKNESS 127
-#define ARRAY_OF_MAP_IDS_ALT  {player->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
-#define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
-#define SIZE_OF_MAP_ARRAY 57
+#define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.11, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
+#define SIZE_OF_MAP_ARRAY 58
 int init()
 {
     int done = 0;
@@ -93,12 +92,12 @@ int init()
     return done;
 }
 
-bool startGame(player* player, bool newSave)
+bool startGame(player* playerSprite, bool newSave)
 {
-    loadPlayerData(player, SAVE_FILE_NAME, newSave ? 2 - aMenu("Are you sure you       want to start a     new save?", "YES", "NO", " ", " ", " ", 2, 2, MAIN_MENU_PALETTE, false, false) : newSave);
-    double arrayOfMaps[] = ARRAY_OF_MAP_IDS_ALT;
+    loadPlayerData(playerSprite, SAVE_FILE_NAME, newSave ? 2 - aMenu("Are you sure you       want to start a     new save?", "YES", "NO", " ", " ", " ", 2, 2, MAIN_MENU_PALETTE, false, false) : newSave);
+    double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
     //printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
-    int map = checkArrayForVal(player->worldNum + (double)(player->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+    int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
     loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     if (tilemap[0][0] == -1 || map == -1)
     {
@@ -155,7 +154,7 @@ int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlen
     return wh;
 }
 
-void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
+void initSprite(sprite* spr, int x, int y, int size, int tileIndex, entityType type)
 {
     spr->x = x;
 	spr->y = y;
@@ -163,12 +162,13 @@ void initSprite(sprite* spr, int x, int y, int size, int tileIndex)
 	spr->h = size;
 	spr->tileIndex = tileIndex;
 	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * size, .y = (tileIndex % 8) * size, .w = size, .h = size});
+	spr->type = type;
 }
 
 void initPlayer(player* player, int x, int y, int size, int tileIndex)
 {
-    inputName(player);  //custom text input routine to get spr->name
-    initSprite(&(player->spr), x, y, size, tileIndex);
+    inputName(player);  //custom text input routine to get player->name
+    initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
 	player->level = 1;
 	player->experience = 0;
 	player->HP = 50;
@@ -186,6 +186,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->lastScreen = 1.0;
 	player->overworldX = x;
 	player->overworldY = y;
+	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
@@ -199,31 +200,32 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 	else
 	{
 	    char* buffer;
-        player->name = readLine(filePath, 0, &buffer);
-        player->name = removeNewline(player->name, PLAYER_NAME_LIMIT + 1);
+        strcpy(player->name, readLine(filePath, 0, &buffer));
+        strcpy(player->name, removeNewline(player->name, PLAYER_NAME_LIMIT + 1));
         player->spr.x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
         player->spr.y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
-        player->spr.w = strtol(readLine(filePath, 3, &buffer), NULL, 10);
+        player->spr.w = TILE_SIZE;
         player->spr.h = player->spr.w;
         player->spr.tileIndex = TILE_ID_PLAYER;
-        player->level = strtol(readLine(filePath, 4, &buffer), NULL, 10);
-        player->experience = strtol(readLine(filePath, 5, &buffer), NULL, 10);
-        player->HP = strtol(readLine(filePath, 6, &buffer), NULL, 10);
-        player->maxHP = strtol(readLine(filePath, 7, &buffer), NULL, 10);
-        player->attack = strtol(readLine(filePath, 8, &buffer), NULL, 10);
-        player->speed = strtol(readLine(filePath, 9, &buffer), NULL, 10);
-        player->statPts = strtol(readLine(filePath, 10, &buffer), NULL, 10);
-        player->move1 = strtol(readLine(filePath, 11, &buffer), NULL, 10);
-        player->move2 = strtol(readLine(filePath, 12, &buffer), NULL, 10);
-        player->move3 = strtol(readLine(filePath, 13, &buffer), NULL, 10);
-        player->move4 = strtol(readLine(filePath, 14, &buffer), NULL, 10);
+        player->level = strtol(readLine(filePath, 3, &buffer), NULL, 10);
+        player->experience = strtol(readLine(filePath, 4, &buffer), NULL, 10);
+        player->HP = strtol(readLine(filePath, 5, &buffer), NULL, 10);
+        player->maxHP = strtol(readLine(filePath, 6, &buffer), NULL, 10);
+        player->attack = strtol(readLine(filePath, 7, &buffer), NULL, 10);
+        player->speed = strtol(readLine(filePath, 8, &buffer), NULL, 10);
+        player->statPts = strtol(readLine(filePath, 9, &buffer), NULL, 10);
+        player->move1 = strtol(readLine(filePath, 10, &buffer), NULL, 10);
+        player->move2 = strtol(readLine(filePath, 11, &buffer), NULL, 10);
+        player->move3 = strtol(readLine(filePath, 12, &buffer), NULL, 10);
+        player->move4 = strtol(readLine(filePath, 13, &buffer), NULL, 10);
         player->steps = 0;
         player->spr.clipRect = &((SDL_Rect){.x = (player->spr.tileIndex / 8) * player->spr.w, .y = (player->spr.tileIndex % 8) * player->spr.w, .w = player->spr.w, .h = player->spr.w});
-        player->worldNum = strtol(readLine(filePath, 15, &buffer), NULL, 10);
-        player->mapScreen = (double) strtol(readLine(filePath, 16, &buffer), NULL, 10) / 10.0;
-        player->lastScreen = (double) strtol(readLine(filePath, 17, &buffer), NULL, 10) / 10.0;
-        player->overworldX = strtol(readLine(filePath, 18, &buffer), NULL, 10);
-        player->overworldY = strtol(readLine(filePath, 19, &buffer), NULL, 10);
+        player->worldNum = strtol(readLine(filePath, 14, &buffer), NULL, 10);
+        player->mapScreen = (double) strtol(readLine(filePath, 15, &buffer), NULL, 10) / 10.0;
+        player->lastScreen = (double) strtol(readLine(filePath, 16, &buffer), NULL, 10) / 10.0;
+        player->overworldX = strtol(readLine(filePath, 17, &buffer), NULL, 10);
+        player->overworldY = strtol(readLine(filePath, 18, &buffer), NULL, 10);
+        player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
         //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 	}
@@ -231,7 +233,52 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 
 void inputName(player* player)
 {
-    player->name = "STEVO";
+    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    //background text (drawn first)
+    drawText("NAME?", 21 * SCREEN_WIDTH / 128, 13 * SCREEN_HEIGHT / 128, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
+    //foreground text
+    drawText("NAME?", 10 * SCREEN_WIDTH / 64, 5 * SCREEN_WIDTH / 64, 59 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, true);
+
+    SDL_Event e;
+    bool quit = false, hasTyped = false;
+    char playerName[PLAYER_NAME_LIMIT + 1] = "      \0";
+    int i = 0;
+    while(!quit)
+    {
+        //Handle events on queue
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+                quit = true;
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z && i < PLAYER_NAME_LIMIT)
+                {
+                    playerName[i++] = toupper(e.key.keysym.sym);
+                    hasTyped = true;
+                }
+                if (e.key.keysym.sym == SDLK_BACKSPACE && i > 0)
+                {
+                    playerName[--i] = ' ';
+                    if (i == 0)
+                        hasTyped = false;
+                }
+
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 3.5 * TILE_SIZE, .w = 6 * TILE_SIZE, .h = TILE_SIZE}));
+                drawText(playerName, 2 * TILE_SIZE, 3.5 * TILE_SIZE, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){255, 255, 255}, true);
+
+                if (e.key.keysym.sym == SDLK_RETURN)
+                    quit = true;
+
+            }
+        }
+    }
+    if (!hasTyped)
+        strcpy(playerName, "STEVO\0");
+    strcpy(player->name, playerName);
 }
 
 void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x)
@@ -276,21 +323,20 @@ void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, c
 
 void drawTilemap(int startX, int startY, int endX, int endY)
 {
-    //printf("");
     for(int dy = startY; dy < endY; dy++)
     {
         for(int dx = startX; dx < endX; dx++)
-            drawTile(tilemap[dy][dx], dx, dy, TILE_SIZE);
+            drawTile(tilemap[dy][dx], dx, dy, TILE_SIZE, SDL_FLIP_NONE);
         SDL_Delay(20);
     }
     SDL_RenderPresent(mainRenderer);
 }
 
-void drawTile(int id, int tileX, int tileY, int width)
+void drawTile(int id, int tileX, int tileY, int width, SDL_RendererFlip flip)
 {
     //printf("%d , %d\n", id  / 8, (id % 8));
-    SDL_RenderCopy(mainRenderer, tilesetTexture, &((SDL_Rect){.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}),
-                   &((SDL_Rect){.x = tileX * width, .y = tileY * width, .w = width, .h = width}));
+    SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect){.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}),
+                   &((SDL_Rect){.x = tileX * width, .y = tileY * width, .w = width, .h = width}), 0 , NULL, flip);
 
     //SDL_RenderPresent(mainRenderer);
 }
@@ -307,22 +353,12 @@ void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render)
     SDL_DestroyTexture(txtTexture);
 }
 
-void drawTextBox(char* input)
-{
-    //19 letters per line/5 lines at 48pt font
-    SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
-    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.y = 8.5 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 8.5) * TILE_SIZE}));
-    SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
-    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 8.65 * TILE_SIZE, .w = SCREEN_WIDTH, .w = 126 * SCREEN_WIDTH / 128, .h = (HEIGHT_IN_TILES - 8.75) * TILE_SIZE}));
-    drawText(input, SCREEN_WIDTH / 64, 8.75 * TILE_SIZE, (HEIGHT_IN_TILES - 8.25) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
-}
-
 bool checkKeyPress(player* playerSprite)
 {
     const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
     if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight))
     {
-        drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x / TILE_SIZE, playerSprite->spr.y / TILE_SIZE, TILE_SIZE);
+        drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x / TILE_SIZE, playerSprite->spr.y / TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         if (playerSprite->spr.y > 0 && checkSKUp)
             playerSprite->spr.y -= TILE_SIZE;
         if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
@@ -331,11 +367,15 @@ bool checkKeyPress(player* playerSprite)
             playerSprite->spr.x -= TILE_SIZE;
         if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
             playerSprite->spr.x += TILE_SIZE;
+        if (checkSKLeft)
+            playerSprite->flip = SDL_FLIP_HORIZONTAL;
+        if (checkSKRight)
+            playerSprite->flip = SDL_FLIP_NONE;
         int thisTile = tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
         checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
         if (thisTile == TILE_ID_DOOR || !playerSprite->spr.x || playerSprite->spr.y == TILE_SIZE || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
         {
-            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x / playerSprite->spr.w, playerSprite->spr.y / playerSprite->spr.w, playerSprite->spr.w);
+            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x / playerSprite->spr.w, playerSprite->spr.y / playerSprite->spr.w, playerSprite->spr.w, playerSprite->flip);
             SDL_RenderPresent(mainRenderer);
             if (thisTile == TILE_ID_DOOR)
             {
@@ -388,8 +428,7 @@ bool checkKeyPress(player* playerSprite)
             double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
             int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
             loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-            drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
-            drawHUD(playerSprite);
+            return KEYPRESS_RETURN_BREAK;
         }
     }
 
@@ -403,9 +442,7 @@ bool checkKeyPress(player* playerSprite)
     }
 
     if (checkSKEsc)
-    {
         return KEYPRESS_RETURN_MENU;
-    }
 
     if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace || checkSKEsc)
             return true;
@@ -431,7 +468,6 @@ void savePlayerData(player* player, char* filePath)
     writeLine(filePath, player->name);
     writeLine(filePath, toString(player->spr.x, buffer));
     writeLine(filePath, toString(player->spr.y, buffer));
-    writeLine(filePath, toString(player->spr.w, buffer));
     writeLine(filePath, toString(player->level, buffer));
     writeLine(filePath, toString(player->experience, buffer));
     writeLine(filePath, toString(player->HP, buffer));
@@ -553,20 +589,13 @@ int checkArrayForVal(double value, double* array, size_t arraySize)
 	for(int i = 0; i < arraySize; i++)
 	{
 	    //printf("%i  -> %f == %f: %d\n", i, value, *(array + i), value == *(array + i));
-		if (absFloat(value - *(array + i)) < .01)
+		if (fabs(value - *(array + i)) < .001)
 		{
 			found = i;
 			break;
 		}
 	}
 	return found;
-}
-
-double absFloat(double val)
-{
-    if (val < 0)
-        val *= -1;
-    return val;
 }
 
 int createFile(char* filePath)
