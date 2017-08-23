@@ -1,7 +1,7 @@
 # Sorcery-of-SDL
 C port of Sorcery of Uvutu using SDL. It's crazy. When I'm done, hopefully you can play.
 
-#> Legal Stuff <
+# > Legal Stuff <
 The font file used is a slightly modified version of a font that is © 2016 VileR,
 and his fonts are licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.
 
