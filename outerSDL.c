@@ -1,15 +1,22 @@
 #include "outerSDL.h"
 
-#define checkSKUp currentKeyStates[SDL_SCANCODE_UP]
-#define checkSKDown currentKeyStates[SDL_SCANCODE_DOWN]
-#define checkSKLeft currentKeyStates[SDL_SCANCODE_LEFT]
-#define checkSKRight currentKeyStates[SDL_SCANCODE_RIGHT]
+#define checkSKUp currentKeyStates[SDL_SCANCODE_W]
+#define checkSKDown currentKeyStates[SDL_SCANCODE_S]
+#define checkSKLeft currentKeyStates[SDL_SCANCODE_A]
+#define checkSKRight currentKeyStates[SDL_SCANCODE_D]
 #define checkSKSpace currentKeyStates[SDL_SCANCODE_SPACE]
 #define checkSKEsc currentKeyStates[SDL_SCANCODE_ESCAPE]
+
+
 
 #define TILE_ID_TREE 8
 #define TILE_ID_LAVA 9
 #define TILE_ID_BOULDER 10
+#define TILE_ID_ICE 11
+#define TILE_ID_WATER 12
+#define TILE_ID_HOLE 13
+#define TILE_ID_PILLAR 14
+#define TILE_ID_DEADTREE 15
 #define TILE_ID_CURSOR 16
 #define TILE_ID_PLAYER 17
 #define TILE_ID_DOOR 22
@@ -171,6 +178,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
 	player->level = 1;
 	player->experience = 0;
+	player->money = 0;
 	player->HP = 50;
 	player->maxHP = 50;
 	player->attack = 1;
@@ -201,7 +209,7 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 	{
 	    char* buffer;
         strcpy(player->name, readLine(filePath, 0, &buffer));
-        strcpy(player->name, removeNewline(player->name, PLAYER_NAME_LIMIT + 1));
+        strcpy(player->name, removeChar(player->name, '\n', PLAYER_NAME_LIMIT + 1));
         player->spr.x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
         player->spr.y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
         player->spr.w = TILE_SIZE;
@@ -209,22 +217,23 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         player->spr.tileIndex = TILE_ID_PLAYER;
         player->level = strtol(readLine(filePath, 3, &buffer), NULL, 10);
         player->experience = strtol(readLine(filePath, 4, &buffer), NULL, 10);
-        player->HP = strtol(readLine(filePath, 5, &buffer), NULL, 10);
-        player->maxHP = strtol(readLine(filePath, 6, &buffer), NULL, 10);
-        player->attack = strtol(readLine(filePath, 7, &buffer), NULL, 10);
-        player->speed = strtol(readLine(filePath, 8, &buffer), NULL, 10);
-        player->statPts = strtol(readLine(filePath, 9, &buffer), NULL, 10);
-        player->move1 = strtol(readLine(filePath, 10, &buffer), NULL, 10);
-        player->move2 = strtol(readLine(filePath, 11, &buffer), NULL, 10);
-        player->move3 = strtol(readLine(filePath, 12, &buffer), NULL, 10);
-        player->move4 = strtol(readLine(filePath, 13, &buffer), NULL, 10);
+        player->money = strtol(readLine(filePath, 5, &buffer), NULL, 10);
+        player->HP = strtol(readLine(filePath, 6, &buffer), NULL, 10);
+        player->maxHP = strtol(readLine(filePath, 7, &buffer), NULL, 10);
+        player->attack = strtol(readLine(filePath, 8, &buffer), NULL, 10);
+        player->speed = strtol(readLine(filePath, 9, &buffer), NULL, 10);
+        player->statPts = strtol(readLine(filePath, 10, &buffer), NULL, 10);
+        player->move1 = strtol(readLine(filePath, 11, &buffer), NULL, 10);
+        player->move2 = strtol(readLine(filePath, 12, &buffer), NULL, 10);
+        player->move3 = strtol(readLine(filePath, 13, &buffer), NULL, 10);
+        player->move4 = strtol(readLine(filePath, 14, &buffer), NULL, 10);
         player->steps = 0;
         player->spr.clipRect = &((SDL_Rect){.x = (player->spr.tileIndex / 8) * player->spr.w, .y = (player->spr.tileIndex % 8) * player->spr.w, .w = player->spr.w, .h = player->spr.w});
-        player->worldNum = strtol(readLine(filePath, 14, &buffer), NULL, 10);
-        player->mapScreen = (double) strtol(readLine(filePath, 15, &buffer), NULL, 10) / 10.0;
-        player->lastScreen = (double) strtol(readLine(filePath, 16, &buffer), NULL, 10) / 10.0;
-        player->overworldX = strtol(readLine(filePath, 17, &buffer), NULL, 10);
-        player->overworldY = strtol(readLine(filePath, 18, &buffer), NULL, 10);
+        player->worldNum = strtol(readLine(filePath, 15, &buffer), NULL, 10);
+        player->mapScreen = (double) strtol(readLine(filePath, 16, &buffer), NULL, 10) / 10.0;
+        player->lastScreen = (double) strtol(readLine(filePath, 17, &buffer), NULL, 10) / 10.0;
+        player->overworldX = strtol(readLine(filePath, 18, &buffer), NULL, 10);
+        player->overworldY = strtol(readLine(filePath, 19, &buffer), NULL, 10);
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
         //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
@@ -276,6 +285,8 @@ void inputName(player* player)
             }
         }
     }
+    char* buffer = removeChar(playerName, ' ', 7);
+    strcpy(playerName, buffer);
     if (!hasTyped)
         strcpy(playerName, "STEVO\0");
     strcpy(player->name, playerName);
@@ -451,8 +462,10 @@ bool checkKeyPress(player* playerSprite)
 
 bool checkCollision(player* player, int tileID, int moveX, int moveY)
 {
-    if (tileID == TILE_ID_DARKNESS || tileID == TILE_ID_TREE || tileID == TILE_ID_LAVA || tileID == TILE_ID_WINDOW || tileID == TILE_ID_LIT_WINDOW
-        || tileID == TILE_ID_COUNTER_TOP || tileID == TILE_ID_HOUSE_BACK_WALL || tileID == TILE_ID_BAD_WOOD_FLOOR)
+    if (tileID == TILE_ID_DARKNESS || tileID == TILE_ID_TREE || tileID == TILE_ID_LAVA || tileID == TILE_ID_BOULDER ||
+        tileID == TILE_ID_ICE || tileID == TILE_ID_WATER || tileID == TILE_ID_HOLE || tileID == TILE_ID_PILLAR ||
+        tileID == TILE_ID_DEADTREE || tileID == TILE_ID_WINDOW || tileID == TILE_ID_LIT_WINDOW || tileID == TILE_ID_COUNTER_TOP ||
+        tileID == TILE_ID_HOUSE_BACK_WALL || tileID == TILE_ID_BAD_WOOD_FLOOR)
     {
         player->spr.x -= moveX * TILE_SIZE;
         player->spr.y -= moveY * TILE_SIZE;
@@ -470,6 +483,7 @@ void savePlayerData(player* player, char* filePath)
     writeLine(filePath, toString(player->spr.y, buffer));
     writeLine(filePath, toString(player->level, buffer));
     writeLine(filePath, toString(player->experience, buffer));
+    writeLine(filePath, toString(player->money, buffer));
     writeLine(filePath, toString(player->HP, buffer));
     writeLine(filePath, toString(player->maxHP, buffer));
     writeLine(filePath, toString(player->attack, buffer));
@@ -566,14 +580,14 @@ void freeThisMem(int ** x)
 	*x = NULL;
 }
 
-char* removeNewline(char input[], size_t length)
+char* removeChar(char input[], char removing, size_t length)
 {
     static char sansNewline[20];
     int i;
     length = strlen(input);
     for(i = 0; i < length - 1; i++)
     {
-        if (input[i] == '\n')
+        if (input[i] == removing)
             break;
         sansNewline[i] = input[i];
         //printf("%c\n", sansNewline[i]);

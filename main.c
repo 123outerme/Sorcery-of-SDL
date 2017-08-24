@@ -17,6 +17,7 @@
 #define TILE_ID_PLAYER 17
 #define TILE_ID_CUBED 20
 #define TILE_ID_TILDA 21
+#define TILE_ID_COIN 100
 #define TILE_ID_INNKEEPER 104
 #define TILE_ID_NPC 105
 #define TILE_ID_UPGRADER 106
@@ -261,12 +262,12 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
                 //Select surfaces based on key press
                 switch(e.key.keysym.sym)
                 {
-                    case SDLK_UP:
+                    case SDLK_w:
                         if (cursor.y > 5 * TILE_SIZE)
                             cursor.y -= TILE_SIZE;
                     break;
 
-                    case SDLK_DOWN:
+                    case SDLK_s:
                         if (cursor.y < (options + 4) * TILE_SIZE)
                             cursor.y += TILE_SIZE;
                     break;
@@ -330,7 +331,6 @@ int showStats(player* player)
 {
     int exitCode = OVERWORLD_STATS;
     char* buffer = "";
-    SDL_RenderFillRect(mainRenderer, NULL);
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
@@ -416,7 +416,65 @@ int showStats(player* player)
 
 int showItems(player* player)
 {
+    char* buffer = "";
+    sprite cursor;
+    initSprite(&cursor, TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
+    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 1 * SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+
+    drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, TILE_SIZE, (HEIGHT_IN_TILES - 1) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, (HEIGHT_IN_TILES - 3) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 4 * TILE_SIZE, (HEIGHT_IN_TILES - 4) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawTile(TILE_ID_COIN, 2, 13, TILE_SIZE, SDL_FLIP_NONE);
+    drawText("x", 3 * TILE_SIZE, 13 * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+    drawText(toString(player->money, buffer), 4 * TILE_SIZE, 13 * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, true);
+
     int exitCode = OVERWORLD_ITEMS;
+    SDL_Event e;
+    bool quit = false;
+    while(!quit)
+    {
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+        //Handle events on queue
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+            {
+                quit = true;
+                exitCode = ANYWHERE_QUIT;
+            }
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                //Select surfaces based on key press
+                switch(e.key.keysym.sym)
+                {
+                    case SDLK_w:
+                        if (cursor.y > 1 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
+                    break;
+
+                    case SDLK_s:
+                        if (cursor.y < 12 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                    break;
+
+                    case SDLK_SPACE:
+                        quit = true;
+                    break;
+                    default:
+                    break;
+                }
+            }
+        }
+        drawTile(cursor.tileIndex, cursor.x / TILE_SIZE, cursor.y / TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        SDL_RenderPresent(mainRenderer);
+    }
     return exitCode;
 }
 

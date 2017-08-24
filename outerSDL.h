@@ -73,7 +73,8 @@ typedef struct {
     sprite spr;  //?
     char name[PLAYER_NAME_LIMIT + 1];  //7 bytes
     int level;  //
-    int experience;
+    int experience;  //
+    int money;  //
     int HP;  //
     int maxHP;  //
     int attack;  //
@@ -126,7 +127,7 @@ int digits(int num);  //gets the number of digits an int has
 int pwrOf10(int power);  //gets input ^ 10
 void readStringInput(char* str, int limit);  //gets string input from the console, letter-by-letter
 void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls its pointer.
-char* removeNewline(char input[], size_t length);  //removes the \n character from a string
+char* removeChar(char input[], char removing, size_t length);  //removes the the first specified character from a string
 int checkArrayForVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float
 int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
 bool checkFile(char* filePath);  //checks if a file exists
