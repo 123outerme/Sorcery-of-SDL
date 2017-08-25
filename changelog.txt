@@ -1,3 +1,19 @@
+24 August 2017
+   released version 0.1.5 of SorcerySDL
+
+     Change log:
+     Added: Added ability to put space in names
+     Added:	Added to the maximum character limit on names (is now 10)
+     Changed: drawTile() now renders by screen coords, not by tile
+     Changed: drawText(), drawTextbox(), and loadTextTexture() all now have additional arguments for a max width
+
+23 August 2017
+   released version 0.1.2 of SorcerySDL
+
+     Change log:
+        -Added: Basic items menu
+        -Fixed: Custom name input menu
+
 23 August 2017
    released version 0.1.1 of SorcerySDL
 

@@ -18,8 +18,9 @@
 #include "SDL/SDL_ttf.h"   //This is included for text stuff
 #include <stdio.h>         //This is included because it's fundamental always. Even if it ain't needed
 #include <string.h>        //This is included for strncat and other string functions
-#include <stdlib.h>        //This is included for calloc and a lot of other stuff
+#include <stdlib.h>        //This is included for calloc, rand(), and a lot of other stuff
 #include <math.h>          //This is included for log10
+#include <time.h>          //This is included for time() as the seed for rand()
 #include <ctype.h>         //This is included for toupper
 #include "version.h"       //This is included for version display at main menu
 
@@ -42,7 +43,7 @@
 #define iPart(x) ((int) x)
 #define fPart(x) (x - iPart(x))
 
-#define PLAYER_NAME_LIMIT 6
+#define PLAYER_NAME_LIMIT 8
 
 #define KEYPRESS_RETURN_MENU 2
 #define KEYPRESS_RETURN_BATTLE 3
@@ -71,7 +72,7 @@ typedef struct
 
 typedef struct {
     sprite spr;  //?
-    char name[PLAYER_NAME_LIMIT + 1];  //7 bytes
+    char name[PLAYER_NAME_LIMIT + 1];  //10 bytes
     int level;  //
     int experience;  //
     int money;  //
@@ -90,14 +91,17 @@ typedef struct {
     double lastScreen;  //8 bytes
     int overworldX;  //
     int overworldY;  //
+    int beatenBosses;  // <-reg boss beaten = +10, world 7 alt boss = +1
     SDL_RendererFlip flip;  //
     bool movementLocked;  // 1 byte
+    //need to add list of open chests
+    //also don't forget items, but you don't need to store them in this struct; just savefile
 } player;
 
 void drawGame(player* player, char* textInput);  //draws overworld stuff
 int mainLoop(player* playerSprite);  //does main overworld loop
 void drawHUD(player* player);  //draws HUD in overworld
-void drawTextBox(char* input, player* player);  //draws the NPC text box
+void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect);  //draws the NPC-style text box
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool showVersion);  //menu
 int aWallOfText(char* title, char* text, bool showHelpInfo);  //draws a wall of text for the player to read & dismiss
 int showStats(player* player);  //opens stats display
@@ -108,15 +112,15 @@ int init();  //inits SDL and necessary game systems
 bool startGame(player* playerSprite, bool newSave);  //inits player sprite, tilemap
 bool loadIMG(char* imgPath, SDL_Texture** dest);  //loads an image from a file into a texture
 bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf file into an SDL font
-int* loadTextTexture();  //loads a texture from inputted text
+int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text
 void initSprite(sprite* spr, int x, int y, int size, int tileIndex, entityType type);  //initializes a new sprite
 void initPlayer(player* player, int x, int y, int size, int tileIndex);  //initializes a new player
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void inputName(player* player);  //gets the name of the sprite by prompting player
 void loadMapFile();  //loads a map from a file
 void drawTilemap(int startX, int startY, int endX, int endY);  //draws a tilemap to the screen
-void drawTile(int id, int tileX, int tileY, int width, SDL_RendererFlip flip);  //draws a tile to the screen
-void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render);  //draws text to the screen
+void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile to the screen
+void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 bool checkKeyPress();  //checks if a key was pressed and acts accordingly if so
 bool checkCollision();  //checks if player has collided with a solid tile
 void savePlayerData(player* player, char* filePath);  //saves sprite data to a file

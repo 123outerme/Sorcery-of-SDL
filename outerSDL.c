@@ -91,7 +91,10 @@ int init()
                         printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
                         return 6;
                     }
-                    else;
+                    else
+                    {
+                        srand((unsigned int) time(NULL));
+                    }
                 }
             }
         }
@@ -139,12 +142,12 @@ bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts)
     return true;
 }
 
-int* loadTextTexture(char* text, SDL_Texture** dest, SDL_Color color, int isBlended)
+int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended)
 {
     static int wh[] = {0, 0};
     SDL_Surface* txtSurface;
     if (isBlended)
-        txtSurface = TTF_RenderText_Blended_Wrapped(mainFont, text, color, 63 * SCREEN_WIDTH / 64);
+        txtSurface = TTF_RenderText_Blended_Wrapped(mainFont, text, color, maxW);
     else
         txtSurface = TTF_RenderText(smallFont, text, color, ((SDL_Color) {181, 182, 173}));
     *dest = SDL_CreateTextureFromSurface(mainRenderer, txtSurface);
@@ -194,6 +197,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->lastScreen = 1.0;
 	player->overworldX = x;
 	player->overworldY = y;
+	player->beatenBosses = 0;
 	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
@@ -234,6 +238,7 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         player->lastScreen = (double) strtol(readLine(filePath, 17, &buffer), NULL, 10) / 10.0;
         player->overworldX = strtol(readLine(filePath, 18, &buffer), NULL, 10);
         player->overworldY = strtol(readLine(filePath, 19, &buffer), NULL, 10);
+        player->beatenBosses = strtol(readLine(filePath, 20, &buffer), NULL, 10);
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
         //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
@@ -245,13 +250,13 @@ void inputName(player* player)
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     //background text (drawn first)
-    drawText("NAME?", 21 * SCREEN_WIDTH / 128, 13 * SCREEN_HEIGHT / 128, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
+    drawText("NAME?", 21 * SCREEN_WIDTH / 128, 13 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
     //foreground text
-    drawText("NAME?", 10 * SCREEN_WIDTH / 64, 5 * SCREEN_WIDTH / 64, 59 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, true);
+    drawText("NAME?", 10 * SCREEN_WIDTH / 64, 5 * SCREEN_WIDTH / 64, SCREEN_WIDTH, 59 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, true);
 
     SDL_Event e;
     bool quit = false, hasTyped = false;
-    char playerName[PLAYER_NAME_LIMIT + 1] = "      \0";
+    char playerName[PLAYER_NAME_LIMIT + 1] = "\t\t\t\t\t\t\t\t\t\t\0";
     int i = 0;
     while(!quit)
     {
@@ -264,20 +269,20 @@ void inputName(player* player)
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z && i < PLAYER_NAME_LIMIT)
+                if (((e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z) || e.key.keysym.sym == SDLK_SPACE) && i < PLAYER_NAME_LIMIT)
                 {
                     playerName[i++] = toupper(e.key.keysym.sym);
                     hasTyped = true;
                 }
                 if (e.key.keysym.sym == SDLK_BACKSPACE && i > 0)
                 {
-                    playerName[--i] = ' ';
+                    playerName[--i] = '\t';
                     if (i == 0)
                         hasTyped = false;
                 }
 
                 SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 3.5 * TILE_SIZE, .w = 6 * TILE_SIZE, .h = TILE_SIZE}));
-                drawText(playerName, 2 * TILE_SIZE, 3.5 * TILE_SIZE, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){255, 255, 255}, true);
+                drawText(playerName, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){255, 255, 255}, true);
 
                 if (e.key.keysym.sym == SDLK_RETURN)
                     quit = true;
@@ -285,7 +290,7 @@ void inputName(player* player)
             }
         }
     }
-    char* buffer = removeChar(playerName, ' ', 7);
+    char* buffer = removeChar(playerName, '\t', 7);
     strcpy(playerName, buffer);
     if (!hasTyped)
         strcpy(playerName, "STEVO\0");
@@ -337,28 +342,28 @@ void drawTilemap(int startX, int startY, int endX, int endY)
     for(int dy = startY; dy < endY; dy++)
     {
         for(int dx = startX; dx < endX; dx++)
-            drawTile(tilemap[dy][dx], dx, dy, TILE_SIZE, SDL_FLIP_NONE);
+            drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         SDL_Delay(20);
     }
     SDL_RenderPresent(mainRenderer);
 }
 
-void drawTile(int id, int tileX, int tileY, int width, SDL_RendererFlip flip)
+void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
 {
     //printf("%d , %d\n", id  / 8, (id % 8));
     SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect){.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}),
-                   &((SDL_Rect){.x = tileX * width, .y = tileY * width, .w = width, .h = width}), 0 , NULL, flip);
+                   &((SDL_Rect){.x = xCoord, .y = yCoord, .w = width, .h = width}), 0 , NULL, flip);
 
     //SDL_RenderPresent(mainRenderer);
 }
 
-void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render)
+void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render)
 {
     SDL_Texture* txtTexture = NULL;
     int* wh;
-    wh = loadTextTexture(input, &txtTexture, color, true);
-    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect){.w = *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}),
-                                             &((SDL_Rect){.x =  x, .y = y, .w = *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}));
+    wh = loadTextTexture(input, &txtTexture, maxW, color, true);
+    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect){.w = *wh > maxW ? maxW : *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}),
+                                             &((SDL_Rect){.x =  x, .y = y, .w = *wh > maxW ? maxW : *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}));
     if (render)
         SDL_RenderPresent(mainRenderer);
     SDL_DestroyTexture(txtTexture);
@@ -367,9 +372,11 @@ void drawText(char* input, int x, int y, int maxH, SDL_Color color, bool render)
 bool checkKeyPress(player* playerSprite)
 {
     const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
+    bool battleFlag = false;
     if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight))
     {
-        drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x / TILE_SIZE, playerSprite->spr.y / TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        playerSprite->steps++;
+        drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, SDL_FLIP_NONE);
         if (playerSprite->spr.y > 0 && checkSKUp)
             playerSprite->spr.y -= TILE_SIZE;
         if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
@@ -383,10 +390,11 @@ bool checkKeyPress(player* playerSprite)
         if (checkSKRight)
             playerSprite->flip = SDL_FLIP_NONE;
         int thisTile = tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-        checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
+        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (9 + 5 * (playerSprite->worldNum < (double) playerSprite->beatenBosses - 1)) && playerSprite->mapScreen > 1.0)
+            battleFlag = true;
         if (thisTile == TILE_ID_DOOR || !playerSprite->spr.x || playerSprite->spr.y == TILE_SIZE || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
         {
-            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x / playerSprite->spr.w, playerSprite->spr.y / playerSprite->spr.w, playerSprite->spr.w, playerSprite->flip);
+            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->flip);
             SDL_RenderPresent(mainRenderer);
             if (thisTile == TILE_ID_DOOR)
             {
@@ -455,6 +463,9 @@ bool checkKeyPress(player* playerSprite)
     if (checkSKEsc)
         return KEYPRESS_RETURN_MENU;
 
+    if (battleFlag)
+        return KEYPRESS_RETURN_BATTLE;
+
     if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace || checkSKEsc)
             return true;
         return false;
@@ -467,6 +478,7 @@ bool checkCollision(player* player, int tileID, int moveX, int moveY)
         tileID == TILE_ID_DEADTREE || tileID == TILE_ID_WINDOW || tileID == TILE_ID_LIT_WINDOW || tileID == TILE_ID_COUNTER_TOP ||
         tileID == TILE_ID_HOUSE_BACK_WALL || tileID == TILE_ID_BAD_WOOD_FLOOR)
     {
+        player->steps--;
         player->spr.x -= moveX * TILE_SIZE;
         player->spr.y -= moveY * TILE_SIZE;
         return true;
@@ -498,9 +510,10 @@ void savePlayerData(player* player, char* filePath)
     writeLine(filePath, toString((int) (10 * player->lastScreen), buffer));
     writeLine(filePath, toString(player->overworldX, buffer));
     writeLine(filePath, toString(player->overworldY, buffer));
+    writeLine(filePath, toString(player->beatenBosses, buffer));
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
-    drawText("Save completed.", 9 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+    drawText("Save completed.", 9 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 55 * SCREEN_WIDTH / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
     SDL_RenderPresent(mainRenderer);
     SDL_Delay(450);
 }
