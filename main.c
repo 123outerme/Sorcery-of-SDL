@@ -17,6 +17,8 @@
 #define TILE_ID_PLAYER 17
 #define TILE_ID_CUBED 20
 #define TILE_ID_TILDA 21
+#define TILE_ID_CRITICAL 39
+#define TILE_ID_SUPEREFFECTIVE 37
 #define TILE_ID_COIN 100
 #define TILE_ID_INNKEEPER 104
 #define TILE_ID_NPC 105
@@ -48,6 +50,17 @@
 
 #define ALL_ATTACKS "SLICESLASHBURN ROASTCRACKBREAKCHILLICE  FLOW SWEEPWHACKBASH STAB GASH SMASH     THORNVINE FLAREBLAZEROCK STONEFROSTHAIL STORMVOLT SMELLSTINKDARK EVIL ALPHAARROW"
 #define ALL_ENEMIES_ARRAY {"Ant", "Rat", "APEMAN", "Firant", "Pyre", "FEENIX", "Gemdog", "Golem", "TARANT", "Pengin", "Snoman", "POLARA", "C Gull", "C Star", "HYDROA", "Rodent", "Crow", "SWURM", "Midas", "Greed", "SENTRY", "Archer", "Knight", "- DREGOH -"}
+
+#define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.11, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
+#define SIZE_OF_MAP_ARRAY 58
+
+#define BATTLE_ACT_CODE_W 1
+#define BATTLE_ACT_CODE_A 2
+#define BATTLE_ACT_CODE_S 3
+#define BATTLE_ACT_CODE_D 4
+#define BATTLE_ACT_CODE_LSHIFT 5
+#define ATTACK_CODE_RUN 38
+#define ATTACK_CODE_BLOCK 55
 
 //Todo for 8/24:
 //* Make world-sized tilemaps work (and smooth scrolling)?
@@ -119,6 +132,11 @@ int mainLoop(player* playerSprite)
     SDL_Event e;
     int frame = 0, exitCode = LOOP_QUIT;
     char* textInput = "Did you know that this is placeholder text? Me neither.";
+    {
+        double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
+        int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+        loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    }
     drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
     drawHUD(playerSprite);
     sprite entity;
@@ -187,6 +205,7 @@ int mainLoop(player* playerSprite)
 
 void drawHUD(player* player)
 {
+    drawTilemap(0, 0, 19, 1);
     char* buffer = "";
     char* worldNames[8] = {"Plain Plains", "Dragon's Den", "Worry Quarry", "West Pole", "River Lake", "Under City", "Upper City", "Battleground"};
     drawText(worldNames[player->worldNum - 1], 0, 0, SCREEN_WIDTH, TILE_SIZE, ((SDL_Color) {255, 255, 255}), false);
@@ -198,15 +217,18 @@ void drawHUD(player* player)
 
 void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect)
 {
+    Uint8 oldR, oldG, oldB, oldA;
+    SDL_GetRenderDrawColor(mainRenderer, &oldR, &oldG, &oldB, &oldA);
     if (!player->mapScreen && player->overworldX == 192 && player->overworldY == 240)
         player->HP = player->maxHP;
     //19 letters per line/5 lines at 48pt font
     SDL_SetRenderDrawColor(mainRenderer, outlineColor.r, outlineColor.g, outlineColor.b, 0xFF);
     SDL_RenderFillRect(mainRenderer, &(textBoxRect));
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
-    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = textBoxRect.x + TILE_SIZE / 8, .y = textBoxRect.y + TILE_SIZE / 8, .w = textBoxRect.w -  2 * TILE_SIZE / 8, .h = textBoxRect.h - 2 * TILE_SIZE / 8}));
-
+    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = textBoxRect.x + TILE_SIZE / 8, .y = textBoxRect.y + TILE_SIZE / 8,
+                                                  .w = textBoxRect.w -  2 * TILE_SIZE / 8, .h = textBoxRect.h - 2 * TILE_SIZE / 8}));
     drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0}, true);
+    SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool showVersion)
@@ -235,10 +257,14 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
 
     if (showVersion)
     {
+        char version[12];
+        strcpy(version, FULLVERSION_STRING);
+        strcat(version, STATUS_SHORT);
+        strcat(version, "\0");
         drawTile(TILE_ID_TILDA, 0, 0, TILE_SIZE, SDL_FLIP_NONE);
         drawTile(TILE_ID_CUBED, 1 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
         drawTile(TILE_ID_TILDA, 2 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
-        drawText(FULLVERSION_STRING, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
+        drawText(version, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
     }
     SDL_Event e;
     bool quit = false;
@@ -302,26 +328,15 @@ int aWallOfText(char* title, char* text, bool showHelpInfo)
 
     SDL_Event e;
     bool quit = false;
-    //While application is running
     while(!quit)
     {
-        //Handle events on queue
         while(SDL_PollEvent(&e) != 0)
         {
-            //User requests quit
             if(e.type == SDL_QUIT)
                 quit = true;
-            //User presses a key
-            else if(e.type == SDL_KEYDOWN)
-            {
-                //Select surfaces based on key press
-                switch(e.key.keysym.sym)
-                {
-                    default:
-                        quit = true;
-                    break;
-                }
-            }
+            else
+                if(e.type == SDL_KEYDOWN)
+                    quit = true;
         }
     }
     return MENU_HELP;
@@ -480,12 +495,17 @@ int showItems(player* player)
 
 bool doBattle(player* player)
 {
-    bool won = true, run = false;
+    bool won = false, run = false;
     int menuLevel = 1;
     printf("Did battle after %d steps.\n", player->steps);
     player->steps = 0;
-    SDL_SetRenderDrawColor(mainRenderer, 0x7B, 0x8E, 0xE7, 0xFF);
-    SDL_RenderFillRect(mainRenderer, NULL);
+    SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
+    for(int i = 0; i < SCREEN_WIDTH; i += 2)
+    {
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 0, .y = 0, .w = i, .h = SCREEN_HEIGHT}));
+        SDL_RenderPresent(mainRenderer);
+    }
+    SDL_Delay(350);
     //W1 = 123, 142, 231 / 7B8EE7 / xLIBC palette color 124
     //W2 = 198, 121, 24 / C67918 / xLIBC palette color 195
     //W3 = 132, 113, 24 / 847118 / xLIBC palette color 131
@@ -494,6 +514,57 @@ bool doBattle(player* player)
     //W6 = 8, 97, 90 / 08615A / xLIBC palette color 13
     //W7 = 231, 158, 33 / E79E21 / xLIBC palette color 228
     //W8 = 66, 105, 24 / 426918 / xLIBC palette color 67
+    Uint8 rBG = 0, gBG = 0, bBG = 0;
+    if (player->worldNum == 1)
+    {
+        rBG = 0x7B;
+        gBG = 0x8E;
+        bBG = 0xE7;
+    }
+    if (player->worldNum == 2)
+    {
+        rBG = 0xC6;
+        gBG = 0x79;
+        bBG = 0x18;
+    }
+    if (player->worldNum == 3)
+    {
+        rBG = 0x84;
+        gBG = 0x71;
+        bBG = 0x18;
+    }
+    if (player->worldNum == 4)
+    {
+        rBG = 0x10;
+        gBG = 0xE3;
+        bBG = 0xBD;
+    }
+    if (player->worldNum == 5)
+    {
+        rBG = 0x10;
+        gBG = 0x61;
+        bBG = 0x9C;
+    }
+    if (player->worldNum == 6)
+    {
+        rBG = 0x08;
+        gBG = 0x61;
+        bBG = 0x5A;
+    }
+    if (player->worldNum == 7)
+    {
+        rBG = 0xE7;
+        gBG = 0x9E;
+        bBG = 0x21;
+    }
+    if (player->worldNum == 8)
+    {
+        rBG = 0x42;
+        gBG = 0x69;
+        bBG = 0x18;
+    }
+    SDL_SetRenderDrawColor(mainRenderer, rBG, gBG, bBG, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
     for(int i = 0; i < 20; i++)
         drawTile(player->worldNum - 1 + 8 * (i == 0 || i == 19), i * TILE_SIZE, 8 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     sprite enemy;
@@ -508,10 +579,13 @@ bool doBattle(player* player)
         char* enemyNames[] = ALL_ENEMIES_ARRAY;
         enemyName = enemyNames[enemyIndex - 1];
     }
+    char* allAttacks = ALL_ATTACKS;
     bool doneFlag = false;
+    bool blockTurns = 0;
     while (!doneFlag)
     {
     bool actFlag = false;
+    int exitCode = 0;
         while(!actFlag)
         {
             char* textBoxText = "error\0";
@@ -526,13 +600,12 @@ bool doBattle(player* player)
                 drawText("Lv", 2 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
                 drawText(toString(player->level, buffer), 26 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
                 drawText("HP", 2 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText(toString(player->HP, buffer), 26 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText("HP", 11 * TILE_SIZE + 2 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + 2 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+                drawText(toString(player->HP, buffer), 13 * TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                drawText("HP", 11 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
             }
             if (menuLevel == 2)
             {
-                char* allAttacks = ALL_ATTACKS;
                 char thisAttack[6] = "     \0";
                 char input[89];
                 strcpy(input, "W: ");
@@ -550,9 +623,9 @@ bool doBattle(player* player)
             }
             drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
 
-            int exitCode = 0;
             SDL_Event e;
             bool quit = false;
+            SDL_Delay(500);
             while(!quit)
             {
                 //Handle events on queue
@@ -571,29 +644,33 @@ bool doBattle(player* player)
                         switch(e.key.keysym.sym)
                         {
                             case SDLK_w:
-                                exitCode = 1;
+                                exitCode = BATTLE_ACT_CODE_W;
                                 quit = true;
                             break;
 
                             case SDLK_a:
                                 if (menuLevel == 2)
-                                    exitCode = 2;
-                                quit = true;
+                                {
+                                    exitCode = BATTLE_ACT_CODE_A;
+                                    quit = true;
+                                }
                             break;
 
                             case SDLK_s:
-                                exitCode = 3;
+                                exitCode = BATTLE_ACT_CODE_S;
                                 quit = true;
                             break;
 
                             case SDLK_d:
                                 if (menuLevel == 2)
-                                    exitCode = 4;
-                                quit = true;
+                                {
+                                    exitCode = BATTLE_ACT_CODE_D;
+                                    quit = true;
+                                }
                             break;
 
                             case SDLK_LSHIFT:
-                                exitCode = 5;
+                                exitCode = BATTLE_ACT_CODE_LSHIFT;
                                 quit = true;
                             break;
 
@@ -604,30 +681,301 @@ bool doBattle(player* player)
                     }
                 }
             }
-            if (exitCode == 1 && menuLevel == 1)
+            if (exitCode == BATTLE_ACT_CODE_W && menuLevel == 1)
             {
                 menuLevel = 2;
                 exitCode = 0;
             }
-            if (exitCode == 5 && menuLevel == 2)
+            if ((exitCode == BATTLE_ACT_CODE_LSHIFT || exitCode == ANYWHERE_QUIT) && menuLevel == 2)
             {
                 menuLevel = 1;
                 exitCode = 0;
             }
-            if (exitCode == 5 && menuLevel == 1)
-            {
-                won = false;
-                run = true;
-            }
-            if ((exitCode > 0 && exitCode < 5 && menuLevel == 2) || (exitCode > 0 && exitCode != 1 && menuLevel == 1))
+            if ((exitCode > 0 && ((exitCode == BATTLE_ACT_CODE_W && player->move1) || (exitCode == BATTLE_ACT_CODE_A && player->move2) ||
+                                  (exitCode == BATTLE_ACT_CODE_S && player->move3) || (exitCode == BATTLE_ACT_CODE_D && player->move4)) &&
+                                   menuLevel == 2) || (exitCode != 0 && exitCode != BATTLE_ACT_CODE_W && menuLevel == 1))
                 actFlag = true;
         }
         //proceed with attacks here
-        //do the below only when a battle is completed
-        doneFlag = true;
-    }
-    drawTextBox(won ? "You won!" : !run ? "You lost!" : "You fled!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-    SDL_Delay(1500);
+        int attackCode = 0;
+        if (menuLevel == 2)
+        {
+            if (exitCode == BATTLE_ACT_CODE_W)
+                attackCode = player->move1;
+            if (exitCode == BATTLE_ACT_CODE_A)
+                attackCode = player->move2;
+            if (exitCode == BATTLE_ACT_CODE_S)
+                attackCode = player->move3;
+            if (exitCode == BATTLE_ACT_CODE_D)
+                attackCode = player->move4;
+        }
+        if (menuLevel == 1)
+        {
+            if (exitCode == BATTLE_ACT_CODE_LSHIFT || exitCode == ANYWHERE_QUIT)
+            {
+                attackCode = ATTACK_CODE_RUN;
+                //not(boss) and 3>randInt(1,U-100fPart(A
+                if (3 > (rand() % abs(enemyIndex)) - player->speed)
+                {
+                    won = false;
+                    run = true;
+                }
+            }
+            if (exitCode == BATTLE_ACT_CODE_S)
+                attackCode = ATTACK_CODE_BLOCK;
 
-    return won;
+        }
+        //If max(U={4,5})max(V={48,49,64,65}) or max(U={7,8,9})max(V={56,57}) or max(U={10,11,12})max(V={42,43,58,59}) or max(U={13,14,15})max(V={56,57}) or max(U={16,17,18})max(V={48,49,64,65}) or max(U={19,20,21})max(V={50,51,66,67}) or not(U=21)max(V={54,70
+        int playerDMG = 0, enemyDMG = 0;
+        bool crit = false, superEffective = false, playerTurn = false;
+        int speedMinusIndex = player->speed - enemyIndex;
+        int speedDiff = rand() % (abs(speedMinusIndex) + 2) * -1 * (speedMinusIndex < 0);
+        //randInt(1,100fPart(A)-U)=K
+        //if K >= 0 you go first
+        //random number between 1 (floor) and speed - enemy index
+        char textBoxText[22];
+        char* buffer = "";
+        for(int s = 0; s < 2; s++)
+        {
+            int redrawIndex = 0, redrawX = -TILE_SIZE, redrawY = -TILE_SIZE;
+            if (((s == 0 && speedDiff >= -1) || (s == 1 && speedDiff < -1)))
+            {
+                playerTurn = true;
+                if (player->HP > 0)
+                {
+                    crit = 0 < ((rand() % (11 + 2 * (attackCode > 55) + 5 * (attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN))) - 9);
+                    if (crit && attackCode != ATTACK_CODE_BLOCK && attackCode != ATTACK_CODE_RUN)
+                    drawTile(TILE_ID_CRITICAL, enemy.x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
+                    drawTile(attackCode, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 4 * TILE_SIZE : enemy.x, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 7 * TILE_SIZE : enemy.y, TILE_SIZE, SDL_FLIP_NONE);
+                    strcpy(textBoxText, player->name);
+                    strcat(textBoxText, " USED ");
+                    char input[6];
+                    if (attackCode != ATTACK_CODE_RUN && attackCode != ATTACK_CODE_BLOCK)
+                    {
+                        strncpy(input, (allAttacks + (attackCode - 40) * 5), 5);
+                        input[5] = '\0';
+
+                        double rawDMG;
+                        if (attackCode < 55)
+                            rawDMG = iPart( 7 + pow(((player->attack - 1.0) * 1.2), 1.3));
+                        if (attackCode > 55)
+                            rawDMG = iPart(6 + pow(((player->attack - 1) * 1.2), 1.25));
+                        if (attackCode % 2 == 1)
+                        {
+                            if (attackCode < 54)
+                                rawDMG += iPart(pow(player->attack, 1.45));
+                            if (attackCode > 56)
+                                rawDMG += iPart(pow(player->attack, 1.5));
+                        }
+                        if (crit)
+                            rawDMG *= 1.5;
+                        if (superEffective)
+                            rawDMG *= 1.35;
+                        if (blockTurns)
+                            rawDMG *= .8;
+                        playerDMG = (int) rawDMG;
+                        enemyHP -= playerDMG;
+                        if (enemyHP < 1)
+                        {
+                            won = true;
+                            enemyHP = 0;
+                        }
+                        SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 14 * TILE_SIZE + TILE_SIZE / 4, .y = 39 * TILE_SIZE / 8, .w = 3 * TILE_SIZE, .h = TILE_SIZE}));
+                        drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+                        SDL_RenderPresent(mainRenderer);
+                        SDL_SetRenderDrawColor(mainRenderer, rBG, gBG, bBG, 0xFF);
+                        redrawIndex = enemy.tileIndex;
+                        redrawX = enemy.x;
+                        redrawY = enemy.y;
+                    }
+                    else
+                    {
+                        strcpy(input, (attackCode == ATTACK_CODE_RUN ? "RUN! \0" : "BLOCK\0"));
+                        redrawIndex = player->spr.tileIndex;
+                        redrawX = 4 * TILE_SIZE;
+                        redrawY = 7 * TILE_SIZE;
+                        if (attackCode == ATTACK_CODE_BLOCK)
+                            blockTurns = 3;
+                    }
+                    strcat(textBoxText, input);
+                }
+            }
+            else
+            {
+                playerTurn = false;
+                if (enemyHP > 0 && !run)
+                {
+                    drawTile(39 + enemyIndex - (enemyIndex % 3 == 0), 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                    strcpy(textBoxText, enemyName);
+                    strcat(textBoxText, " USED ");
+                    char input[6];
+                    strncpy(input, (allAttacks + (enemyIndex - (enemyIndex % 3 == 0) - 1) * 5), 5);
+                    input[5] = '\0';
+                    strcat(textBoxText, input);
+                    enemyDMG = (int) (6 + (pow((double) enemyIndex, 1.13 + .05 * (enemyIndex % 3 == 0))));
+                    if (blockTurns)
+                    {
+                        enemyDMG *= .5;
+                        blockTurns--;
+                    }
+                    player->HP -= enemyDMG;
+                    if (player->HP < 1)
+                    {
+                        player->HP = 0;
+                    }
+                    char* buffer = "";
+                    SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 26 * TILE_SIZE / 8, .y = 39 * TILE_SIZE / 8, .w = 3 * TILE_SIZE, .h = TILE_SIZE}));
+                    drawText(toString(player->HP, buffer), 26 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    SDL_RenderPresent(mainRenderer);
+                    SDL_SetRenderDrawColor(mainRenderer, rBG, gBG, bBG, 0xFF);
+                    //redraw player HP here
+                }
+                redrawIndex = player->spr.tileIndex;
+                redrawX = 4 * TILE_SIZE;
+                redrawY = 7 * TILE_SIZE;
+            }
+            if ((playerTurn && player->HP > 0) || (!playerTurn && enemyHP > 0 && !run))
+            {
+                bool dispDamage = false;
+                drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                if (((attackCode !=  ATTACK_CODE_BLOCK && attackCode != ATTACK_CODE_RUN) && playerTurn) || !playerTurn)
+                {
+                    drawText("DAMAGE:", TILE_SIZE / 4, 10 * TILE_SIZE + 2 * TILE_SIZE / 8 , SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    drawText(toString(playerTurn ? playerDMG : enemyDMG, buffer), 8 * TILE_SIZE + 2 * TILE_SIZE / 8, 10 * TILE_SIZE + 2 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+                    dispDamage = true;
+                }
+                if (playerTurn && blockTurns && !run)
+                {
+                    drawText("BLOCK TURNS:", TILE_SIZE / 4, (10 + dispDamage) * TILE_SIZE + 2 * TILE_SIZE / 8, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    drawText(toString(blockTurns, buffer), 13 * TILE_SIZE + 2 * TILE_SIZE / 8, (10 + dispDamage) * TILE_SIZE + 2 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+                }
+                SDL_Delay(750);
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = redrawX, .y = redrawY, .w = TILE_SIZE, .h = TILE_SIZE}));
+                drawTile(redrawIndex, redrawX, redrawY, TILE_SIZE, SDL_FLIP_NONE);
+                SDL_RenderPresent(mainRenderer);
+                SDL_Event e;
+                bool quit = false;
+                while(!quit)
+                {
+                    while(SDL_PollEvent(&e) != 0)
+                    {
+                        if(e.type == SDL_QUIT)
+                            quit = true;
+                        else
+                            if(e.type == SDL_KEYDOWN)
+                                quit = true;
+                    }
+                }
+            }
+        }
+        if (enemyHP < 1)
+            won = true;
+        if (won || run || player->HP < 1)
+            doneFlag = true;
+
+        menuLevel = 1;
+    }
+    if (!won && !run)
+    {
+        player->HP = player->maxHP;
+        player->mapScreen = 1.0;
+        player->spr.x = 4 * TILE_SIZE;
+        player->spr.y = 6 * TILE_SIZE;
+        SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
+        for(int i = 0; i <= TILE_SIZE * 9; i += 2)
+        {
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.w = SCREEN_WIDTH, .h = i}));
+            SDL_RenderPresent(mainRenderer);
+            SDL_Delay(2);
+        }
+    SDL_Delay(650);
+    }
+    drawTextBox(won ? "You won!" : run ? "You fled!" : "You lost!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+    SDL_Event e;
+    bool quit = false;
+    while(!quit)
+    {
+        while(SDL_PollEvent(&e) != 0)
+        {
+            if(e.type == SDL_QUIT)
+                quit = true;
+            else
+                if(e.type == SDL_KEYDOWN)
+                    quit = true;
+        }
+    }
+    if (won)
+    {
+        int acquiredGold = 4 - (player->level - enemyIndex);
+        int acquiredExp = 23 + 3 * enemyIndex + (3 * player->worldNum) * (enemyIndex % 3 == 0) - 4 * (player->level - enemyIndex);
+        if (acquiredGold < 0)
+            acquiredGold = 0;
+        if (acquiredExp < 0)
+            acquiredExp = 0;
+        player->money += acquiredGold;
+        player->experience += acquiredExp;
+        char* buffer = "";
+        drawTextBox("EXP:", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        drawText(toString(acquiredExp, buffer), 4 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+
+        drawText("GOLD:", TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawText(toString(acquiredGold, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+
+        {
+            int remainingExp = (int)(50 + pow((player->level - 1), 1.75)) - player->experience;
+            if (remainingExp < 0)
+                remainingExp = 0;
+            drawText("EXP TO LV UP:", TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+            drawText(toString(remainingExp, buffer), 13 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        }
+        drawText("TOTAL GOLD:", TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawText(toString(player->money, buffer), 11 * TILE_SIZE + TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+        SDL_PollEvent(&e);
+        quit = false;
+        SDL_Delay(400);
+        while(!quit)
+        {
+            while(SDL_PollEvent(&e) != 0)
+            {
+                if(e.type == SDL_QUIT)
+                    quit = true;
+                else
+                    if(e.type == SDL_KEYDOWN)
+                        quit = true;
+            }
+        }
+        if (player->level < 99 && player->experience >= (int) 50 + pow((player->level - 1), 1.75))
+        {
+            //player level is increased in the drawText call
+            player->experience -= (int) 50 + pow((player->level - 2), 1.75);
+            player->maxHP += (rand() % 3) + 5 + 2 * (enemyIndex % 3 != 1);
+            if (player->maxHP > 999)
+                player->maxHP = 999;
+            player->HP = player->maxHP;
+            player->statPts++;
+            if (rand() % 5 == 0)
+                player->statPts++; //random chance for an extra stat pt
+                char* buffer = "";
+            drawTextBox("Level up!          Lv", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+            drawText(toString(++player->level, buffer), 4 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+            SDL_PollEvent(&e);
+            quit = false;
+            SDL_Delay(400);
+            while(!quit)
+            {
+                while(SDL_PollEvent(&e) != 0)
+                {
+                    if(e.type == SDL_QUIT)
+                        quit = true;
+                    else
+                        if(e.type == SDL_KEYDOWN)
+                            quit = true;
+                }
+            }
+            //do stat increases
+        }
+    }
+    return won || run;
 }

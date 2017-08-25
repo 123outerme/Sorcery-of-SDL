@@ -1,9 +1,22 @@
+25 August 2017
+   released version 0.1.7 of SorcerySDL
+
+     Change log:
+        -Added: Actual attacks, win/loss events (such as gaining exp), and level up code (no stat increases or visual for level ups yet)
+
+25 August 2017
+   released version 0.1.6 of SorcerySDL
+
+     Change log:
+        -Added: Added full battle mechanics (still have to give winning rewards, do level ups, etc.)
+        -Added: Added blinkiing cursor to the player name input code
+
 24 August 2017
    released version 0.1.5 of SorcerySDL
 
      Change log:
      Added: Added ability to put space in names
-     Added:	Added to the maximum character limit on names (is now 10)
+     Added:	Added to the maximum character limit on names (is now 9)
      Changed: drawTile() now renders by screen coords, not by tile
      Changed: drawText(), drawTextbox(), and loadTextTexture() all now have additional arguments for a max width
 

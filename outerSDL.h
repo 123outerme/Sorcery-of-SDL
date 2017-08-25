@@ -128,8 +128,7 @@ void closeSDL();  //closes out SDL and necessary game systems
 
 char* toString(int value, char * result);  //turns inputted int into a string
 int digits(int num);  //gets the number of digits an int has
-int pwrOf10(int power);  //gets input ^ 10
-void readStringInput(char* str, int limit);  //gets string input from the console, letter-by-letter
+int pwrOf10(int power);  //gets 10 ^ input
 void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls its pointer.
 char* removeChar(char input[], char removing, size_t length);  //removes the the first specified character from a string
 int checkArrayForVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float

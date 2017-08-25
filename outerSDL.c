@@ -7,8 +7,6 @@
 #define checkSKSpace currentKeyStates[SDL_SCANCODE_SPACE]
 #define checkSKEsc currentKeyStates[SDL_SCANCODE_ESCAPE]
 
-
-
 #define TILE_ID_TREE 8
 #define TILE_ID_LAVA 9
 #define TILE_ID_BOULDER 10
@@ -26,8 +24,10 @@
 #define TILE_ID_HOUSE_BACK_WALL 28
 #define TILE_ID_BAD_WOOD_FLOOR 29
 #define TILE_ID_DARKNESS 127
+
 #define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.11, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 58
+
 int init()
 {
     int done = 0;
@@ -105,15 +105,6 @@ int init()
 bool startGame(player* playerSprite, bool newSave)
 {
     loadPlayerData(playerSprite, SAVE_FILE_NAME, newSave ? 2 - aMenu("Are you sure you       want to start a     new save?", "YES", "NO", " ", " ", " ", 2, 2, MAIN_MENU_PALETTE, false, false) : newSave);
-    double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
-    //printf("%f\n", player->worldNum + (double)(player->mapScreen / 10.0));
-    int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
-    loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-    if (tilemap[0][0] == -1 || map == -1)
-    {
-        printf("Tilemap could not load! Error code 5. Extra info: %d", map);
-        return 5;
-    }
     return 0;
 }
 
@@ -247,6 +238,7 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 
 void inputName(player* player)
 {
+    const long frameOffset = 9999999;
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     //background text (drawn first)
@@ -256,8 +248,8 @@ void inputName(player* player)
 
     SDL_Event e;
     bool quit = false, hasTyped = false;
-    char playerName[PLAYER_NAME_LIMIT + 1] = "\t\t\t\t\t\t\t\t\t\t\0";
-    int i = 0;
+    char playerName[PLAYER_NAME_LIMIT + 1] = "        \0";
+    int i = 0, frame = 0;
     while(!quit)
     {
         //Handle events on queue
@@ -276,21 +268,45 @@ void inputName(player* player)
                 }
                 if (e.key.keysym.sym == SDLK_BACKSPACE && i > 0)
                 {
-                    playerName[--i] = '\t';
+                    playerName[--i] = ' ';
                     if (i == 0)
                         hasTyped = false;
                 }
-
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 3.5 * TILE_SIZE, .w = 6 * TILE_SIZE, .h = TILE_SIZE}));
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 3.5 * TILE_SIZE, .w = PLAYER_NAME_LIMIT * TILE_SIZE, .h = TILE_SIZE}));
                 drawText(playerName, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){255, 255, 255}, true);
+
+                if (i < PLAYER_NAME_LIMIT)
+                {
+                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (PLAYER_NAME_LIMIT + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
+                    SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + i) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
+                    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+                    SDL_RenderPresent(mainRenderer);
+                }
+
 
                 if (e.key.keysym.sym == SDLK_RETURN)
                     quit = true;
-
             }
         }
+
+        if (e.type != SDL_KEYDOWN)
+            frame++;
+
+        if (frame % frameOffset == 0 && i < PLAYER_NAME_LIMIT)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + i) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
+            SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+            SDL_RenderPresent(mainRenderer);
+        }
+        if (frame % frameOffset == frameOffset / 2)
+        {
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (PLAYER_NAME_LIMIT + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
+            SDL_RenderPresent(mainRenderer);
+        }
     }
-    char* buffer = removeChar(playerName, '\t', 7);
+    char* buffer = removeChar(playerName, ' ', 7);
     strcpy(playerName, buffer);
     if (!hasTyped)
         strcpy(playerName, "STEVO\0");
@@ -456,7 +472,10 @@ bool checkKeyPress(player* playerSprite)
         textBoxOn = !textBoxOn;
         playerSprite->movementLocked = !playerSprite->movementLocked;
         if (!textBoxOn)
+        {
+            drawHUD(playerSprite);
             drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+        }
         SDL_Delay(75);
     }
 
@@ -544,7 +563,7 @@ char* toString(int value, char * result)
 		result[digit - i] = (char) x + '0';
 		//printf("result[%d] = (%d) / %d = %d = character %c\n", digit - i, value - usedVal, pwrOf10(i - 1), x, result[digit - i] - '0');
 		usedVal = usedVal + (result[digit - i] - '0') * pwrOf10(i - 1);
-		//printf("usedVal = itself + %d * %d =  %d\n", (int) result[digit - i] - '0', pwrOf10(i - 1), usedVal);
+		//printf("usedVal = itself + %d * %d = %d\n", (int) result[digit - i] - '0', pwrOf10(i - 1), usedVal);
 	}
 	//printf("%s\n",result);
 	return result;
@@ -565,28 +584,6 @@ int pwrOf10(int power)
 	return val;
 }
 
-void readStringInput(char* str, int limit)
-{
-	printf("Enter a string (Limit of %d characters): ", limit);
-	//get input using a getc() loop and terminate upon a newline
-	int i = 0;
-	char c;
-	while (i < limit)
-	{
-		c = getc(stdin);
-		if (c == '\n')
-			break;
-		str[i] = c;
-		i++;
-
-	}
-	if (i >= limit)
-		i = limit;
-	str = realloc(str, sizeof(char[i + 1]));
-	str[i] = '\0';
-	//this works when i < limit because apparently you can just increase the size of arrays
-	//by storing a new value at [dim + 1]
-}
 void freeThisMem(int ** x)
 {
 	free(*x);
@@ -595,17 +592,18 @@ void freeThisMem(int ** x)
 
 char* removeChar(char input[], char removing, size_t length)
 {
-    static char sansNewline[20];
+    static char sansNewline[255];
     int i;
     length = strlen(input);
-    for(i = 0; i < length - 1; i++)
+    for(i = length - 1; i >= 0; i--)
     {
-        if (input[i] == removing)
+        if (input[i] != removing)
             break;
-        sansNewline[i] = input[i];
-        //printf("%c\n", sansNewline[i]);
+        //printf("%c\n", input[i]);
     }
-    sansNewline[i] = '\0';
+    for(int x = 0; x < i + 1; x++)
+        sansNewline[x] = input[x];
+    sansNewline[i + 1 < length ? i + 1 : length] = '\0';
     //printf("%s at %d\n", sansNewline, sansNewline);
     return sansNewline;
 }
