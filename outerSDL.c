@@ -196,7 +196,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 
 void loadPlayerData(player* player, char* filePath, bool forceNew)
 {
-    if (!checkFile(filePath) || forceNew)
+    if (!checkFile(filePath, 21) || forceNew)
 	{
 	    initPlayer(player, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
 	}
@@ -636,12 +636,22 @@ int createFile(char* filePath)
 		return 0;
 }
 
-bool checkFile(char* filePath)
+bool checkFile(char* filePath, int desiredLines)
 {
     FILE* filePtr = fopen(filePath,"r");
 	if (!filePtr)
-		return false;
-    return true;
+		return 0;
+    char ch;
+    int lines;
+    while(!feof(filePtr))
+    {
+      ch = fgetc(filePtr);
+      if(ch == '\n')
+      {
+        lines++;
+      }
+    }
+    return lines >= desiredLines;
 }
 
 int writeLine(char* filePath, char* stuff)

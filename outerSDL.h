@@ -106,7 +106,7 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
 int aWallOfText(char* title, char* text, bool showHelpInfo);  //draws a wall of text for the player to read & dismiss
 int showStats(player* player);  //opens stats display
 int showItems(player* player);  //shows list of player items
-bool doBattle(player* player);  //does a battle
+bool doBattle(player* player, bool isBoss);  //does a battle
 
 int init();  //inits SDL and necessary game systems
 bool startGame(player* playerSprite, bool newSave);  //inits player sprite, tilemap
@@ -133,7 +133,7 @@ void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls
 char* removeChar(char input[], char removing, size_t length);  //removes the the first specified character from a string
 int checkArrayForVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float
 int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
-bool checkFile(char* filePath);  //checks if a file exists
+bool checkFile(char* filePath, int desiredLines);  //checks if a file exists
 int writeLine(char* filePath, char* stuff);  //appends a line to a file
 char* readLine(char* filePath, int lineNum, char** output);  //reads a certain line from a file
 

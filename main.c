@@ -15,10 +15,21 @@
 
 #define TILE_ID_CURSOR 16
 #define TILE_ID_PLAYER 17
+#define TILE_ID_CHEST 19
 #define TILE_ID_CUBED 20
 #define TILE_ID_TILDA 21
-#define TILE_ID_CRITICAL 39
 #define TILE_ID_SUPEREFFECTIVE 37
+#define TILE_ID_RUN 38
+#define TILE_ID_CRITICAL 39
+#define TILE_ID_BLOCK 55
+#define TILE_ID_APEMAN 74
+#define TILE_ID_FEENIX 77
+#define TILE_ID_TARANT 80
+#define TILE_ID_POLARA 83
+#define TILE_ID_HYDROA 86
+#define TILE_ID_SWURM 89
+#define TILE_ID_SENTRY 92
+#define TILE_ID_DREGOH 95
 #define TILE_ID_COIN 100
 #define TILE_ID_INNKEEPER 104
 #define TILE_ID_NPC 105
@@ -39,6 +50,7 @@
 #define LOOP_GOTO_MENU 1
 #define LOOP_GOTO_BATTLE 2
 #define LOOP_RETURN 3
+#define LOOP_GOTO_BATTLE_BOSS 4
 
 #define OVERWORLD_RETURN 1
 #define OVERWORLD_STATS 2
@@ -54,19 +66,27 @@
 #define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.11, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 58
 
+#define ARRAY_OF_CHEST_IDS {1.2, 1.21, 2.11, 2.23, 3.2, 3.32, 4.11, 4.12, 5.1, 5.2, 5.12, 6.2, 6.22, 6.32, 7.1, 7.12, 7.2, 7.21, 7.24, 8.11, 8.2, 8.32}
+#define SIZE_OF_CHEST_ARRAY 22
+
+#define ARRAY_OF_BOSS_IDS {1.33, 2.33, 3.22, 4.31, 5.32, 6.31, 7.13, 7.23, 8.33}
+#define SIZE_OF_BOSS_ARRAY 9
+
 #define BATTLE_ACT_CODE_W 1
 #define BATTLE_ACT_CODE_A 2
 #define BATTLE_ACT_CODE_S 3
 #define BATTLE_ACT_CODE_D 4
 #define BATTLE_ACT_CODE_LSHIFT 5
-#define ATTACK_CODE_RUN 38
-#define ATTACK_CODE_BLOCK 55
+#define ATTACK_CODE_RUN TILE_ID_RUN
+#define ATTACK_CODE_BLOCK TILE_ID_BLOCK
 
-//Todo for 8/24:
+//Todo for 9/5:
 //* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
+//* Add item chests and bosses
+//* Add items
 
 int main(int argc, char* args[])
 {
@@ -90,8 +110,8 @@ int main(int argc, char* args[])
             while (loopCode)
             {
                 loopCode = mainLoop(&player);
-                if (loopCode == LOOP_GOTO_BATTLE)
-                    doBattle(&player);
+                if (loopCode == LOOP_GOTO_BATTLE || loopCode == LOOP_GOTO_BATTLE_BOSS)
+                    doBattle(&player, loopCode == LOOP_GOTO_BATTLE_BOSS);
                 if (loopCode == LOOP_GOTO_MENU)
                 {
                     loopCode = -2;
@@ -136,6 +156,7 @@ int mainLoop(player* playerSprite)
         double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
         int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+        //use the int "map" when testing if user is in a map with a boss/chest?
     }
     drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
     drawHUD(playerSprite);
@@ -158,6 +179,137 @@ int mainLoop(player* playerSprite)
         {
             index = TILE_ID_INNKEEPER;
             textInput = "ARE YOU TIRED? REST HERE.       (HEALED)";
+        }
+    }
+    else
+    {
+        int found;
+        {
+            double arrayOfMaps[SIZE_OF_CHEST_ARRAY] = ARRAY_OF_CHEST_IDS;
+            found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
+        }
+        if (found != -1)
+        {
+            /*If M=1.2
+72.056
+If M=1.21
+136.088
+If M=2.11
+128.088
+If M=2.23
+64.088
+If M=3.2
+72.088
+If M=3.32
+24.088
+If M=4.11
+104.016
+If M=4.12
+24.04
+If M=5.2
+80.064
+If M=5.1
+112.016
+If M=5.12
+48.072
+If M=6.2
+16.04
+If M=6.32
+8.096
+If M=7.1
+40.032
+If M=7.12
+48.04
+If M=7.2
+32.08
+If M=7.21
+128.04
+If M=7.24
+40.056
+If M=8.11
+144.056
+If M=8.2
+24.08
+If M=8.32
+24.08
+            */
+            type = type_chest;
+            index = TILE_ID_CHEST;
+            if (found == 0)
+            {
+                x *= -9;
+                y *= -7;
+            }
+            if (found == 1)
+            {
+                x *= -17;
+                y *= -11;
+            }
+        }
+        else
+        {
+            type = type_boss;
+            {
+                double arrayOfMaps[SIZE_OF_BOSS_ARRAY] = ARRAY_OF_BOSS_IDS;
+                found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
+            }
+            if (found != -1 && playerSprite->beatenBosses < playerSprite->worldNum)
+            {
+                if (found == 0)
+                {
+                    index = TILE_ID_APEMAN;
+                    x *= -14;
+                    y *= -7;
+                }
+                if (found == 1)
+                {
+                    index = TILE_ID_FEENIX;
+                    x *= -11;
+                    y *= -7;
+                }
+                if (found == 2)
+                {
+                    index = TILE_ID_TARANT;
+                    x *= -7;
+                    y *= -8;
+                }
+                if (found == 3)
+                {
+                    index = TILE_ID_POLARA;
+                    x *= -10;
+                    y *= -6;
+                }
+                if (found == 4)
+                {
+                    index = TILE_ID_HYDROA;
+                    x *= -5;
+                    y *= -5;
+                }
+                if (found == 5)
+                {
+                    index = TILE_ID_SWURM;
+                    x *= -12;
+                    y *= -7;
+                }
+                if (found == 6)
+                {
+                    index = TILE_ID_SENTRY;
+                    x *= -14;
+                    y *= -7;
+                }
+                if (found == 7)
+                {
+                    index = TILE_ID_DREGOH;
+                    x *= -7;
+                    y *= -3;
+                }
+                if (found == 8)
+                {
+                    index = TILE_ID_DREGOH;
+                    x *= -11;
+                    y *= -7;
+                }
+            }
         }
     }
     initSprite(&entity, x, y, TILE_SIZE, index, type);
@@ -183,11 +335,22 @@ int mainLoop(player* playerSprite)
             exitCode = LOOP_GOTO_MENU;
             quit = true;
         }
-
         if (press == KEYPRESS_RETURN_BATTLE)
         {
             exitCode = LOOP_GOTO_BATTLE;
             quit = true;
+        }
+        if (playerSprite->spr.x == entity.x && playerSprite->spr.y == entity.y)
+        {
+            if (entity.type == type_boss)
+            {
+                exitCode = LOOP_GOTO_BATTLE_BOSS;
+                quit = true;
+            }
+            if (entity.type == type_chest)
+            {
+                //pick up chest here
+            }
         }
 
         frame += press;
@@ -493,7 +656,7 @@ int showItems(player* player)
     return exitCode;
 }
 
-bool doBattle(player* player)
+bool doBattle(player* player, bool isBoss)
 {
     bool won = false, run = false;
     int menuLevel = 1;
@@ -568,10 +731,12 @@ bool doBattle(player* player)
     for(int i = 0; i < 20; i++)
         drawTile(player->worldNum - 1 + 8 * (i == 0 || i == 19), i * TILE_SIZE, 8 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     sprite enemy;
-    //enemy = randInt(1+3int(M-1),2+3int(M-1
-    //bosses = 3(M=7.23)+3int(M
-    int enemyIndex = (rand() % 2) + 1 + 3 * (player->worldNum - 1);
-    int enemyHP = 14 + iPart(pow((double) enemyIndex, 1.22)) + (5 + 1) * (!enemyIndex % 3);
+    int enemyIndex;
+    if (!isBoss)
+        enemyIndex = (rand() % 2) + 1 + 3 * (player->worldNum - 1);
+    else
+        enemyIndex = 3 * player->worldNum + 3 * (player->worldNum == 7 && player->mapScreen == 2.3);
+    int enemyHP = 14 + iPart(pow((double) enemyIndex, 1.22)) + (int) pow((5 + 1), player->worldNum) * (!enemyIndex % 3);
     //14+int(U^1.22)+40(M=8.33 and U/3=int(U/3))+(5+1^int(M))(U/3=int(U/3
     initSprite(&enemy, 15 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, enemyIndex + 71, type_na);
     char* enemyName;
@@ -948,7 +1113,7 @@ bool doBattle(player* player)
         }
         if (player->level < 99 && player->experience >= (int) 50 + pow((player->level - 1), 1.75))
         {
-            //player level is increased in the drawText call
+            player->level++;
             player->experience -= (int) 50 + pow((player->level - 2), 1.75);
             player->maxHP += (rand() % 3) + 5 + 2 * (enemyIndex % 3 != 1);
             if (player->maxHP > 999)
@@ -957,9 +1122,10 @@ bool doBattle(player* player)
             player->statPts++;
             if (rand() % 5 == 0)
                 player->statPts++; //random chance for an extra stat pt
-                char* buffer = "";
+            if (player->statPts > 99)
+                player->statPts = 99;
             drawTextBox("Level up!          Lv", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-            drawText(toString(++player->level, buffer), 4 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+            drawText(toString(player->level, buffer), 3 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
             SDL_PollEvent(&e);
             quit = false;
             SDL_Delay(400);
@@ -974,7 +1140,109 @@ bool doBattle(player* player)
                             quit = true;
                 }
             }
-            //do stat increases
+            //doing stat increases
+            SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+            quit = false;
+            SDL_Delay(400);
+            sprite cursor;
+            initSprite(&cursor, TILE_SIZE / 4, 9 * TILE_SIZE + TILE_SIZE / 4, TILE_SIZE, TILE_ID_CURSOR, type_na);
+            int breakCode = 0;
+            while (!quit)
+            {
+                drawTextBox(" ATK:", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                drawText(toString(player->attack, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                drawText("SPD:", 5 * TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                drawText(toString(player->speed, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                drawText("STAT PTS=", 5 * TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                drawText(toString(player->statPts, buffer), 10 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                drawText("DONE", 5 * TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+                while(!quit)
+                {
+                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+                    while(SDL_PollEvent(&e) != 0)
+                    {
+                        if(e.type == SDL_QUIT)
+                        {
+                            quit = true;
+                            breakCode = ANYWHERE_QUIT;
+                        }
+                        else
+                            if(e.type == SDL_KEYDOWN)
+                            {
+                                switch (e.key.keysym.sym)
+                                {
+                                    case SDLK_w:
+                                        if (cursor.y > 9 * TILE_SIZE + TILE_SIZE / 4)
+                                            cursor.y -= TILE_SIZE;
+                                    break;
+
+                                    case SDLK_s:
+                                        if (cursor.y < 12 * TILE_SIZE + TILE_SIZE / 4)
+                                            cursor.y += TILE_SIZE;
+                                    break;
+                                    case SDLK_SPACE:
+                                        if (cursor.y == 12 * TILE_SIZE + TILE_SIZE / 4)
+                                            quit = true;
+                                        else
+                                        {
+                                            if (player->statPts)
+                                            {
+                                                if (cursor.y == 9 * TILE_SIZE + TILE_SIZE / 4)
+                                                    player->attack++;
+                                                if (cursor.y == 10 * TILE_SIZE + TILE_SIZE / 4)
+                                                    player->speed++;
+                                                if (cursor.y != 11 * TILE_SIZE + TILE_SIZE / 4)
+                                                {
+                                                    player->statPts--;
+                                                    quit = true;
+                                                }
+                                            }
+                                        }
+                                    break;
+
+                                    default:
+                                    break;
+                                }
+                            }
+                    }
+                    drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+                    SDL_RenderPresent(mainRenderer);
+                }
+                //check if user really wants to quit
+                if (cursor.y != 12 * TILE_SIZE + TILE_SIZE / 4 || breakCode == ANYWHERE_QUIT)
+                    quit = false;
+                else
+                {
+                    if (player->statPts)
+                    {
+                        drawTextBox("QUIT WITHOUT USING ALL PTS?        SPACE = YES      ANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                        bool unpause = false;
+                        SDL_Delay(400);
+                        while(!unpause)
+                        {
+                            while(SDL_PollEvent(&e) != 0)
+                            {
+                                if(e.type == SDL_QUIT)
+                                    unpause = true;
+                                else
+                                    if(e.type == SDL_KEYDOWN)
+                                    {
+                                        switch (e.key.keysym.sym)
+                                        {
+                                            case SDLK_SPACE:
+                                            break;
+
+                                            default:
+                                                quit = false;
+                                            break;
+                                        }
+                                        unpause = true;
+                                    }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     return won || run;
