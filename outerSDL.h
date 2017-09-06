@@ -41,14 +41,20 @@
 
 #define printBool(x) x == true ? "true" : "false"
 #define iPart(x) ((int) x)
-#define fPart(x) (x - iPart(x))
+#define fPart(x) ((x) - iPart(x))
 
 #define PLAYER_NAME_LIMIT 8
+#define PLAYER_ITEMS_LIMIT 11
 
 #define KEYPRESS_RETURN_MENU 2
 #define KEYPRESS_RETURN_BATTLE 3
 #define KEYPRESS_RETURN_BREAK 4
+
 #define MAIN_MENU_PALETTE (SDL_Color){16, 32, 140}, (SDL_Color){24, 65, 214}, (SDL_Color){24, 162, 239}, (SDL_Color){24, 195, 247}
+#define OVERWORLD_MENU_PALETTE (SDL_Color){181, 182, 173}, (SDL_Color){181, 182, 173}, (SDL_Color){16, 32, 140}, (SDL_Color){16, 32, 140}
+
+#define ARRAY_OF_CHEST_IDS {1.2, 1.21, 2.11, 2.23, 3.2, 3.32, 4.11, 4.12, 5.1, 5.2, 5.12, 6.2, 6.22, 6.32, 7.1, 7.12, 7.2, 7.21, 7.24, 8.11, 8.2, 8.32}
+#define SIZE_OF_CHEST_ARRAY 22
 
 typedef enum
 {
@@ -94,8 +100,9 @@ typedef struct {
     int beatenBosses;  // <-reg boss beaten = +10, world 7 alt boss = +1
     SDL_RendererFlip flip;  //
     bool movementLocked;  // 1 byte
+    int items[PLAYER_ITEMS_LIMIT];  // ? bytes * 11
+    int pickedUpChests[SIZE_OF_CHEST_ARRAY]; // ? bytes * 22
     //need to add list of open chests
-    //also don't forget items, but you don't need to store them in this struct; just savefile
 } player;
 
 void drawGame(player* player, char* textInput);  //draws overworld stuff
@@ -107,6 +114,7 @@ int aWallOfText(char* title, char* text, bool showHelpInfo);  //draws a wall of 
 int showStats(player* player);  //opens stats display
 int showItems(player* player);  //shows list of player items
 bool doBattle(player* player, bool isBoss);  //does a battle
+bool pickupItem(player* player, int itemCode, int chestID);  //player picks up an item
 
 int init();  //inits SDL and necessary game systems
 bool startGame(player* playerSprite, bool newSave);  //inits player sprite, tilemap
@@ -118,7 +126,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex);  //initi
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void inputName(player* player);  //gets the name of the sprite by prompting player
 void loadMapFile();  //loads a map from a file
-void drawTilemap(int startX, int startY, int endX, int endY);  //draws a tilemap to the screen
+void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap to the screen
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile to the screen
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 bool checkKeyPress();  //checks if a key was pressed and acts accordingly if so

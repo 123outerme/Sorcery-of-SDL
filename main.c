@@ -30,7 +30,12 @@
 #define TILE_ID_SWURM 89
 #define TILE_ID_SENTRY 92
 #define TILE_ID_DREGOH 95
+#define TILE_ID_SWORD 96
+#define TILE_ID_TOME 97
+#define TILE_ID_ARMOR 98
+#define TILE_ID_POTION 99
 #define TILE_ID_COIN 100
+#define TILE_ID_STONE 102
 #define TILE_ID_INNKEEPER 104
 #define TILE_ID_NPC 105
 #define TILE_ID_UPGRADER 106
@@ -58,19 +63,25 @@
 #define OVERWORLD_SAVE_RETURN 4
 #define OVERWORLD_QUIT 5
 
-#define OVERWORLD_MENU_PALETTE (SDL_Color){181, 182, 173}, (SDL_Color){181, 182, 173}, (SDL_Color){16, 32, 140}, (SDL_Color){16, 32, 140}
-
 #define ALL_ATTACKS "SLICESLASHBURN ROASTCRACKBREAKCHILLICE  FLOW SWEEPWHACKBASH STAB GASH SMASH     THORNVINE FLAREBLAZEROCK STONEFROSTHAIL STORMVOLT SMELLSTINKDARK EVIL ALPHAARROW"
 #define ALL_ENEMIES_ARRAY {"Ant", "Rat", "APEMAN", "Firant", "Pyre", "FEENIX", "Gemdog", "Golem", "TARANT", "Pengin", "Snoman", "POLARA", "C Gull", "C Star", "HYDROA", "Rodent", "Crow", "SWURM", "Midas", "Greed", "SENTRY", "Archer", "Knight", "- DREGOH -"}
 
 #define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.11, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 58
 
-#define ARRAY_OF_CHEST_IDS {1.2, 1.21, 2.11, 2.23, 3.2, 3.32, 4.11, 4.12, 5.1, 5.2, 5.12, 6.2, 6.22, 6.32, 7.1, 7.12, 7.2, 7.21, 7.24, 8.11, 8.2, 8.32}
-#define SIZE_OF_CHEST_ARRAY 22
-
 #define ARRAY_OF_BOSS_IDS {1.33, 2.33, 3.22, 4.31, 5.32, 6.31, 7.13, 7.23, 8.33}
 #define SIZE_OF_BOSS_ARRAY 9
+
+#define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
+#define SIZE_OF_SWORD_ARRAY 8
+#define ARRAY_OF_TOME_NAMES {"WOOD TOME", "BURNT TOME", "STONE TOME", "COLD TOME", "STORM TOME", "SMELLY TOME", "DARK TOME", "ALPHA TOME", "POWER TOME"}
+#define SIZE_OF_TOME_ARRAY 9
+#define ARRAY_OF_ARMOR_NAMES {"WEAK ARMOR", "BASIC ARMOR", "GOOD ARMOR", "GREAT ARMOR", "FINE ARMOR", "THICK ARMOR", "HEAVY ARMOR", "METAL ARMOR", "SOLID ARMOR"}
+#define SIZE_OF_ARMOR_ARRAY 9
+#define ARRAY_OF_POTION_NAMES {"FLAT POTION", "FIZZ POTION", "GOOD POTION", "FULL POTION"}
+#define SIZE_OF_POTION_ARRAY 4
+#define ARRAY_OF_STONE_NAMES {"LAVA STONE", "STONE STONE", "ICE STONE", "WATER STONE", "BRICK STONE", "GOLD STONE", "MUD STONE"}
+#define SIZE_OF_STONE_ARRAY 7
 
 #define BATTLE_ACT_CODE_W 1
 #define BATTLE_ACT_CODE_A 2
@@ -80,13 +91,12 @@
 #define ATTACK_CODE_RUN TILE_ID_RUN
 #define ATTACK_CODE_BLOCK TILE_ID_BLOCK
 
-//Todo for 9/5:
+//Todo for 9/6:
 //* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
-//* Add item chests and bosses
-//* Add items
+//* Input all boss quips and NPC text
 
 int main(int argc, char* args[])
 {
@@ -151,6 +161,7 @@ int mainLoop(player* playerSprite)
     bool quit = false, press = false;
     SDL_Event e;
     int frame = 0, exitCode = LOOP_QUIT;
+    static int pickedUp = 1;
     char* textInput = "Did you know that this is placeholder text? Me neither.";
     {
         double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
@@ -158,11 +169,12 @@ int mainLoop(player* playerSprite)
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
         //use the int "map" when testing if user is in a map with a boss/chest?
     }
-    drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+    drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false);
     drawHUD(playerSprite);
     sprite entity;
     entityType type = type_na;
-    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127;
+    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127, found = -1;
+    bool drawEntityFlag = true;
     if (!playerSprite->mapScreen)
     {
         type = type_npc;
@@ -183,7 +195,6 @@ int mainLoop(player* playerSprite)
     }
     else
     {
-        int found;
         {
             double arrayOfMaps[SIZE_OF_CHEST_ARRAY] = ARRAY_OF_CHEST_IDS;
             found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
@@ -245,6 +256,8 @@ If M=8.32
                 x *= -17;
                 y *= -11;
             }
+            if (playerSprite->pickedUpChests[found])
+                drawEntityFlag = false;
         }
         else
         {
@@ -313,7 +326,11 @@ If M=8.32
         }
     }
     initSprite(&entity, x, y, TILE_SIZE, index, type);
-    drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
+    if (drawEntityFlag)
+        drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
+    drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+    SDL_RenderPresent(mainRenderer);
+    SDL_Delay(220);
     while(!quit)    //this is the literal main loop right here
     {
         drawGame(playerSprite, textInput);
@@ -349,6 +366,19 @@ If M=8.32
             }
             if (entity.type == type_chest)
             {
+                int item = 0;
+                if (found == 0)
+                    item = 991;
+                if (found == 1)
+                    item = 981;
+                if (found == 2)
+                    item = 971;
+                if (found == 3)
+                    item = 961;
+                if (found == 4)
+                    item = 972;
+                if (!playerSprite->pickedUpChests[found] && pickedUp)
+                    pickedUp = pickupItem(playerSprite, item, found);
                 //pick up chest here
             }
         }
@@ -368,7 +398,7 @@ If M=8.32
 
 void drawHUD(player* player)
 {
-    drawTilemap(0, 0, 19, 1);
+    drawTilemap(0, 0, 19, 1, false);
     char* buffer = "";
     char* worldNames[8] = {"Plain Plains", "Dragon's Den", "Worry Quarry", "West Pole", "River Lake", "Under City", "Upper City", "Battleground"};
     drawText(worldNames[player->worldNum - 1], 0, 0, SCREEN_WIDTH, TILE_SIZE, ((SDL_Color) {255, 255, 255}), false);
@@ -597,61 +627,156 @@ int showItems(player* player)
     char* buffer = "";
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
-    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
-    SDL_RenderFillRect(mainRenderer, NULL);
-    SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
-    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 1 * SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-
-    drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, TILE_SIZE, (WIDTH_IN_TILES - 2) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 1) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, (WIDTH_IN_TILES - 2) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, (WIDTH_IN_TILES - 2) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 3) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 4 * TILE_SIZE, (WIDTH_IN_TILES - 2) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 4) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(" ", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, (WIDTH_IN_TILES - 2) * TILE_SIZE - TILE_SIZE / 4,  (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawTile(TILE_ID_COIN, 2 * TILE_SIZE, 13 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-    drawText("x", 3 * TILE_SIZE, 13 * TILE_SIZE, (WIDTH_IN_TILES - 3) * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-    drawText(toString(player->money, buffer), 4 * TILE_SIZE, 13 * TILE_SIZE, 3 * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, true);
-
     int exitCode = OVERWORLD_ITEMS;
-    SDL_Event e;
     bool quit = false;
-    while(!quit)
+    while (!quit)
     {
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
-        //Handle events on queue
-        while(SDL_PollEvent(&e) != 0)
+        SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = 1 * SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, TILE_SIZE, (WIDTH_IN_TILES - 2) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 1) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+        for(int i = 0; i < PLAYER_ITEMS_LIMIT; i++)
         {
-            //User requests quit
-            if(e.type == SDL_QUIT)
+            if (player->items[i] > 0)
             {
-                quit = true;
-                exitCode = ANYWHERE_QUIT;
-            }
-            //User presses a key
-            else if(e.type == SDL_KEYDOWN)
-            {
-                //Select surfaces based on key press
-                switch(e.key.keysym.sym)
+                char* itemName;
                 {
-                    case SDLK_w:
-                        if (cursor.y > 1 * TILE_SIZE)
-                            cursor.y -= TILE_SIZE;
-                    break;
-
-                    case SDLK_s:
-                        if (cursor.y < 12 * TILE_SIZE)
-                            cursor.y += TILE_SIZE;
-                    break;
-
-                    case SDLK_SPACE:
-                        quit = true;
-                    break;
-                    default:
-                    break;
+                    if (player->items[i] / 10 == TILE_ID_POTION)
+                    {
+                        char* arrayOfItems[SIZE_OF_POTION_ARRAY] = ARRAY_OF_POTION_NAMES;
+                        int nameIndex = player->items[i] - (10 * iPart((player->items[i] / 10.0)));
+                        itemName = arrayOfItems[nameIndex - 1];
+                    }
+                    if (player->items[i] / 10 == TILE_ID_SWORD)
+                    {
+                        char* arrayOfItems[SIZE_OF_SWORD_ARRAY] = ARRAY_OF_SWORD_NAMES;
+                        int nameIndex = player->items[i] - (10 * iPart((player->items[i] / 10.0)));
+                        itemName = arrayOfItems[nameIndex - 1];
+                    }
+                    if (player->items[i] / 10 == TILE_ID_TOME)
+                    {
+                        char* arrayOfItems[SIZE_OF_TOME_ARRAY] = ARRAY_OF_TOME_NAMES;
+                        int nameIndex = player->items[i] - (10 * iPart((player->items[i] / 10.0)));
+                        itemName = arrayOfItems[nameIndex - 1];
+                    }
+                    if (player->items[i] / 10 == TILE_ID_ARMOR)
+                    {
+                        char* arrayOfItems[SIZE_OF_ARMOR_ARRAY] = ARRAY_OF_ARMOR_NAMES;
+                        int nameIndex = player->items[i] - (10 * iPart((player->items[i] / 10.0)));
+                        itemName = arrayOfItems[nameIndex - 1];
+                    }
+                    if (player->items[i] / 10 == TILE_ID_STONE)
+                    {
+                        char* arrayOfItems[SIZE_OF_STONE_ARRAY] = ARRAY_OF_STONE_NAMES;
+                        int nameIndex = player->items[i] - (10 * iPart((player->items[i] / 10.0)));
+                        itemName = arrayOfItems[nameIndex - 1];
+                    }
                 }
+                drawTile(player->items[i] / 10, 2 * TILE_SIZE, (2 + i) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                drawText(itemName, 3 * TILE_SIZE + TILE_SIZE / 4, (2 + i) * TILE_SIZE, (WIDTH_IN_TILES - 2) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 2 - i) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
             }
         }
-        drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
-        SDL_RenderPresent(mainRenderer);
+        drawTile(TILE_ID_COIN, 2 * TILE_SIZE, 13 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        drawText("x", 3 * TILE_SIZE, 13 * TILE_SIZE, (WIDTH_IN_TILES - 3) * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
+        drawText(toString(player->money, buffer), 4 * TILE_SIZE, 13 * TILE_SIZE, 3 * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, true);
+
+        SDL_Event e;
+        while(!quit)
+        {
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+            //Handle events on queue
+            while(SDL_PollEvent(&e) != 0)
+            {
+                //User requests quit
+                if(e.type == SDL_QUIT)
+                {
+                    quit = true;
+                    exitCode = ANYWHERE_QUIT;
+                }
+                //User presses a key
+                else if(e.type == SDL_KEYDOWN)
+                {
+                    //Select surfaces based on key press
+                    switch(e.key.keysym.sym)
+                    {
+                        case SDLK_w:
+                            if (cursor.y > 1 * TILE_SIZE)
+                                cursor.y -= TILE_SIZE;
+                        break;
+
+                        case SDLK_s:
+                            if (cursor.y < 12 * TILE_SIZE)
+                                cursor.y += TILE_SIZE;
+                        break;
+
+                        case SDLK_SPACE:
+                            quit = true;
+                        break;
+                        default:
+                        break;
+                    }
+                }
+            }
+            drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+            SDL_RenderPresent(mainRenderer);
+        }
+        int itemIndex = cursor.y / TILE_SIZE - 2;
+        if (itemIndex >= 0)
+        {
+            int itemCode = player->items[itemIndex];
+            if (!(itemCode / 10 == TILE_ID_STONE))
+            {
+                quit = false;
+                player->items[itemIndex] = 0;
+            }
+            else
+            {
+                //do custom teleport menu here
+            }
+            if (itemCode / 10 == TILE_ID_POTION)
+            {
+                player->HP += 40 + 60 * ((itemCode - 10 * (itemCode / 10)) - 1);
+                if (player->HP > player->maxHP)
+                    player->HP = player->maxHP;
+            }
+            if (itemCode / 10 == TILE_ID_ARMOR)
+            {
+                int increasedHP = 2 + 10 * (itemCode - 10 * (itemCode / 10));
+                player->maxHP += increasedHP;
+                player->HP += increasedHP;
+                if (player->maxHP > 999)
+                    player->maxHP = 999;
+                if (player->HP > player->maxHP)
+                    player->HP = player->maxHP;
+            }
+            if (itemCode / 10 == TILE_ID_SWORD || itemCode / 10 == TILE_ID_TOME)
+            {
+                char* allAttacks = ALL_ATTACKS;
+                char thisAttack[6] = "     \0";
+                char wArray[9] = "W: ";
+                strcat(wArray, strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5));
+                char aArray[9] = "A: ";
+                strcat(aArray, player->move2 ? strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5) : "     ");
+                char sArray[9] = "S: ";
+                strcat(sArray, player->move3 ? strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5) : "     ");
+                char dArray[9] = "D: ";
+                strcat(dArray, player->move4 ? strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5) : "     ");
+                int retCode = aMenu("Which Slot?", wArray, aArray, sArray, dArray, "BACK", 5, 0, OVERWORLD_MENU_PALETTE, true, false);
+                //use aMenu() to do the move replacement menu
+                int newMove = 40 + 14 * (itemCode / 10 == 97) + 2 * (itemCode - 10 * (itemCode / 10));
+                if (retCode == 1)
+                    player->move1 = newMove;
+                if (retCode == 2)
+                    player->move2 = newMove;
+                if (retCode == 3)
+                    player->move3 = newMove;
+                if (retCode == 4)
+                    player->move4 = newMove;
+                if (retCode == 5)
+                    player->items[itemIndex] = itemCode;  //restoring item back to its place
+            }
+        }
     }
     return exitCode;
 }
@@ -747,6 +872,10 @@ bool doBattle(player* player, bool isBoss)
     char* allAttacks = ALL_ATTACKS;
     bool doneFlag = false;
     bool blockTurns = 0;
+    if (isBoss)
+    {
+        //do boss quip here
+    }
     while (!doneFlag)
     {
     bool actFlag = false;
@@ -1044,6 +1173,7 @@ bool doBattle(player* player, bool isBoss)
     }
     if (!won && !run)
     {
+        //if you lost
         player->HP = player->maxHP;
         player->mapScreen = 1.0;
         player->spr.x = 4 * TILE_SIZE;
@@ -1073,6 +1203,7 @@ bool doBattle(player* player, bool isBoss)
     }
     if (won)
     {
+        //if you won
         int acquiredGold = 4 - (player->level - enemyIndex);
         int acquiredExp = 23 + 3 * enemyIndex + (3 * player->worldNum) * (enemyIndex % 3 == 0) - 4 * (player->level - enemyIndex);
         if (acquiredGold < 0)
@@ -1088,11 +1219,11 @@ bool doBattle(player* player, bool isBoss)
         drawText("GOLD:", TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
         drawText(toString(acquiredGold, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
 
+        drawText("EXP TO LV UP:", TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
         {
             int remainingExp = (int)(50 + pow((player->level - 1), 1.75)) - player->experience;
             if (remainingExp < 0)
                 remainingExp = 0;
-            drawText("EXP TO LV UP:", TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
             drawText(toString(remainingExp, buffer), 13 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
         }
         drawText("TOTAL GOLD:", TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
@@ -1244,6 +1375,48 @@ bool doBattle(player* player, bool isBoss)
                 }
             }
         }
+        if (isBoss)
+        {
+            //give/upgrade teleport stone here
+        }
     }
     return won || run;
+}
+bool pickupItem(player* player, int itemCode, int chestID)
+{
+    int firstOpenSlot = -1;
+    for(int i = PLAYER_ITEMS_LIMIT; i >= 0; i--)
+    {
+        if (player->items[i] == 0)
+            firstOpenSlot = i;
+    }
+    drawTilemap(player->spr.x / TILE_SIZE, player->spr.y, 1 + player->spr.x / TILE_SIZE, 1 + player->spr.y / TILE_SIZE, false);
+    drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
+    SDL_RenderPresent(mainRenderer);
+    if (firstOpenSlot > -1)
+    {
+        player->items[firstOpenSlot] = itemCode;
+        drawTextBox("Found new item!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        player->pickedUpChests[chestID] = 1;
+    }
+    else
+    {
+        firstOpenSlot = -1;
+        drawTextBox("My inventory's too full!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+    }
+    SDL_Event e;
+    bool quit = false;
+    while(!quit)
+    {
+        while(SDL_PollEvent(&e) != 0)
+        {
+            if(e.type == SDL_QUIT)
+                quit = true;
+            else
+                if(e.type == SDL_KEYDOWN)
+                    quit = true;
+        }
+    }
+    drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
+    return firstOpenSlot > -1;
 }

@@ -191,6 +191,14 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->beatenBosses = 0;
 	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
+	for(int i = 0; i < PLAYER_ITEMS_LIMIT; i++)
+    {
+        player->items[i] = 0;
+    }
+	for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
+    {
+        player->pickedUpChests[i] = 0;
+    }
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
@@ -230,6 +238,14 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         player->overworldX = strtol(readLine(filePath, 18, &buffer), NULL, 10);
         player->overworldY = strtol(readLine(filePath, 19, &buffer), NULL, 10);
         player->beatenBosses = strtol(readLine(filePath, 20, &buffer), NULL, 10);
+        for(int i = 0; i < PLAYER_ITEMS_LIMIT; i++)
+        {
+            player->items[i] = strtol(readLine(filePath, 21 + i, &buffer), NULL, 10);
+        }
+        for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
+        {
+            player->pickedUpChests[i] = strtol(readLine(filePath, 21 + PLAYER_ITEMS_LIMIT + i, &buffer), NULL, 10);
+        }
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
         //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
@@ -353,15 +369,15 @@ void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, c
 	fclose(filePtr);
 }
 
-void drawTilemap(int startX, int startY, int endX, int endY)
+void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
     {
         for(int dx = startX; dx < endX; dx++)
             drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        SDL_Delay(20);
     }
-    SDL_RenderPresent(mainRenderer);
+    if (updateScreen)
+        SDL_RenderPresent(mainRenderer);
 }
 
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
@@ -474,7 +490,7 @@ bool checkKeyPress(player* playerSprite)
         if (!textBoxOn)
         {
             drawHUD(playerSprite);
-            drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+            drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
         }
         SDL_Delay(75);
     }
@@ -530,6 +546,14 @@ void savePlayerData(player* player, char* filePath)
     writeLine(filePath, toString(player->overworldX, buffer));
     writeLine(filePath, toString(player->overworldY, buffer));
     writeLine(filePath, toString(player->beatenBosses, buffer));
+    for(int i = 0; i < PLAYER_ITEMS_LIMIT; i++)
+    {
+        writeLine(filePath, toString(player->items[i], buffer));
+    }
+    for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
+    {
+        writeLine(filePath, toString(player->pickedUpChests[i], buffer));
+    }
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     drawText("Save completed.", 9 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 55 * SCREEN_WIDTH / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
