@@ -131,6 +131,7 @@ void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 bool checkKeyPress();  //checks if a key was pressed and acts accordingly if so
 bool checkCollision();  //checks if player has collided with a solid tile
+SDL_Scancode waitForKey();  //waits for a player to press any key, returns the key that was pressed
 void savePlayerData(player* player, char* filePath);  //saves sprite data to a file
 void closeSDL();  //closes out SDL and necessary game systems
 

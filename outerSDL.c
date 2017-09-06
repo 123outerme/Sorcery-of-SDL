@@ -521,6 +521,28 @@ bool checkCollision(player* player, int tileID, int moveX, int moveY)
     return false;
 }
 
+SDL_Scancode waitForKey()
+{
+    SDL_Event e;
+    bool quit = false;
+    SDL_Scancode scancode = SDLK_ESCAPE;
+    while(!quit)
+    {
+        while(SDL_PollEvent(&e) != 0)
+        {
+            if(e.type == SDL_QUIT)
+                quit = true;
+            else
+                if(e.type == SDL_KEYDOWN)
+                {
+                    scancode = e.key.keysym.sym;
+                    quit = true;
+                }
+        }
+    }
+    return scancode;
+}
+
 void savePlayerData(player* player, char* filePath)
 {
     char* buffer = "";

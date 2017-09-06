@@ -38,7 +38,7 @@
 #define TILE_ID_STONE 102
 #define TILE_ID_INNKEEPER 104
 #define TILE_ID_NPC 105
-#define TILE_ID_UPGRADER 106
+#define TILE_ID_BESERKERJ 106
 #define TILE_ID_MINER 107
 #define TILE_ID_PARKA 108
 #define TILE_ID_EARL 109
@@ -72,6 +72,8 @@
 #define ARRAY_OF_BOSS_IDS {1.33, 2.33, 3.22, 4.31, 5.32, 6.31, 7.13, 7.23, 8.33}
 #define SIZE_OF_BOSS_ARRAY 9
 
+//ARRAY_OF_UPGRADER_IDS -> {1.22, 3.1, ...}
+
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
 #define ARRAY_OF_TOME_NAMES {"WOOD TOME", "BURNT TOME", "STONE TOME", "COLD TOME", "STORM TOME", "SMELLY TOME", "DARK TOME", "ALPHA TOME", "POWER TOME"}
@@ -96,7 +98,9 @@
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
+//* Add in teleport stone drops and functionality
 //* Input all boss quips and NPC text
+//* Add in move upgrader
 
 int main(int argc, char* args[])
 {
@@ -519,19 +523,7 @@ int aWallOfText(char* title, char* text, bool showHelpInfo)
     if (showHelpInfo)
         drawText("By Stephen Policelli", 0, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
 
-    SDL_Event e;
-    bool quit = false;
-    while(!quit)
-    {
-        while(SDL_PollEvent(&e) != 0)
-        {
-            if(e.type == SDL_QUIT)
-                quit = true;
-            else
-                if(e.type == SDL_KEYDOWN)
-                    quit = true;
-        }
-    }
+    waitForKey();
     return MENU_HELP;
 }
 
@@ -592,33 +584,8 @@ int showStats(player* player)
     drawText("S:", 4 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
     drawText("D:", 4 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
 
-    SDL_Event e;
-    bool quit = false;
-
-    while(!quit)
-    {
-        while(SDL_PollEvent(&e) != 0)
-        {
-            if(e.type == SDL_QUIT)
-            {
-                exitCode = ANYWHERE_QUIT;
-                quit = true;
-            }
-            //User presses a key
-            else if(e.type == SDL_KEYDOWN)
-            {
-                //Select surfaces based on key press
-                switch(e.key.keysym.sym)
-                {
-                    case SDLK_SPACE:
-                        quit = true;
-                    break;
-                    default:
-                    break;
-                }
-            }
-        }
-    }
+    if (waitForKey() == SDLK_ESCAPE)
+        exitCode = ANYWHERE_QUIT;
     return exitCode;
 }
 
@@ -1149,19 +1116,7 @@ bool doBattle(player* player, bool isBoss)
                 SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = redrawX, .y = redrawY, .w = TILE_SIZE, .h = TILE_SIZE}));
                 drawTile(redrawIndex, redrawX, redrawY, TILE_SIZE, SDL_FLIP_NONE);
                 SDL_RenderPresent(mainRenderer);
-                SDL_Event e;
-                bool quit = false;
-                while(!quit)
-                {
-                    while(SDL_PollEvent(&e) != 0)
-                    {
-                        if(e.type == SDL_QUIT)
-                            quit = true;
-                        else
-                            if(e.type == SDL_KEYDOWN)
-                                quit = true;
-                    }
-                }
+                waitForKey();
             }
         }
         if (enemyHP < 1)
@@ -1188,19 +1143,7 @@ bool doBattle(player* player, bool isBoss)
     SDL_Delay(650);
     }
     drawTextBox(won ? "You won!" : run ? "You fled!" : "You lost!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-    SDL_Event e;
-    bool quit = false;
-    while(!quit)
-    {
-        while(SDL_PollEvent(&e) != 0)
-        {
-            if(e.type == SDL_QUIT)
-                quit = true;
-            else
-                if(e.type == SDL_KEYDOWN)
-                    quit = true;
-        }
-    }
+    waitForKey();
     if (won)
     {
         //if you won
@@ -1228,20 +1171,8 @@ bool doBattle(player* player, bool isBoss)
         }
         drawText("TOTAL GOLD:", TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
         drawText(toString(player->money, buffer), 11 * TILE_SIZE + TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
-        SDL_PollEvent(&e);
-        quit = false;
         SDL_Delay(400);
-        while(!quit)
-        {
-            while(SDL_PollEvent(&e) != 0)
-            {
-                if(e.type == SDL_QUIT)
-                    quit = true;
-                else
-                    if(e.type == SDL_KEYDOWN)
-                        quit = true;
-            }
-        }
+        waitForKey();
         if (player->level < 99 && player->experience >= (int) 50 + pow((player->level - 1), 1.75))
         {
             player->level++;
@@ -1257,27 +1188,16 @@ bool doBattle(player* player, bool isBoss)
                 player->statPts = 99;
             drawTextBox("Level up!          Lv", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
             drawText(toString(player->level, buffer), 3 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
-            SDL_PollEvent(&e);
-            quit = false;
             SDL_Delay(400);
-            while(!quit)
-            {
-                while(SDL_PollEvent(&e) != 0)
-                {
-                    if(e.type == SDL_QUIT)
-                        quit = true;
-                    else
-                        if(e.type == SDL_KEYDOWN)
-                            quit = true;
-                }
-            }
+            waitForKey();
             //doing stat increases
             SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
-            quit = false;
             SDL_Delay(400);
             sprite cursor;
             initSprite(&cursor, TILE_SIZE / 4, 9 * TILE_SIZE + TILE_SIZE / 4, TILE_SIZE, TILE_ID_CURSOR, type_na);
             int breakCode = 0;
+            bool quit = false;
+            SDL_Event e;
             while (!quit)
             {
                 drawTextBox(" ATK:", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
@@ -1347,76 +1267,72 @@ bool doBattle(player* player, bool isBoss)
                     if (player->statPts)
                     {
                         drawTextBox("QUIT WITHOUT USING ALL PTS?        SPACE = YES      ANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-                        bool unpause = false;
                         SDL_Delay(400);
-                        while(!unpause)
-                        {
-                            while(SDL_PollEvent(&e) != 0)
-                            {
-                                if(e.type == SDL_QUIT)
-                                    unpause = true;
-                                else
-                                    if(e.type == SDL_KEYDOWN)
-                                    {
-                                        switch (e.key.keysym.sym)
-                                        {
-                                            case SDLK_SPACE:
-                                            break;
-
-                                            default:
-                                                quit = false;
-                                            break;
-                                        }
-                                        unpause = true;
-                                    }
-                            }
-                        }
+                        quit = waitForKey() == SDLK_SPACE;
                     }
                 }
             }
         }
         if (isBoss)
         {
-            //give/upgrade teleport stone here
+            int itemLocation = findItem(player, TILE_ID_STONE * 10 + player->worldNum - 1);
+            if (itemLocation == -1)
+                pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1);
+            else
+                player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
         }
     }
     return won || run;
 }
 bool pickupItem(player* player, int itemCode, int chestID)
 {
-    int firstOpenSlot = -1;
-    for(int i = PLAYER_ITEMS_LIMIT; i >= 0; i--)
-    {
-        if (player->items[i] == 0)
-            firstOpenSlot = i;
-    }
+    int firstOpenSlot = findItem(player, 0);
     drawTilemap(player->spr.x / TILE_SIZE, player->spr.y, 1 + player->spr.x / TILE_SIZE, 1 + player->spr.y / TILE_SIZE, false);
     drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
     SDL_RenderPresent(mainRenderer);
     if (firstOpenSlot > -1)
     {
         player->items[firstOpenSlot] = itemCode;
-        drawTextBox("Found new item!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-        player->pickedUpChests[chestID] = 1;
+        char text[24] = "Found a ";
+        if (itemCode / 10 == TILE_ID_SWORD)
+            strcat(text, "Sword!\0");
+        if (itemCode / 10 == TILE_ID_TOME)
+            strcat(text, "Tome!\0");
+        if (itemCode / 10 == TILE_ID_ARMOR)
+            strcat(text, "Armor!\0");
+        if (itemCode / 10 == TILE_ID_POTION)
+            strcat(text, "Potion!\0");
+        if (itemCode / 10 == TILE_ID_STONE)
+            strcat(text, "Teleport Stone!\0");
+        drawTextBox(text, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        if (chestID >= 0)
+            player->pickedUpChests[chestID] = 1;
+        if (!(itemCode / 10 == TILE_ID_STONE))
+        {
+            drawTilemap(player->spr.x / TILE_SIZE, player->spr.y / TILE_SIZE, player->spr.x / TILE_SIZE + 1, player->spr.y / TILE_SIZE + 1, true);
+            drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
+            SDL_RenderPresent(mainRenderer);
+        }
     }
     else
     {
         firstOpenSlot = -1;
         drawTextBox("My inventory's too full!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
     }
-    SDL_Event e;
-    bool quit = false;
-    while(!quit)
-    {
-        while(SDL_PollEvent(&e) != 0)
-        {
-            if(e.type == SDL_QUIT)
-                quit = true;
-            else
-                if(e.type == SDL_KEYDOWN)
-                    quit = true;
-        }
-    }
-    drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
+    SDL_Delay(400);
+    waitForKey();
+    if (!(itemCode / 10 == TILE_ID_STONE))
+        drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
     return firstOpenSlot > -1;
+}
+
+int findItem(player* player, int itemToFind)
+{
+    int firstOpenSlot = -1;
+    for(int i = PLAYER_ITEMS_LIMIT; i >= 0; i--)
+    {
+        if (player->items[i] == itemToFind)
+            firstOpenSlot = i;
+    }
+    return firstOpenSlot;
 }
