@@ -1,11 +1,18 @@
 #include "outerSDL.h"
 
-#define checkSKUp currentKeyStates[SDL_SCANCODE_W]
-#define checkSKDown currentKeyStates[SDL_SCANCODE_S]
-#define checkSKLeft currentKeyStates[SDL_SCANCODE_A]
-#define checkSKRight currentKeyStates[SDL_SCANCODE_D]
-#define checkSKSpace currentKeyStates[SDL_SCANCODE_SPACE]
-#define checkSKEsc currentKeyStates[SDL_SCANCODE_ESCAPE]
+#define checkSKUp keyStates[SDL_SCANCODE_W]
+#define checkSKDown keyStates[SDL_SCANCODE_S]
+#define checkSKLeft keyStates[SDL_SCANCODE_A]
+#define checkSKRight keyStates[SDL_SCANCODE_D]
+#define checkSKSpace keyStates[SDL_SCANCODE_SPACE]
+#define checkSKEsc keyStates[SDL_SCANCODE_ESCAPE]
+
+#define SCUp SDLK_w
+#define SCDown SDLK_s
+#define SCLeft SDLK_a
+#define SCRight SDLK_d
+#define SCSpace SDLK_SPACE
+#define SCEsc SDLK_ESCAPE
 
 #define TILE_ID_TREE 8
 #define TILE_ID_LAVA 9
@@ -403,7 +410,7 @@ void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bo
 
 bool checkKeyPress(player* playerSprite)
 {
-    const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
+    const Uint8* keyStates = SDL_GetKeyboardState(NULL);
     bool battleFlag = false;
     if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight))
     {
@@ -482,17 +489,22 @@ bool checkKeyPress(player* playerSprite)
             return KEYPRESS_RETURN_BREAK;
         }
     }
-
+    if (playerSprite->movementLocked)
+    {
+        SDL_Scancode key = waitForKey();
+        playerSprite->movementLocked = false;
+        textBoxOn = false;
+        drawHUD(playerSprite);
+        drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
+        SDL_Delay(75);
+        if (key == SCSpace)
+            return KEYPRESS_RETURN_TEXTACTION;
+        return true;
+    }
     if (checkSKSpace && fPart(playerSprite->mapScreen) == playerSprite->mapScreen && playerSprite->spr.x == 9 * TILE_SIZE && playerSprite->spr.y == 6 * TILE_SIZE)
     {
-        textBoxOn = !textBoxOn;
-        playerSprite->movementLocked = !playerSprite->movementLocked;
-        if (!textBoxOn)
-        {
-            drawHUD(playerSprite);
-            drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
-        }
-        SDL_Delay(75);
+        textBoxOn = true;
+        playerSprite->movementLocked = true;
     }
 
     if (checkSKEsc)
@@ -501,7 +513,7 @@ bool checkKeyPress(player* playerSprite)
     if (battleFlag)
         return KEYPRESS_RETURN_BATTLE;
 
-    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace || checkSKEsc)
+    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace)
             return true;
         return false;
 }

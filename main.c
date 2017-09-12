@@ -72,7 +72,8 @@
 #define ARRAY_OF_BOSS_IDS {1.33, 2.33, 3.22, 4.31, 5.32, 6.31, 7.13, 7.23, 8.33}
 #define SIZE_OF_BOSS_ARRAY 9
 
-//ARRAY_OF_UPGRADER_IDS -> {1.22, 3.1, ...}
+#define ARRAY_OF_UPGRADER_IDS {1.22, 3.1, 4.22, 5.1, 6.32, 7.1, 8.1}
+#define SIZE_OF_UPGRADER_ARRAY 7
 
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
@@ -93,14 +94,15 @@
 #define ATTACK_CODE_RUN TILE_ID_RUN
 #define ATTACK_CODE_BLOCK TILE_ID_BLOCK
 
-//Todo for 9/6:
+//Todo for 9/12:
 //* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
-//* Add in teleport stone drops and functionality
+//* Add in teleport stone functionality
 //* Input all boss quips and NPC text
-//* Add in move upgrader
+//* Add in move upgrader fully
+//* Add custom keymapping
 
 int main(int argc, char* args[])
 {
@@ -191,6 +193,14 @@ int mainLoop(player* playerSprite)
             index = TILE_ID_PARKA;
         if (playerSprite->worldNum == 7)
             index = TILE_ID_EARL;
+        double arrayOfMaps[SIZE_OF_UPGRADER_ARRAY] = ARRAY_OF_UPGRADER_IDS;
+        int isUpgraderMap = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->lastScreen / 10.0), arrayOfMaps, SIZE_OF_UPGRADER_ARRAY);
+        if (isUpgraderMap != -1)
+        {
+            index = TILE_ID_BESERKERJ;
+            textInput = "PRESS 2nd TO UPGRADE A MOVE. PLEASE PROGRAM BETTER DIALOGUE FOR ME.";
+            //do other stuff to ensure upgrader is fully functional
+        }
         if (playerSprite->overworldX == 192 && playerSprite->overworldY == 240)
         {
             index = TILE_ID_INNKEEPER;
@@ -584,7 +594,7 @@ int showStats(player* player)
     drawText("S:", 4 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
     drawText("D:", 4 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
 
-    if (waitForKey() == SDLK_ESCAPE)
+    if (waitForKey() == SCEsc)
         exitCode = ANYWHERE_QUIT;
     return exitCode;
 }
@@ -1268,7 +1278,7 @@ bool doBattle(player* player, bool isBoss)
                     {
                         drawTextBox("QUIT WITHOUT USING ALL PTS?        SPACE = YES      ANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
                         SDL_Delay(400);
-                        quit = waitForKey() == SDLK_SPACE;
+                        quit = waitForKey() == SCSpace;
                     }
                 }
             }

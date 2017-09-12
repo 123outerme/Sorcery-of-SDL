@@ -39,6 +39,13 @@
 #define WIDTH_IN_TILES SCREEN_WIDTH / TILE_SIZE
 #define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
 
+#define SCUp SDLK_w
+#define SCDown SDLK_s
+#define SCLeft SDLK_a
+#define SCRight SDLK_d
+#define SCSpace SDLK_SPACE
+#define SCEsc SDLK_ESCAPE
+
 #define printBool(x) x == true ? "true" : "false"
 #define iPart(x) ((int) x)
 #define fPart(x) ((x) - iPart(x))
@@ -49,6 +56,7 @@
 #define KEYPRESS_RETURN_MENU 2
 #define KEYPRESS_RETURN_BATTLE 3
 #define KEYPRESS_RETURN_BREAK 4
+#define KEYPRESS_RETURN_TEXTACTION 5
 
 #define MAIN_MENU_PALETTE (SDL_Color){16, 32, 140}, (SDL_Color){24, 65, 214}, (SDL_Color){24, 162, 239}, (SDL_Color){24, 195, 247}
 #define OVERWORLD_MENU_PALETTE (SDL_Color){181, 182, 173}, (SDL_Color){181, 182, 173}, (SDL_Color){16, 32, 140}, (SDL_Color){16, 32, 140}
@@ -115,6 +123,7 @@ int showStats(player* player);  //opens stats display
 int showItems(player* player);  //shows list of player items
 bool doBattle(player* player, bool isBoss);  //does a battle
 bool pickupItem(player* player, int itemCode, int chestID);  //player picks up an item
+int findItem(player* player, int itemToFind);  //tries to find item in player's inventory. Use 0 for empty slot
 
 int init();  //inits SDL and necessary game systems
 bool startGame(player* playerSprite, bool newSave);  //inits player sprite, tilemap

@@ -1,3 +1,23 @@
+11 September 2017
+   released version 0.1.10 of SorcerySDL
+
+     Change log:
+        -Cleaned: text box code: specifically NPC text boxes
+
+5 September 2016
+   released version 0.1.9 of SorcerySDL
+
+    Change log:
+        -Added: Fully-functioning items, chest pickups, etc.
+        -Added: Boss and chest trigger/display code
+
+26 August 2017
+   released version 0.1.8 of SorcerySDL
+
+     Change log:
+        -Fixed: loading a save file that wasn't correctly formatted (ex. too few lines, etc.); now creates a new game upon detecting such an issue
+        -Added: Stat point upgrade code
+
 25 August 2017
    released version 0.1.7 of SorcerySDL
 
@@ -9,7 +29,7 @@
 
      Change log:
         -Added: Added full battle mechanics (still have to give winning rewards, do level ups, etc.)
-        -Added: Added blinkiing cursor to the player name input code
+        -Added: Added blinking cursor to the player name input code
 
 24 August 2017
    released version 0.1.5 of SorcerySDL
