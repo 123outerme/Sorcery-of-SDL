@@ -672,25 +672,20 @@ int showItems(player* player)
                 //User presses a key
                 else if(e.type == SDL_KEYDOWN)
                 {
-                    //Select surfaces based on key press
-                    switch(e.key.keysym.sym)
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                     {
-                        case SDLK_w:
-                            if (cursor.y > 1 * TILE_SIZE)
-                                cursor.y -= TILE_SIZE;
-                        break;
-
-                        case SDLK_s:
-                            if (cursor.y < 12 * TILE_SIZE)
-                                cursor.y += TILE_SIZE;
-                        break;
-
-                        case SDLK_SPACE:
-                            quit = true;
-                        break;
-                        default:
-                        break;
+                        if (cursor.y > 1 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
                     }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                    {
+                        if (cursor.y < 12 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                        quit = true;
                 }
             }
             drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);

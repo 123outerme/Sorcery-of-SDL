@@ -294,7 +294,7 @@ void inputName(player* player)
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                if (((e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z) || e.key.keysym.sym == SDLK_SPACE) && i < PLAYER_NAME_LIMIT)
+                if (((e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z) || e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT)) && i < PLAYER_NAME_LIMIT)
                 {
                     playerName[i++] = toupper(e.key.keysym.sym);
                     hasTyped = true;
