@@ -1,11 +1,11 @@
 #include "outerSDL.h"
 
-#define checkSKUp keyStates[SDL_SCANCODE_W]
-#define checkSKDown keyStates[SDL_SCANCODE_S]
-#define checkSKLeft keyStates[SDL_SCANCODE_A]
-#define checkSKRight keyStates[SDL_SCANCODE_D]
-#define checkSKSpace keyStates[SDL_SCANCODE_SPACE]
-#define checkSKEsc keyStates[SDL_SCANCODE_ESCAPE]
+#define checkSKUp keyStates[SC_UP]
+#define checkSKDown keyStates[SC_DOWN]
+#define checkSKLeft keyStates[SC_LEFT]
+#define checkSKRight keyStates[SC_RIGHT]
+#define checkSKInteract keyStates[SC_INTERACT]
+#define checkSKMenu keyStates[SC_MENU]
 
 #define SCUp SDLK_w
 #define SCDown SDLK_s
@@ -206,6 +206,12 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     {
         player->pickedUpChests[i] = 0;
     }
+    SC_UP = SDL_SCANCODE_W;
+    SC_DOWN = SDL_SCANCODE_S;
+    SC_LEFT = SDL_SCANCODE_A;
+    SC_RIGHT = SDL_SCANCODE_D;
+    SC_INTERACT = SDL_SCANCODE_SPACE;
+    SC_MENU = SDL_SCANCODE_ESCAPE;
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
@@ -252,6 +258,10 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
         {
             player->pickedUpChests[i] = strtol(readLine(filePath, 21 + PLAYER_ITEMS_LIMIT + i, &buffer), NULL, 10);
+        }
+        for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+        {
+            CUSTOM_SCANCODES[i] = strtol(readLine(filePath, 21 + PLAYER_ITEMS_LIMIT + SIZE_OF_CHEST_ARRAY + i, &buffer), NULL, 10);
         }
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
@@ -501,19 +511,19 @@ bool checkKeyPress(player* playerSprite)
             return KEYPRESS_RETURN_TEXTACTION;
         return true;
     }
-    if (checkSKSpace && fPart(playerSprite->mapScreen) == playerSprite->mapScreen && playerSprite->spr.x == 9 * TILE_SIZE && playerSprite->spr.y == 6 * TILE_SIZE)
+    if (checkSKInteract && fPart(playerSprite->mapScreen) == playerSprite->mapScreen && playerSprite->spr.x == 9 * TILE_SIZE && playerSprite->spr.y == 6 * TILE_SIZE)
     {
         textBoxOn = true;
         playerSprite->movementLocked = true;
     }
 
-    if (checkSKEsc)
+    if (checkSKMenu)
         return KEYPRESS_RETURN_MENU;
 
     if (battleFlag)
         return KEYPRESS_RETURN_BATTLE;
 
-    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpace)
+    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract)
             return true;
         return false;
 }
@@ -588,6 +598,12 @@ void savePlayerData(player* player, char* filePath)
     {
         writeLine(filePath, toString(player->pickedUpChests[i], buffer));
     }
+    writeLine(filePath, toString(SC_UP, buffer));
+    writeLine(filePath, toString(SC_DOWN, buffer));
+    writeLine(filePath, toString(SC_LEFT, buffer));
+    writeLine(filePath, toString(SC_RIGHT, buffer));
+    writeLine(filePath, toString(SC_INTERACT, buffer));
+    writeLine(filePath, toString(SC_MENU, buffer));
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     drawText("Save completed.", 9 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 55 * SCREEN_WIDTH / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
@@ -745,4 +761,11 @@ char* readLine(char* filePath, int lineNum, char** output)
 	fclose(filePtr);
 	return thisLine;
 	}
+}
+
+void changeKey(int keyIndex, int newKey, bool isKeyCode)
+{
+    if (isKeyCode)
+        newKey = (int) SDL_GetScancodeFromKey(newKey);
+    CUSTOM_SCANCODES[keyIndex] = newKey;
 }

@@ -52,6 +52,7 @@
 
 #define PLAYER_NAME_LIMIT 8
 #define PLAYER_ITEMS_LIMIT 11
+#define SIZE_OF_SCANCODE_ARRAY 6
 
 #define KEYPRESS_RETURN_MENU 2
 #define KEYPRESS_RETURN_BATTLE 3
@@ -154,6 +155,7 @@ int createFile(char* filePath);  //creates a file if it doesn't exist; if it doe
 bool checkFile(char* filePath, int desiredLines);  //checks if a file exists
 int writeLine(char* filePath, char* stuff);  //appends a line to a file
 char* readLine(char* filePath, int lineNum, char** output);  //reads a certain line from a file
+void changeKey(int keyIndex, int newKey, bool isKeyCode);  //changes the key read from CUSTOM_SCANCODES[keyIndex] to newKey. Converts from keycode, if last arg evals to true.
 
 
 SDL_Window* mainWindow;
@@ -164,5 +166,14 @@ bool textBoxOn;
 TTF_Font* mainFont;
 TTF_Font* smallFont;
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+
+int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
+#define SC_UP CUSTOM_SCANCODES[0]
+#define SC_DOWN CUSTOM_SCANCODES[1]
+#define SC_LEFT CUSTOM_SCANCODES[2]
+#define SC_RIGHT CUSTOM_SCANCODES[3]
+#define SC_INTERACT CUSTOM_SCANCODES[4]
+#define SC_MENU CUSTOM_SCANCODES[5]
+
 
 #endif // OUTERSDL_H_INCLUDED

@@ -102,7 +102,7 @@
 //* Add in teleport stone functionality
 //* Input all boss quips and NPC text
 //* Add in move upgrader fully
-//* Add custom keymapping
+//* Add config menu (replace HELP option?)
 
 int main(int argc, char* args[])
 {
@@ -110,7 +110,7 @@ int main(int argc, char* args[])
 	int succeeded = init();
 	if (!succeeded)
     {
-
+        loadPlayerData(&player, SAVE_FILE_NAME, false);
         int selection = 0;
         do
         {
@@ -493,24 +493,22 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
             else if(e.type == SDL_KEYDOWN)
             {
                 //Select surfaces based on key press
-                switch(e.key.keysym.sym)
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                 {
-                    case SDLK_w:
-                        if (cursor.y > 5 * TILE_SIZE)
-                            cursor.y -= TILE_SIZE;
-                    break;
+                    if (cursor.y > 5 * TILE_SIZE)
+                        cursor.y -= TILE_SIZE;
+                }
 
-                    case SDLK_s:
-                        if (cursor.y < (options + 4) * TILE_SIZE)
-                            cursor.y += TILE_SIZE;
-                    break;
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                {
+                    if (cursor.y < (options + 4) * TILE_SIZE)
+                        cursor.y += TILE_SIZE;
+                }
 
-                    case SDLK_SPACE:
-                        selection = cursor.y / TILE_SIZE - 4;
-                        quit = true;
-                    break;
-                    default:
-                    break;
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                {
+                    selection = cursor.y / TILE_SIZE - 4;
+                    quit = true;
                 }
             }
         }
