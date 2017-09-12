@@ -7,13 +7,6 @@
 #define checkSKInteract keyStates[SC_INTERACT]
 #define checkSKMenu keyStates[SC_MENU]
 
-#define SCUp SDLK_w
-#define SCDown SDLK_s
-#define SCLeft SDLK_a
-#define SCRight SDLK_d
-#define SCSpace SDLK_SPACE
-#define SCEsc SDLK_ESCAPE
-
 #define TILE_ID_TREE 8
 #define TILE_ID_LAVA 9
 #define TILE_ID_BOULDER 10
@@ -101,6 +94,12 @@ int init()
                     else
                     {
                         srand((unsigned int) time(NULL));
+                        if (checkFile(CONFIG_FILE_NAME, SIZE_OF_SCANCODE_ARRAY))
+                        {
+                            loadConfig(CONFIG_FILE_NAME);
+                        }
+                        else
+                            initConfig(CONFIG_FILE_NAME);
                     }
                 }
             }
@@ -206,13 +205,19 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     {
         player->pickedUpChests[i] = 0;
     }
+    //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
+}
+
+
+void initConfig(char* filePath)
+{
     SC_UP = SDL_SCANCODE_W;
     SC_DOWN = SDL_SCANCODE_S;
     SC_LEFT = SDL_SCANCODE_A;
     SC_RIGHT = SDL_SCANCODE_D;
     SC_INTERACT = SDL_SCANCODE_SPACE;
     SC_MENU = SDL_SCANCODE_ESCAPE;
-    //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
+    saveConfig(filePath);
 }
 
 void loadPlayerData(player* player, char* filePath, bool forceNew)
@@ -258,10 +263,6 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
         {
             player->pickedUpChests[i] = strtol(readLine(filePath, 21 + PLAYER_ITEMS_LIMIT + i, &buffer), NULL, 10);
-        }
-        for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
-        {
-            CUSTOM_SCANCODES[i] = strtol(readLine(filePath, 21 + PLAYER_ITEMS_LIMIT + SIZE_OF_CHEST_ARRAY + i, &buffer), NULL, 10);
         }
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
@@ -386,6 +387,15 @@ void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, c
 	fclose(filePtr);
 }
 
+void loadConfig(char* filePath)
+{
+    char* buffer = "";
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        CUSTOM_SCANCODES[i] = strtol(readLine(filePath, i, &buffer), NULL, 10);
+    }
+}
+
 void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
@@ -507,7 +517,7 @@ bool checkKeyPress(player* playerSprite)
         drawHUD(playerSprite);
         drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
         SDL_Delay(75);
-        if (key == SCSpace)
+        if (key == KCInteract)
             return KEYPRESS_RETURN_TEXTACTION;
         return true;
     }
@@ -598,17 +608,31 @@ void savePlayerData(player* player, char* filePath)
     {
         writeLine(filePath, toString(player->pickedUpChests[i], buffer));
     }
+    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    drawText("Save completed.", 9 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 55 * SCREEN_WIDTH / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+    SDL_RenderPresent(mainRenderer);
+    SDL_Delay(450);
+}
+
+void saveConfig(char* filePath)
+{
+    char* buffer;
+    createFile(filePath);
     writeLine(filePath, toString(SC_UP, buffer));
     writeLine(filePath, toString(SC_DOWN, buffer));
     writeLine(filePath, toString(SC_LEFT, buffer));
     writeLine(filePath, toString(SC_RIGHT, buffer));
     writeLine(filePath, toString(SC_INTERACT, buffer));
     writeLine(filePath, toString(SC_MENU, buffer));
-    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
-    SDL_RenderFillRect(mainRenderer, NULL);
-    drawText("Save completed.", 9 * SCREEN_WIDTH / 64, 30 * SCREEN_HEIGHT / 64, 55 * SCREEN_WIDTH / 64, 34 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
-    SDL_RenderPresent(mainRenderer);
-    SDL_Delay(450);
+    //alternatively, we could iterate through all of CUSTOM_SCANCODES[].
+}
+
+void changeKey(int keyIndex, int newKey, bool isKeyCode)
+{
+    if (isKeyCode)
+        newKey = (int) SDL_GetScancodeFromKey(newKey);
+    CUSTOM_SCANCODES[keyIndex] = newKey;
 }
 
 void closeSDL()
@@ -761,11 +785,4 @@ char* readLine(char* filePath, int lineNum, char** output)
 	fclose(filePtr);
 	return thisLine;
 	}
-}
-
-void changeKey(int keyIndex, int newKey, bool isKeyCode)
-{
-    if (isKeyCode)
-        newKey = (int) SDL_GetScancodeFromKey(newKey);
-    CUSTOM_SCANCODES[keyIndex] = newKey;
 }

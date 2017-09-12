@@ -110,7 +110,6 @@ int main(int argc, char* args[])
 	int succeeded = init();
 	if (!succeeded)
     {
-        loadPlayerData(&player, SAVE_FILE_NAME, false);
         int selection = 0;
         do
         {
@@ -148,6 +147,7 @@ int main(int argc, char* args[])
             }
             printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 10));
             savePlayerData(&player, SAVE_FILE_NAME);
+            saveConfig(CONFIG_FILE_NAME);
         }
         closeSDL();
 	}
@@ -438,7 +438,7 @@ void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect t
     SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 
-int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool showVersion)
+int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
 {
     if (curSelect < 1)
         curSelect = 1;
@@ -460,9 +460,9 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
     drawText(opt2, 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
     drawText(opt3, 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
     drawText(opt4, 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
-    drawText(opt5, 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, !showVersion);
+    drawText(opt5, 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, !isMain);
 
-    if (showVersion)
+    if (isMain)
     {
         char version[12];
         strcpy(version, FULLVERSION_STRING);
@@ -492,7 +492,7 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                //Select surfaces based on key press
+                const Uint8* keyStates = SDL_GetKeyboardState(NULL);
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                 {
                     if (cursor.y > 5 * TILE_SIZE)
@@ -509,6 +509,16 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
                 {
                     selection = cursor.y / TILE_SIZE - 4;
                     quit = true;
+                }
+                if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R])
+                {
+                    SC_UP = SDL_SCANCODE_W;
+                    SC_DOWN = SDL_SCANCODE_S;
+                    SC_LEFT = SDL_SCANCODE_A;
+                    SC_RIGHT = SDL_SCANCODE_D;
+                    SC_INTERACT = SDL_SCANCODE_SPACE;
+                    SC_MENU = SDL_SCANCODE_ESCAPE;
+                    saveConfig(CONFIG_FILE_NAME);
                 }
             }
         }
@@ -592,7 +602,7 @@ int showStats(player* player)
     drawText("S:", 4 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
     drawText("D:", 4 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
 
-    if (waitForKey() == SCEsc)
+    if (waitForKey() == KCMenu)
         exitCode = ANYWHERE_QUIT;
     return exitCode;
 }
@@ -1271,7 +1281,7 @@ bool doBattle(player* player, bool isBoss)
                     {
                         drawTextBox("QUIT WITHOUT USING ALL PTS?        SPACE = YES      ANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
                         SDL_Delay(400);
-                        quit = waitForKey() == SCSpace;
+                        quit = waitForKey() == KCInteract;
                     }
                 }
             }

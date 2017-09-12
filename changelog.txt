@@ -1,4 +1,11 @@
 11 September 2017
+   released version 0.1.11 of SorcerySDL
+
+     Change log:
+        -Added: code for custom keymapping
+        -Added: sorceryConfig.ini; config file to store various settings
+
+11 September 2017
    released version 0.1.10 of SorcerySDL
 
      Change log:

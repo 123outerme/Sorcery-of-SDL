@@ -31,6 +31,7 @@
 #define TILESET_FILE_NAME "SOUVUTU0.png"
 #define MAP_FILE_NAME "maps.bin"
 #define SAVE_FILE_NAME "SAVUVUTU.bin"
+#define CONFIG_FILE_NAME "sorceryConfig.ini"
 #define FONT_FILE_NAME "Px437_ITT_BIOS_X.ttf"
 #define FRAMERATE 60
 #define SCREEN_WIDTH TILE_SIZE * 20
@@ -39,12 +40,12 @@
 #define WIDTH_IN_TILES SCREEN_WIDTH / TILE_SIZE
 #define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
 
-#define SCUp SDLK_w
-#define SCDown SDLK_s
-#define SCLeft SDLK_a
-#define SCRight SDLK_d
-#define SCSpace SDLK_SPACE
-#define SCEsc SDLK_ESCAPE
+#define KCUp SDL_GetKeyFromScancode(SC_UP)
+#define KCDown SDL_GetKeyFromScancode(SC_DOWN)
+#define KCLeft SDL_GetKeyFromScancode(SC_LEFT)
+#define KCRight SDL_GetKeyFromScancode(SC_RIGHT)
+#define KCInteract SDL_GetKeyFromScancode(SC_INTERACT)
+#define KCMenu SDL_GetKeyFromScancode(SC_MENU)
 
 #define printBool(x) x == true ? "true" : "false"
 #define iPart(x) ((int) x)
@@ -118,7 +119,7 @@ void drawGame(player* player, char* textInput);  //draws overworld stuff
 int mainLoop(player* playerSprite);  //does main overworld loop
 void drawHUD(player* player);  //draws HUD in overworld
 void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect);  //draws the NPC-style text box
-int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool showVersion);  //menu
+int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //menu
 int aWallOfText(char* title, char* text, bool showHelpInfo);  //draws a wall of text for the player to read & dismiss
 int showStats(player* player);  //opens stats display
 int showItems(player* player);  //shows list of player items
@@ -133,9 +134,11 @@ bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text
 void initSprite(sprite* spr, int x, int y, int size, int tileIndex, entityType type);  //initializes a new sprite
 void initPlayer(player* player, int x, int y, int size, int tileIndex);  //initializes a new player
+void initConfig(char* filePath);  //resets config data
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void inputName(player* player);  //gets the name of the sprite by prompting player
 void loadMapFile();  //loads a map from a file
+void loadConfig(char* filePath);  //loads config data into the public variables
 void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap to the screen
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile to the screen
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
@@ -143,6 +146,8 @@ bool checkKeyPress();  //checks if a key was pressed and acts accordingly if so
 bool checkCollision();  //checks if player has collided with a solid tile
 SDL_Scancode waitForKey();  //waits for a player to press any key, returns the key that was pressed
 void savePlayerData(player* player, char* filePath);  //saves sprite data to a file
+void saveConfig(char* filePath);  //saves config data to the file
+void changeKey(int keyIndex, int newKey, bool isKeyCode);  //changes the key read from CUSTOM_SCANCODES[keyIndex] to newKey. Converts from keycode, if last arg evals to true.
 void closeSDL();  //closes out SDL and necessary game systems
 
 char* toString(int value, char * result);  //turns inputted int into a string
@@ -155,7 +160,6 @@ int createFile(char* filePath);  //creates a file if it doesn't exist; if it doe
 bool checkFile(char* filePath, int desiredLines);  //checks if a file exists
 int writeLine(char* filePath, char* stuff);  //appends a line to a file
 char* readLine(char* filePath, int lineNum, char** output);  //reads a certain line from a file
-void changeKey(int keyIndex, int newKey, bool isKeyCode);  //changes the key read from CUSTOM_SCANCODES[keyIndex] to newKey. Converts from keycode, if last arg evals to true.
 
 
 SDL_Window* mainWindow;
