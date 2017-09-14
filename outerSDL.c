@@ -205,6 +205,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     {
         player->pickedUpChests[i] = 0;
     }
+    aWallOfText("Intro", "A long time ago, the nameless One of the Prophesy made a choice that would seemingly change everything. Sadly, a new King came to power, and Uvutu crumbled. The One lived to have a child, whom you are. Save your homeland.", false);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
