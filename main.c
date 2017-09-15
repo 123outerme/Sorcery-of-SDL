@@ -286,7 +286,7 @@ If M=8.32
                 double arrayOfMaps[SIZE_OF_BOSS_ARRAY] = ARRAY_OF_BOSS_IDS;
                 found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
             }
-            if (found != -1 && playerSprite->beatenBosses < playerSprite->worldNum)
+            if (found != -1 && playerSprite->beatenBosses / 10 < playerSprite->worldNum)
             {
                 if (found == 0)
                 {
@@ -330,7 +330,7 @@ If M=8.32
                     x *= -14;
                     y *= -7;
                 }
-                if (found == 7)
+                if (found == 7 && fPart((player->beatenBosses / 10.0)) == .1)
                 {
                     index = TILE_ID_DREGOH;
                     x *= -7;
@@ -1299,6 +1299,7 @@ bool doBattle(player* player, bool isBoss)
                 pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1);
             else
                 player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
+	    player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen = 2.3); // <-reg boss beaten = +10, world 7 alt boss = +1
         }
     }
     return won || run;
