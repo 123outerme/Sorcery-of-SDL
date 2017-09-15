@@ -450,7 +450,7 @@ bool checkKeyPress(player* playerSprite)
         if (checkSKRight)
             playerSprite->flip = SDL_FLIP_NONE;
         int thisTile = tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (9 + 5 * (playerSprite->worldNum < (double) playerSprite->beatenBosses - 1)) && playerSprite->mapScreen > 1.0)
+        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (9 + 5 * (playerSprite->worldNum <= playerSprite->beatenBosses / 10) && playerSprite->mapScreen > 1.0)
             battleFlag = true;
         if (thisTile == TILE_ID_DOOR || !playerSprite->spr.x || playerSprite->spr.y == TILE_SIZE || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
         {
