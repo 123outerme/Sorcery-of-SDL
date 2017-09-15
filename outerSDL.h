@@ -154,7 +154,7 @@ char* toString(int value, char * result);  //turns inputted int into a string
 int digits(int num);  //gets the number of digits an int has
 int pwrOf10(int power);  //gets 10 ^ input
 void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls its pointer.
-char* removeChar(char input[], char removing, size_t length);  //removes the the first specified character from a string
+char* removeChar(char input[], char removing, size_t length, bool foreToBack);  //removes the the first specified character from a string
 int checkArrayForVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float
 int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
 bool checkFile(char* filePath, int desiredLines);  //checks if a file exists

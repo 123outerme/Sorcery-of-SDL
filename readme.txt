@@ -1,10 +1,10 @@
 > Building / Running <
-To build on Windows, first:
+To build, first:
 Unzip this file.
-Use a Command Prompt window to navigate to the location you just unzipped to, and if you're on Windows,
-run a_WindowsBuild.bat. If you're on Linux, run a_LinuxBuild.sh. To run on Windows, you can double
-click on the .exe file you just built or the shortcut on the Desktop. To run on Linux, you can execute
-the file you made, or type in sourun in bash from anywhere and it'll launch.
+Use a Command Prompt window to navigate to the location you just unzipped to and into the subfolder build.
+If you're on Windows, run a_WindowsBuild.bat. If you're on Linux, run a_LinuxBuild.sh. To run on
+Windows, you can double click on the .exe file you just built or the shortcut on the Desktop. To run
+on Linux, you can execute the file you made, or type in sourun in bash from anywhere and it'll launch.
 
 > Legal Stuff <
 The font file used is a slightly modified version of a font that is © 2016 VileR,

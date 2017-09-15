@@ -1,3 +1,10 @@
+15 September 2017
+   released version 0.1.1 of SorcerySDL
+
+     Change log:
+        -Added: Extra param to removeChar that allows it to search and remove chars back-to-front or front-to-back
+        -Added: Used extra param to remove any spaces before player name
+
 14 September 2017
    released version 0.1.11 of SorcerySDL
 

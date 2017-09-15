@@ -231,7 +231,7 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 	{
 	    char* buffer;
         strcpy(player->name, readLine(filePath, 0, &buffer));
-        strcpy(player->name, removeChar(player->name, '\n', PLAYER_NAME_LIMIT + 1));
+        strcpy(player->name, removeChar(player->name, '\n', PLAYER_NAME_LIMIT + 1, false));
         player->spr.x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
         player->spr.y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
         player->spr.w = TILE_SIZE;
@@ -341,8 +341,12 @@ void inputName(player* player)
             SDL_RenderPresent(mainRenderer);
         }
     }
-    char* buffer = removeChar(playerName, ' ', 7);
+    char* buffer = removeChar(playerName, ' ', 7, true);
+    printf("%s\n", buffer);
+    buffer = removeChar(buffer, ' ', strlen(buffer), false);
     strcpy(playerName, buffer);
+    if (!strlen(playerName))
+        hasTyped = false;
     if (!hasTyped)
         strcpy(playerName, "STEVO\0");
     strcpy(player->name, playerName);
@@ -689,22 +693,40 @@ void freeThisMem(int ** x)
 	*x = NULL;
 }
 
-char* removeChar(char input[], char removing, size_t length)
+char* removeChar(char input[], char removing, size_t length, bool foreToBack)
 {
-    static char sansNewline[255];
-    int i;
+    static char sansChar[255];
+    int i, start, finish;
     length = strlen(input);
-    for(i = length - 1; i >= 0; i--)
+    if (foreToBack)
     {
-        if (input[i] != removing)
-            break;
-        //printf("%c\n", input[i]);
+        for(i = 0; i < input; i++)
+        {
+            //printf("%c at %d\n", input[i], i);
+            if (input[i] != removing)
+                break;
+        }
+        if (i == 0)
+            return input;
+        int y = 0;
+        for(int x = i; x < length; x++)
+            sansChar[y++] = input[x];
+        sansChar[length] = '\0';
     }
-    for(int x = 0; x < i + 1; x++)
-        sansNewline[x] = input[x];
-    sansNewline[i + 1 < length ? i + 1 : length] = '\0';
-    //printf("%s at %d\n", sansNewline, sansNewline);
-    return sansNewline;
+    else
+    {
+        for(i = length - 1; i >= 0; i--)
+        {
+            if (input[i] != removing)
+                break;
+            //printf("%c\n", input[i]);
+        }
+        for(int x = 0; x < i + 1; x++)
+            sansChar[x] = input[x];
+        sansChar[i + 1 < length ? i + 1 : length] = '\0';
+    }
+    //printf("%s at %d\n", sansChar, sansChar);'
+    return sansChar;
 }
 
 int checkArrayForVal(double value, double* array, size_t arraySize)
