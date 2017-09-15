@@ -110,7 +110,7 @@
 //* Add in move upgrader fully
 //* Add config menu (replace HELP option?)
 
-int main(int argc, char* args[])
+int main(int argc, char* argv[])
 {
 	player player;
 	int succeeded = init();

@@ -12,7 +12,7 @@
   error code 4: TTF font failed to load
   error code 5: tilemap failed to load
 */
-
+#define SDL_MAIN_HANDLED 1
 #include "SDL/SDL.h"       //This is included because it's an SDL2 program... duh
 #include "SDL/SDL_image.h" //This is included so we can use PNGs.
 #include "SDL/SDL_ttf.h"   //This is included for text stuff
