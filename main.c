@@ -83,7 +83,7 @@
 
 #define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 10, 14, 6, 2, 1, 5, 6, 4, 16, 5, 18, 3, 3}
 #define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 8, 2, 9, 5, 12, 4, 5, 10, 5, 7, 7, 10, 10}
-#define SIZE_OF_CHESTCOORD_ARRAY 20
+#define SIZE_OF_CHESTCOORD_ARRAY 21
 
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
@@ -334,7 +334,7 @@ int mainLoop(player* playerSprite)
         }
         if (pickFromLocation)
         {
-            //all NPC text; maybe store the desired values in 4 seperate arrays and iterate instead of this?s
+            //all NPC text; maybe store the desired values in 4 seperate arrays and iterate instead of this?
             printf("playerSprite->worldNum == %d && playerSprite->lastScreen == %f && playerSprite->overworldX / TILE_SIZE == %d && playerSprite->overworldY / TILE_SIZE == %d\ntextLocation = %d", playerSprite->worldNum, playerSprite->lastScreen, playerSprite->overworldX / TILE_SIZE, playerSprite->overworldY / TILE_SIZE, textLocation);
             if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 9)
                 textLocation = 0;
