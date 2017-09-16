@@ -185,7 +185,7 @@ int showSettings()
 void configureKeys()
 {
     sprite cursor;
-    SDL_Color textColor = (SDL_Color){24, 162, 239};
+    SDL_Color textColor = (SDL_Color){24, 195, 247};
     SDL_Color bgColor = (SDL_Color){16, 32, 140};
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
     int selection = -1;
@@ -381,9 +381,9 @@ int mainLoop(player* playerSprite)
                 textLocation = 2;
             if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 32)
                 textLocation = 3;
-            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 6)
+            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 6)
                 textLocation = 4;
-            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
+            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 10)
                 textLocation = 5;
             if (playerSprite->worldNum == 3 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 8 && playerSprite->overworldY / TILE_SIZE == 5)
                 textLocation = 6;
@@ -822,14 +822,88 @@ int showItems(player* player)
         if (itemIndex >= 0)
         {
             int itemCode = player->items[itemIndex];
-            if (!(itemCode / 10 == TILE_ID_STONE))
+            if (itemCode / 10 != TILE_ID_STONE)
             {
                 quit = false;
                 player->items[itemIndex] = 0;
             }
             else
             {
-                //do custom teleport menu here
+                sprite cursor;
+                SDL_Color textColor = (SDL_Color){16, 32, 140};
+                SDL_Color bgColor = (SDL_Color){181, 182, 173};
+                initSprite(&cursor, TILE_SIZE, 4 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
+
+                SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                //foreground text
+                drawText("TELEPORT TO WHERE?", 1 * TILE_SIZE + TILE_SIZE / 4, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 51 * SCREEN_HEIGHT / 64, textColor, false);
+
+                drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, 4 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 4) * TILE_SIZE, textColor, false);
+                drawText("PLAIN PLAINS", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+                if (player->beatenBosses > 0)
+                    drawText("DRAGON'S DEN", 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+                if (player->beatenBosses > 10)
+                    drawText("WORRY QUARRY", 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+                if (player->beatenBosses > 20)
+                    drawText("WEST POLE", 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+                if (player->beatenBosses > 30)
+                    drawText("RIVER LAKE", 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
+                if (player->beatenBosses > 40)
+                    drawText("UNDER CITY", 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
+                if (player->beatenBosses > 60)
+                    drawText("UPPER CITY", 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, false);
+                if (player->beatenBosses > 71)
+                    drawText("BATTLEGROUND", 2 * TILE_SIZE + TILE_SIZE / 4, 12 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 12) * TILE_SIZE, textColor, false);
+
+                SDL_Event e;
+                bool quit = false;
+                int tpSelection = -1;
+                //While application is running
+                while(!quit)
+                {
+                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+                    //Handle events on queue
+                    while(SDL_PollEvent(&e) != 0)
+                    {
+                        //User requests quit
+                        if(e.type == SDL_QUIT)
+                        {
+                            quit = true;
+                            tpSelection = 4;
+                        }
+                        //User presses a key
+                        else if(e.type == SDL_KEYDOWN)
+                        {
+                            if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                            {
+                                if (cursor.y > 4 * TILE_SIZE)
+                                    cursor.y -= TILE_SIZE;
+                            }
+
+                            if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                            {
+                                if (cursor.y < (player->beatenBosses / 10 + 6) * TILE_SIZE)
+                                    cursor.y += TILE_SIZE;
+                            }
+
+                            if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                            {
+                                tpSelection = cursor.y / TILE_SIZE - 3;
+                                quit = true;
+                            }
+                        }
+                    }
+                    drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+                    SDL_RenderPresent(mainRenderer);
+                }
+                if (tpSelection > 1)
+                {
+                    player->worldNum = tpSelection - 1;
+                    player->mapScreen = 10;
+                    player->spr.x = 4 * TILE_SIZE;
+                    player->spr.y = 6 * TILE_SIZE;
+                }
             }
             if (itemCode / 10 == TILE_ID_POTION)
             {
@@ -994,20 +1068,20 @@ bool doBattle(player* player, bool isBoss)
         {
             char* textBoxText = "error\0";
             if (menuLevel == 1)
-                textBoxText = "Up: ATTACK         Down: BLOCK     Menu: RUN";
+                textBoxText = "Up:   ATTACK       Down: BLOCK     Menu: RUN";
             if (menuLevel == 2)
             {
                 char thisAttack[6] = "     \0";
                 char input[89];
-                strcpy(input, "Up: ");
+                strcpy(input, "Up:    ");
                 strcat(input, strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5));
-                strcat(input, "          Left: ");
+                strcat(input, "          Left:  ");
                 strcat(input, player->move2 ? strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5) : "     ");
-                strcat(input, "        Down: ");
+                strcat(input, "        Down:  ");
                 strcat(input, player->move3 ? strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5) : "     ");
                 strcat(input, "        Right: ");
                 strcat(input, player->move4 ? strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5) : "     ");
-                strcat(input, "        Menu: BACK\0");
+                strcat(input, "        Menu:  BACK\0");
                 //3 + 5 chars + 11 spaces --> 88 total chars
                 //don't forget move1 -> w, move -> a, move3 ->s, move4 -> d
                 textBoxText = input;
@@ -1198,7 +1272,7 @@ bool doBattle(player* player, bool isBoss)
                     strcpy(textBoxText, enemyName);
                     strcat(textBoxText, " USED ");
                     char input[6];
-                    strncpy(input, (allAttacks + (enemyIndex - (enemyIndex % 3 == 0) - 1) * 5), 5);
+                    strncpy(input, (allAttacks + (enemyIndex - (enemyIndex / 3) - 1) * 5), 5);
                     input[5] = '\0';
                     strcat(textBoxText, input);
                     enemyDMG = (int) (6 + (pow((double) enemyIndex, 1.13 + .05 * (enemyIndex % 3 == 0))));
