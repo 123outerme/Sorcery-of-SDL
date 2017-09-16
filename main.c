@@ -122,7 +122,7 @@
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
-//* Add in teleport stone functionality
+//* Add in ending text, forcing a save, and returning to overworld to battle code
 
 int main(int argc, char* argv[])
 {
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
                 }
 
             }
-            printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
+            //printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
             savePlayerData(&player, SAVE_FILE_NAME);
             saveConfig(CONFIG_FILE_NAME);
         }
@@ -222,6 +222,7 @@ void configureKeys()
         strcpy(firstText, "MENU: ");
         drawText(strcat(firstText, toString(SC_MENU, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
         drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, true);
+        drawText("Default is W, S,   A, D, Space, Esc", 1 * TILE_SIZE + TILE_SIZE / 4, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, true);
         SDL_Event e;
         bool quit = false;
         //While application is running

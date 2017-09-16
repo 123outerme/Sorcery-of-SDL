@@ -35,13 +35,13 @@ int init()
     int imgFlags = IMG_INIT_PNG;
     if( !( IMG_Init( imgFlags ) & imgFlags ) )
     {
-        printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+        printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
          done = -1;
     }
     //Initialize SDL_ttf
     if( TTF_Init() == -1 )
     {
-        printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
+        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
         done = -2;
     }
     mainWindow = NULL;
@@ -77,10 +77,10 @@ int init()
                 SDL_RenderSetLogicalSize(mainRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
                 SDL_RenderClear(mainRenderer);
                 loadTTFont(FONT_FILE_NAME, &mainFont, 48);
-                loadTTFont(FONT_FILE_NAME, &smallFont, 20);
-                if (!mainFont || !smallFont)
+                //loadTTFont(FONT_FILE_NAME, &smallFont, 20);
+                if (!mainFont)
                 {
-                    printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "smallFont", TTF_GetError());
+                    printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "???", TTF_GetError());
                     return -3;
                 }
                 else
@@ -145,8 +145,8 @@ int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, 
     SDL_Surface* txtSurface;
     if (isBlended)
         txtSurface = TTF_RenderText_Blended_Wrapped(mainFont, text, color, maxW);
-    else
-        txtSurface = TTF_RenderText(smallFont, text, color, ((SDL_Color) {181, 182, 173}));
+//    else
+//        txtSurface = TTF_RenderText(smallFont, text, color, ((SDL_Color) {181, 182, 173}));
     *dest = SDL_CreateTextureFromSurface(mainRenderer, txtSurface);
     if (!*dest)
     {
@@ -642,7 +642,7 @@ void changeKey(int keyIndex, int newKey, bool isKeyCode)
 void closeSDL()
 {
     TTF_CloseFont(mainFont);
-    TTF_CloseFont(smallFont);
+    //TTF_CloseFont(smallFont);
 	SDL_DestroyTexture(tilesetTexture);
 	SDL_FreeSurface(mainScreen);
     SDL_DestroyWindow(mainWindow);

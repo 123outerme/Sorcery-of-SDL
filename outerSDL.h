@@ -171,7 +171,7 @@ SDL_Texture* tilesetTexture;
 SDL_Renderer* mainRenderer;
 bool textBoxOn;
 TTF_Font* mainFont;
-TTF_Font* smallFont;
+//TTF_Font* smallFont;
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
