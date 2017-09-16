@@ -75,11 +75,8 @@
 #define ARRAY_OF_UPGRADER_IDS {1.22, 3.1, 4.22, 5.1, 6.32, 7.1, 8.1}
 #define SIZE_OF_UPGRADER_ARRAY 7
 
-#define MATRIX_OF_HOUSE_IDS {{}{}}
-#define Y_OF_HOUSE_MATRIX 2
-#define X_OF_HOUSE_MATRIX 0
-
-#define ALL_NPC_TEXT_ARRAY {}
+#define ALL_NPC_TEXT_ARRAY {"BLOCK REDUCES YOUR DMG A BIT, BUT HALVES ENEMY DMG.", "A CRITICAL IS SHOWN WITH RED, AND A WEAKNESS WITH YELLOW!", "I SAW AN APEMAN DEEP IN THE WOODS.", "I FOUND THE APEMAN FIRST. HE'S MINE! BUT HE'S ANGRY.", "THESE CREATURES ARE WEAK TO WATER!", "SOME SAY THESE MONSTERS FIGHT US BECAUSE THEY SERVE THE DRAGONS KING.", "IF YOU GROW SOME WEEDS, THEY'LL BREAK THROUGH THE MONSTERS.", "MAN, IF I HAD A FIRE, I COULD MELT THE SNOW HERE!", "I KNEW I SHOULD'VE MOVED TO THE EAST POLE. THEY HAVE NO MONSTERS.", "WE SHOULD PUT SOME PLANTS AROUND HERE TO HOLD THE SAND IN PLACE.", "THE MONSTER OF THE SEA HAS TURNED THE FISH AGAINST US! BUT WHO WOKE HIM?", "THIS IS MY MANSION. SINCE IT'S BY THE WATER, IT WAS VERY EXPENSIVE. BUT NOW IF I GO OUTSIDE, I'LL GET HURT.", "WE HAVE TO LIVE HERE NOW. IT'S BECAUSE OF THAT DARN WORM! HE SAYS HE SERVES THE GREEDY DRAGONS KING.", "MAYBE IF WE COULD GET RUNNING WATER, WE COULD SCARE THESE DIRTY MONSTERS.", "THE GENERAL HAS A MESSAGE FOR YOU: EITHER FIGHT AND THE KING WILL KILL YOUR PEOPLE, or JOIN HIM IN HIS ARMORY.", "HERE MONSTERS DON'T ATTACK US. ONLY OUR THOUGHTS OF GREED DO. THEY HATE DIRTY ATTACKS.", "THIS IS A REALLY NICE PLACE TO LIVE. EXCEPT FOR THE STRICT LAWS.", "AAH! WE'RE UNDER ATTACK! THE DRAGONS KING IS HERE! HELP US, "}
+#define SIZE_OF_NPC_TEXT_ARRAY 17
 
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
@@ -301,8 +298,8 @@ int mainLoop(player* playerSprite)
     drawHUD(playerSprite);
     sprite entity;
     entityType type = type_na;
-    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127, found = -1;
-    bool drawEntityFlag = true;
+    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127, found = -1, textLocation = 0;
+    bool drawEntityFlag = true, pickFromLocation = true;
     if (!playerSprite->mapScreen)
     {
         type = type_npc;
@@ -322,11 +319,82 @@ int mainLoop(player* playerSprite)
             index = TILE_ID_BESERKERJ;
             textInput = "PRESS 2nd TO UPGRADE A MOVE. PLEASE PROGRAM BETTER DIALOGUE FOR ME.";
             //do other stuff to ensure upgrader is fully functional
+            pickFromLocation = false;
         }
         if (playerSprite->overworldX == 192 && playerSprite->overworldY == 240)
         {
             index = TILE_ID_INNKEEPER;
             textInput = "ARE YOU TIRED? REST HERE.       (HEALED)";
+            pickFromLocation = false;
+        }
+        /*If M+C=1.1 and D=48.08
+3
+If M+C=1.1 and D=96.032
+4
+If M+C=1.1 and D=128.064
+5
+If M+C=1.32
+6
+If M+C=2.1 and D=96.056
+7
+If M+C=2.1 and D=96.088
+8
+If M+C=3.1 and D=64.048
+9
+
+If M+C=4.1 and D=112.056
+10
+If M+C=4.1 and D=120.032
+11
+If M+C=5.1 and D=88.056
+12
+If M+C=5.1 and D=136.056
+13
+If M+C=5.21 and D=32.056
+14
+If M+C=6.1 and D=88.064
+15
+If M+C=6.1 and D=48.088
+16
+If M+C=7.12
+17
+If M+C=7.1 and D=40.096
+18
+If M+C=7.1 and D=104.096
+19
+If M+C=8.1 and D=88.056
+20
+--------
+^ starts at 3
+V starts at 0
+
+M+C:
+M = playerSprite->worldNum
+C = playerSprite->lastScreen / 10
+
+D:
+x val: divide by 8
+y val: divide by 8, subtract 1
+        */
+        if (pickFromLocation)
+        {
+            printf("playerSprite->worldNum == %d && playerSprite->lastScreen == %f && playerSprite->overworldX / TILE_SIZE == %d && playerSprite->overworldY / TILE_SIZE == %d\ntextLocation = %d", playerSprite->worldNum, playerSprite->lastScreen, playerSprite->overworldX / TILE_SIZE, playerSprite->overworldY / TILE_SIZE, textLocation);
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 9)
+                textLocation = 0;
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 3)
+                textLocation = 1;
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 16 && playerSprite->overworldY / TILE_SIZE == 7)
+                textLocation = 2;
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 3.2)
+                textLocation = 3;
+            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 6)
+                textLocation = 4;
+            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
+                textLocation = 5;
+            if (playerSprite->worldNum == 3 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 8 && playerSprite->overworldY / TILE_SIZE == 5)
+                textLocation = 6;
+            char* stringArray[] = ALL_NPC_TEXT_ARRAY;
+            textInput = stringArray[textLocation];
         }
     }
     else
@@ -337,19 +405,7 @@ int mainLoop(player* playerSprite)
         }
         if (found != -1)
         {
-            /*If M=1.2
-72.056
-If M=1.21
-136.088
-If M=2.11
-128.088
-If M=2.23
-64.088
-If M=3.2
-72.088
-If M=3.32
-24.088
-If M=4.11
+            /*If M=4.11
 104.016
 If M=4.12
 24.04
@@ -390,6 +446,26 @@ If M=8.32
             if (found == 1)
             {
                 x *= -17;
+                y *= -11;
+            }
+            if (found == 2)
+            {
+                x *= -16;
+                y *= -11;
+            }
+            if (found == 3)
+            {
+                x *= -8;
+                y *= -11;
+            }
+            if (found == 4)
+            {
+                x *= -9;
+                y *= -11;
+            }
+            if (found == 5)
+            {
+                x *= -3;
                 y *= -11;
             }
             if (playerSprite->pickedUpChests[found])
