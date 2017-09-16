@@ -115,6 +115,9 @@ typedef struct {
     //need to add list of open chests
 } player;
 
+int showSettings();  //opens settings menu
+void configureKeys();  //opens keybinding menu
+void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int selection);  //gets a new key
 void drawGame(player* player, char* textInput);  //draws overworld stuff
 int mainLoop(player* playerSprite);  //does main overworld loop
 void drawHUD(player* player);  //draws HUD in overworld
@@ -144,7 +147,7 @@ void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 bool checkKeyPress();  //checks if a key was pressed and acts accordingly if so
 bool checkCollision();  //checks if player has collided with a solid tile
-SDL_Scancode waitForKey();  //waits for a player to press any key, returns the key that was pressed
+SDL_Keycode waitForKey();  //waits for a player to press any key, returns the key that was pressed
 void savePlayerData(player* player, char* filePath);  //saves sprite data to a file
 void saveConfig(char* filePath);  //saves config data to the file
 void changeKey(int keyIndex, int newKey, bool isKeyCode);  //changes the key read from CUSTOM_SCANCODES[keyIndex] to newKey. Converts from keycode, if last arg evals to true.
@@ -178,6 +181,5 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_RIGHT CUSTOM_SCANCODES[3]
 #define SC_INTERACT CUSTOM_SCANCODES[4]
 #define SC_MENU CUSTOM_SCANCODES[5]
-
 
 #endif // OUTERSDL_H_INCLUDED

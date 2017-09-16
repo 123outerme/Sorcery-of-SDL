@@ -1,4 +1,10 @@
 15 September 2017
+   released version 0.0.0 of SorcerySDL
+
+     Change log:
+        -Added: Full custom input code
+
+15 September 2017
    released version 0.1.1 of SorcerySDL
 
      Change log:

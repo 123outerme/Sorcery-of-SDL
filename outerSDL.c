@@ -342,7 +342,6 @@ void inputName(player* player)
         }
     }
     char* buffer = removeChar(playerName, ' ', 7, true);
-    printf("%s\n", buffer);
     buffer = removeChar(buffer, ' ', strlen(buffer), false);
     strcpy(playerName, buffer);
     if (!strlen(playerName))
@@ -454,7 +453,7 @@ bool checkKeyPress(player* playerSprite)
         if (checkSKRight)
             playerSprite->flip = SDL_FLIP_NONE;
         int thisTile = tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (9 + 5 * (playerSprite->worldNum <= playerSprite->beatenBosses / 10) && playerSprite->mapScreen > 1.0))
+        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (playerSprite->worldNum <= playerSprite->beatenBosses / 10 ? 14 : 9) && playerSprite->mapScreen > 1.0)
             battleFlag = true;
         if (thisTile == TILE_ID_DOOR || !playerSprite->spr.x || playerSprite->spr.y == TILE_SIZE || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
         {
@@ -516,7 +515,7 @@ bool checkKeyPress(player* playerSprite)
     }
     if (playerSprite->movementLocked)
     {
-        SDL_Scancode key = waitForKey();
+        SDL_Keycode key = waitForKey();
         playerSprite->movementLocked = false;
         textBoxOn = false;
         drawHUD(playerSprite);
@@ -558,7 +557,7 @@ bool checkCollision(player* player, int tileID, int moveX, int moveY)
     return false;
 }
 
-SDL_Scancode waitForKey()
+SDL_Keycode waitForKey()
 {
     SDL_Event e;
     bool quit = false;

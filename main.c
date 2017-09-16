@@ -48,7 +48,7 @@
 
 #define MENU_NEW_SAVE 1
 #define MENU_LOAD_SAVE 2
-#define MENU_HELP 3
+#define MENU_SETTINGS 3
 #define MENU_QUIT 4
 
 #define LOOP_QUIT 0
@@ -108,7 +108,7 @@
 //* Add in teleport stone functionality
 //* Input all boss quips and NPC text
 //* Add in move upgrader fully
-//* Add config menu (replace HELP option?)
+//* Add all chests for detection
 
 int main(int argc, char* argv[])
 {
@@ -119,12 +119,12 @@ int main(int argc, char* argv[])
         int selection = 0;
         do
         {
-            selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "HELP", "QUIT", " ", 4, selection, MAIN_MENU_PALETTE, false, true);
-            if (selection == MENU_HELP)
-                selection = aWallOfText("Sorcery of Uvutu", "^<V> to move. Use ESC to enter menu. Spacebar to talk to people. Spacebar in the Menu to select an option. Critical Hits are marked by a RED X, and Weakness by a YELLOW +. See the README.", true);
+            selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "SETTINGS", "QUIT", " ", 4, selection, MAIN_MENU_PALETTE, false, true);
+            if (selection == MENU_SETTINGS)
+                selection = showSettings();
         }
-        while (selection == MENU_HELP);
-        if (selection < MENU_HELP && selection != ANYWHERE_QUIT)
+        while (selection == MENU_SETTINGS);
+        if (selection < MENU_SETTINGS && selection != ANYWHERE_QUIT)
         {
             succeeded = startGame(&player, selection == MENU_NEW_SAVE);
             int loopCode = LOOP_GOTO_MENU;
@@ -158,6 +158,122 @@ int main(int argc, char* argv[])
         closeSDL();
 	}
 	return succeeded;
+}
+
+int showSettings()
+{
+    int selection = 1;
+    while(selection != 3 && selection != -1)
+    {
+        selection = aMenu("SETTINGS", "CONFIGURE KEYS", "HELP", "BACK", " ", " ", 3, 1, MAIN_MENU_PALETTE, false, false);
+        if (selection == 2)
+            aWallOfText("Sorcery of Uvutu", "^<V> to move. Use ESC to enter menu. Spacebar to talk to people. Spacebar in the Menu to select an option. Critical Hits are marked by a RED X, and Weakness by a YELLOW +. See the README.", true);
+        if (selection == 1)
+            configureKeys();
+    }
+    return MENU_SETTINGS;
+}
+
+void configureKeys()
+{
+    sprite cursor;
+    SDL_Color textColor = (SDL_Color){24, 162, 239};
+    SDL_Color bgColor = (SDL_Color){16, 32, 140};
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
+    int selection = -1;
+    while(selection != 7)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        //foreground text
+        drawText("CONFIGURE KEYS", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, textColor, false);
+
+        char* buffer = "";
+        char firstText[99];
+        strcpy(firstText, "UP: ");
+        drawText(strcat(firstText, toString(SC_UP, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+
+        strcpy(firstText, "DOWN: ");
+        drawText(strcat(firstText, toString(SC_DOWN, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+
+        strcpy(firstText, "LEFT: ");
+        drawText(strcat(firstText, toString(SC_LEFT, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+
+        strcpy(firstText, "RIGHT: ");
+        drawText(strcat(firstText, toString(SC_RIGHT, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+
+        strcpy(firstText, "CONFIRM: ");
+        drawText(strcat(firstText, toString(SC_INTERACT, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
+
+        strcpy(firstText, "MENU: ");
+        drawText(strcat(firstText, toString(SC_MENU, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
+        drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, true);
+        SDL_Event e;
+        bool quit = false;
+        //While application is running
+        while(!quit)
+        {
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+            //Handle events on queue
+            while(SDL_PollEvent(&e) != 0)
+            {
+                //User requests quit
+                if(e.type == SDL_QUIT)
+                {
+                    quit = true;
+                    selection = 7;
+                }
+                //User presses a key
+                else if(e.type == SDL_KEYDOWN)
+                {
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                    {
+                        if (cursor.y > 5 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                    {
+                        if (cursor.y < 11 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                    {
+                        selection = cursor.y / TILE_SIZE - 4;
+                        quit = true;
+                    }
+                }
+            }
+            drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+            SDL_RenderPresent(mainRenderer);
+        }
+        if (selection != 7)
+        {
+            char* keyName[6] = {"UP", "DOWN", "LEFT", "RIGHT", "CONFIRM", "MENU"};
+            char titleText[] = "PRESS A KEY FOR ";
+            strcat(titleText, keyName[selection - 1]);
+            getNewKey(titleText, bgColor, textColor, selection - 1);
+        }
+        else
+            saveConfig(CONFIG_FILE_NAME);
+    }
+}
+
+void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int selection)
+{
+    SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    drawText(titleText, .5 * TILE_SIZE, 5 * SCREEN_HEIGHT / 64, (WIDTH_IN_TILES - .5) * TILE_SIZE, (HEIGHT_IN_TILES - 4) * TILE_SIZE, textColor, true);
+    SDL_Keycode kc = waitForKey();
+    bool conflict= false;
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        if (CUSTOM_SCANCODES[i] == SDL_GetScancodeFromKey(kc))
+            conflict = true;
+    }
+    if (!conflict)
+        CUSTOM_SCANCODES[selection] = SDL_GetScancodeFromKey(kc);
 }
 
 void drawGame(player* player, char* textInput)
@@ -548,7 +664,7 @@ int aWallOfText(char* title, char* text, bool showHelpInfo)
         drawText("By Stephen Policelli", 0, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
 
     waitForKey();
-    return MENU_HELP;
+    return MENU_SETTINGS;
 }
 
 int showStats(player* player)
@@ -872,7 +988,7 @@ bool doBattle(player* player, bool isBoss)
             if (menuLevel == 1)
             {
                 char* buffer = "";
-                textBoxText = "W: ATTACK          S: BLOCK       LSHIFT: RUN";
+                textBoxText = "Up: ATTACK         Down: BLOCK     Menu: RUN";
                 drawTile(player->spr.tileIndex, 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                 drawTile(enemy.tileIndex, enemy.x, enemy.y, enemy.w, SDL_FLIP_NONE);
                 drawTextBox(player->name, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE});
@@ -888,15 +1004,15 @@ bool doBattle(player* player, bool isBoss)
             {
                 char thisAttack[6] = "     \0";
                 char input[89];
-                strcpy(input, "W: ");
+                strcpy(input, "Up: ");
                 strcat(input, strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5));
-                strcat(input, "           A: ");
+                strcat(input, "          Left: ");
                 strcat(input, player->move2 ? strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5) : "     ");
-                strcat(input, "           S: ");
+                strcat(input, "        Down: ");
                 strcat(input, player->move3 ? strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5) : "     ");
-                strcat(input, "           D: ");
+                strcat(input, "        Right: ");
                 strcat(input, player->move4 ? strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5) : "     ");
-                strcat(input, "           LSHIFT: BACK\0");
+                strcat(input, "        Menu: BACK\0");
                 //3 + 5 chars + 11 spaces --> 88 total chars
                 //don't forget move1 -> w, move -> a, move3 ->s, move4 -> d
                 textBoxText = input;
@@ -921,42 +1037,40 @@ bool doBattle(player* player, bool isBoss)
                     else if(e.type == SDL_KEYDOWN)
                     {
                         //Select surfaces based on key press
-                        switch(e.key.keysym.sym)
+                        if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                         {
-                            case SDLK_w:
-                                exitCode = BATTLE_ACT_CODE_W;
+                            exitCode = BATTLE_ACT_CODE_W;
+                            quit = true;
+                        }
+
+                        if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT))
+                        {
+                            if (menuLevel == 2)
+                            {
+                                exitCode = BATTLE_ACT_CODE_A;
                                 quit = true;
-                            break;
+                            }
+                        }
 
-                            case SDLK_a:
-                                if (menuLevel == 2)
-                                {
-                                    exitCode = BATTLE_ACT_CODE_A;
-                                    quit = true;
-                                }
-                            break;
+                        if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                        {
+                            exitCode = BATTLE_ACT_CODE_S;
+                            quit = true;
+                        }
 
-                            case SDLK_s:
-                                exitCode = BATTLE_ACT_CODE_S;
+                        if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT))
+                        {
+                            if (menuLevel == 2)
+                            {
+                                exitCode = BATTLE_ACT_CODE_D;
                                 quit = true;
-                            break;
+                            }
+                        }
 
-                            case SDLK_d:
-                                if (menuLevel == 2)
-                                {
-                                    exitCode = BATTLE_ACT_CODE_D;
-                                    quit = true;
-                                }
-                            break;
-
-                            case SDLK_LSHIFT:
-                                exitCode = BATTLE_ACT_CODE_LSHIFT;
-                                quit = true;
-                            break;
-
-                            break;
-                            default:
-                            break;
+                        if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_MENU))
+                        {
+                            exitCode = BATTLE_ACT_CODE_LSHIFT;
+                            quit = true;
                         }
                     }
                 }
