@@ -78,6 +78,13 @@
 #define ALL_NPC_TEXT_ARRAY {"BLOCK REDUCES YOUR DMG A BIT, BUT HALVES ENEMY DMG.", "A CRITICAL IS SHOWN WITH RED, AND A WEAKNESS WITH YELLOW!", "I SAW AN APEMAN DEEP IN THE WOODS.", "I FOUND THE APEMAN FIRST. HE'S MINE! BUT HE'S ANGRY.", "THESE CREATURES ARE WEAK TO WATER!", "SOME SAY THESE MONSTERS FIGHT US BECAUSE THEY SERVE THE DRAGONS KING.", "IF YOU GROW SOME WEEDS, THEY'LL BREAK THROUGH THE MONSTERS.", "MAN, IF I HAD A FIRE, I COULD MELT THE SNOW HERE!", "I KNEW I SHOULD'VE MOVED TO THE EAST POLE. THEY HAVE NO MONSTERS.", "WE SHOULD PUT SOME PLANTS AROUND HERE TO HOLD THE SAND IN PLACE.", "THE MONSTER OF THE SEA HAS TURNED THE FISH AGAINST US! BUT WHO WOKE HIM?", "THIS IS MY MANSION. SINCE IT'S BY THE WATER, IT WAS VERY EXPENSIVE. BUT NOW IF I GO OUTSIDE, I'LL GET HURT.", "WE HAVE TO LIVE HERE NOW. IT'S BECAUSE OF THAT DARN WORM! HE SAYS HE SERVES THE GREEDY DRAGONS KING.", "MAYBE IF WE COULD GET RUNNING WATER, WE COULD SCARE THESE DIRTY MONSTERS.", "THE GENERAL HAS A MESSAGE FOR YOU: EITHER FIGHT AND THE KING WILL KILL YOUR PEOPLE, or JOIN HIM IN HIS ARMORY.", "HERE MONSTERS DON'T ATTACK US. ONLY OUR THOUGHTS OF GREED DO. THEY HATE DIRTY ATTACKS.", "THIS IS A REALLY NICE PLACE TO LIVE. EXCEPT FOR THE STRICT LAWS.", "AAH! WE'RE UNDER ATTACK! THE DRAGONS KING IS HERE! HELP US, "}
 #define SIZE_OF_NPC_TEXT_ARRAY 17
 
+#define ALL_BOSS_QUIP_ARRAY {"LEAF ME ALONE! I/WOOD-N'T DO THAT!", "I'M ON FIRE TODAY!/DON'T BE SO/HOT-HEADED!", "DON'T TRY TO BE/STONEFACED. I KNOW/YOU WANT TO RUN!", "I'M A COOL, COLD-/HEARTED CREATURE./ICY YOUR FEAR!" , "GO WITH THE FLOW/DUDE. YOU ARE IN/THE WAKE OF RUIN!", "WRIGGLE ALL YOU/WANT, YOU CAN'T/SQUISH ME!", "So this is your/choice? PREPARE TO/BE CRUSHED!", "Here, I will crush/you and your people!"}
+#define SIZE_OF_BOSS_QUIP_ARRAY 8
+
+#define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 10, 14, 6, 2, 1, 5, 6, 4, 16, 5, 18, 3, 3}
+#define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 8, 2, 9, 5, 12, 4, 5, 10, 5, 7, 7, 10, 10}
+#define SIZE_OF_CHESTCOORD_ARRAY 20
+
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
 #define ARRAY_OF_TOME_NAMES {"WOOD TOME", "BURNT TOME", "STONE TOME", "COLD TOME", "STORM TOME", "SMELLY TOME", "DARK TOME", "ALPHA TOME", "POWER TOME"}
@@ -89,11 +96,11 @@
 #define ARRAY_OF_STONE_NAMES {"LAVA STONE", "STONE STONE", "ICE STONE", "WATER STONE", "BRICK STONE", "GOLD STONE", "MUD STONE"}
 #define SIZE_OF_STONE_ARRAY 7
 
-#define BATTLE_ACT_CODE_W 1
-#define BATTLE_ACT_CODE_A 2
-#define BATTLE_ACT_CODE_S 3
-#define BATTLE_ACT_CODE_D 4
-#define BATTLE_ACT_CODE_LSHIFT 5
+#define BATTLE_ACT_CODE_UP 1
+#define BATTLE_ACT_CODE_LEFT 2
+#define BATTLE_ACT_CODE_DOWN 3
+#define BATTLE_ACT_CODE_RIGHT 4
+#define BATTLE_ACT_CODE_MENU 5
 #define ATTACK_CODE_RUN TILE_ID_RUN
 #define ATTACK_CODE_BLOCK TILE_ID_BLOCK
 
@@ -103,9 +110,7 @@
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
 //* Add in teleport stone functionality
-//* Input all boss quips and NPC text
 //* Add in move upgrader fully
-//* Add all chests for detection
 
 int main(int argc, char* argv[])
 {
@@ -327,57 +332,9 @@ int mainLoop(player* playerSprite)
             textInput = "ARE YOU TIRED? REST HERE.       (HEALED)";
             pickFromLocation = false;
         }
-        /*If M+C=1.1 and D=48.08
-3
-If M+C=1.1 and D=96.032
-4
-If M+C=1.1 and D=128.064
-5
-If M+C=1.32
-6
-If M+C=2.1 and D=96.056
-7
-If M+C=2.1 and D=96.088
-8
-If M+C=3.1 and D=64.048
-9
-
-If M+C=4.1 and D=112.056
-10
-If M+C=4.1 and D=120.032
-11
-If M+C=5.1 and D=88.056
-12
-If M+C=5.1 and D=136.056
-13
-If M+C=5.21 and D=32.056
-14
-If M+C=6.1 and D=88.064
-15
-If M+C=6.1 and D=48.088
-16
-If M+C=7.12
-17
-If M+C=7.1 and D=40.096
-18
-If M+C=7.1 and D=104.096
-19
-If M+C=8.1 and D=88.056
-20
---------
-^ starts at 3
-V starts at 0
-
-M+C:
-M = playerSprite->worldNum
-C = playerSprite->lastScreen / 10
-
-D:
-x val: divide by 8
-y val: divide by 8, subtract 1
-        */
         if (pickFromLocation)
         {
+            //all NPC text; maybe store the desired values in 4 seperate arrays and iterate instead of this?s
             printf("playerSprite->worldNum == %d && playerSprite->lastScreen == %f && playerSprite->overworldX / TILE_SIZE == %d && playerSprite->overworldY / TILE_SIZE == %d\ntextLocation = %d", playerSprite->worldNum, playerSprite->lastScreen, playerSprite->overworldX / TILE_SIZE, playerSprite->overworldY / TILE_SIZE, textLocation);
             if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 9)
                 textLocation = 0;
@@ -393,6 +350,28 @@ y val: divide by 8, subtract 1
                 textLocation = 5;
             if (playerSprite->worldNum == 3 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 8 && playerSprite->overworldY / TILE_SIZE == 5)
                 textLocation = 6;
+            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 14 && playerSprite->overworldY / TILE_SIZE == 6)
+                textLocation = 7;
+            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 15 && playerSprite->overworldY / TILE_SIZE == 3)
+                textLocation = 8;
+            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
+                textLocation = 9;
+            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 17 && playerSprite->overworldY / TILE_SIZE == 6)
+                textLocation = 10;
+            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 2.1)
+                textLocation = 11;
+            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 7)
+                textLocation = 12;
+            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
+                textLocation = 13;
+            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 1.2)
+                textLocation = 14;
+            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 5 && playerSprite->overworldY / TILE_SIZE == 11)
+                textLocation = 15;
+            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 13 && playerSprite->overworldY / TILE_SIZE == 11)
+                textLocation = 16;
+            if (playerSprite->worldNum == 8 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
+                textLocation = 17;
             char* stringArray[] = ALL_NPC_TEXT_ARRAY;
             textInput = stringArray[textLocation];
         }
@@ -405,69 +384,12 @@ y val: divide by 8, subtract 1
         }
         if (found != -1)
         {
-            /*If M=4.11
-104.016
-If M=4.12
-24.04
-If M=5.2
-80.064
-If M=5.1
-112.016
-If M=5.12
-48.072
-If M=6.2
-16.04
-If M=6.32
-8.096
-If M=7.1
-40.032
-If M=7.12
-48.04
-If M=7.2
-32.08
-If M=7.21
-128.04
-If M=7.24
-40.056
-If M=8.11
-144.056
-If M=8.2
-24.08
-If M=8.32
-24.08
-            */
             type = type_chest;
             index = TILE_ID_CHEST;
-            if (found == 0)
-            {
-                x *= -9;
-                y *= -7;
-            }
-            if (found == 1)
-            {
-                x *= -17;
-                y *= -11;
-            }
-            if (found == 2)
-            {
-                x *= -16;
-                y *= -11;
-            }
-            if (found == 3)
-            {
-                x *= -8;
-                y *= -11;
-            }
-            if (found == 4)
-            {
-                x *= -9;
-                y *= -11;
-            }
-            if (found == 5)
-            {
-                x *= -3;
-                y *= -11;
-            }
+            int chestX[SIZE_OF_CHESTCOORD_ARRAY] = ARRAY_OF_CHEST_XS;
+            int chestY[SIZE_OF_CHESTCOORD_ARRAY] = ARRAY_OF_CHEST_YS;
+            x *= -1 * chestX[found];
+            y *= -1 * chestY[found];
             if (playerSprite->pickedUpChests[found])
                 drawEntityFlag = false;
         }
@@ -590,7 +512,7 @@ If M=8.32
                 if (found == 4)
                     item = 972;
                 if (!playerSprite->pickedUpChests[found] && pickedUp)
-                    pickedUp = pickupItem(playerSprite, item, found);
+                    pickedUp = pickupItem(playerSprite, item, found, true);
                 //pick up chest here
             }
         }
@@ -1050,9 +972,22 @@ bool doBattle(player* player, bool isBoss)
     char* allAttacks = ALL_ATTACKS;
     bool doneFlag = false;
     bool blockTurns = 0;
+    char* buffer = "";
+    drawTile(player->spr.tileIndex, 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    drawTile(enemy.tileIndex, enemy.x, enemy.y, enemy.w, SDL_FLIP_NONE);
+    drawTextBox(player->name, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE});
+    drawTextBox(enemyName, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.x = 11 * TILE_SIZE, .y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE});
+    drawText("Lv", 2 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(player->level, buffer), 26 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("HP", 2 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(player->HP, buffer), 13 * TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("HP", 11 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
     if (isBoss)
     {
-        //do boss quip here
+        char* quipArray[SIZE_OF_BOSS_QUIP_ARRAY] = ALL_BOSS_QUIP_ARRAY;
+        drawTextBox(quipArray[player->worldNum - 1], player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        waitForKey();
     }
     while (!doneFlag)
     {
@@ -1062,20 +997,7 @@ bool doBattle(player* player, bool isBoss)
         {
             char* textBoxText = "error\0";
             if (menuLevel == 1)
-            {
-                char* buffer = "";
                 textBoxText = "Up: ATTACK         Down: BLOCK     Menu: RUN";
-                drawTile(player->spr.tileIndex, 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-                drawTile(enemy.tileIndex, enemy.x, enemy.y, enemy.w, SDL_FLIP_NONE);
-                drawTextBox(player->name, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE});
-                drawTextBox(enemyName, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.x = 11 * TILE_SIZE, .y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE});
-                drawText("Lv", 2 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText(toString(player->level, buffer), 26 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText("HP", 2 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText(toString(player->HP, buffer), 13 * TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText("HP", 11 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
-            }
             if (menuLevel == 2)
             {
                 char thisAttack[6] = "     \0";
@@ -1094,7 +1016,6 @@ bool doBattle(player* player, bool isBoss)
                 textBoxText = input;
             }
             drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-
             SDL_Event e;
             bool quit = false;
             SDL_Delay(500);
@@ -1115,7 +1036,7 @@ bool doBattle(player* player, bool isBoss)
                         //Select surfaces based on key press
                         if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                         {
-                            exitCode = BATTLE_ACT_CODE_W;
+                            exitCode = BATTLE_ACT_CODE_UP;
                             quit = true;
                         }
 
@@ -1123,14 +1044,14 @@ bool doBattle(player* player, bool isBoss)
                         {
                             if (menuLevel == 2)
                             {
-                                exitCode = BATTLE_ACT_CODE_A;
+                                exitCode = BATTLE_ACT_CODE_LEFT;
                                 quit = true;
                             }
                         }
 
                         if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
                         {
-                            exitCode = BATTLE_ACT_CODE_S;
+                            exitCode = BATTLE_ACT_CODE_DOWN;
                             quit = true;
                         }
 
@@ -1138,60 +1059,60 @@ bool doBattle(player* player, bool isBoss)
                         {
                             if (menuLevel == 2)
                             {
-                                exitCode = BATTLE_ACT_CODE_D;
+                                exitCode = BATTLE_ACT_CODE_RIGHT;
                                 quit = true;
                             }
                         }
 
                         if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_MENU))
                         {
-                            exitCode = BATTLE_ACT_CODE_LSHIFT;
+                            exitCode = BATTLE_ACT_CODE_MENU;
                             quit = true;
                         }
                     }
                 }
             }
-            if (exitCode == BATTLE_ACT_CODE_W && menuLevel == 1)
+            if (exitCode == BATTLE_ACT_CODE_UP && menuLevel == 1)
             {
                 menuLevel = 2;
                 exitCode = 0;
             }
-            if ((exitCode == BATTLE_ACT_CODE_LSHIFT || exitCode == ANYWHERE_QUIT) && menuLevel == 2)
+            if ((exitCode == BATTLE_ACT_CODE_MENU || exitCode == ANYWHERE_QUIT) && menuLevel == 2)
             {
                 menuLevel = 1;
                 exitCode = 0;
             }
-            if ((exitCode > 0 && ((exitCode == BATTLE_ACT_CODE_W && player->move1) || (exitCode == BATTLE_ACT_CODE_A && player->move2) ||
-                                  (exitCode == BATTLE_ACT_CODE_S && player->move3) || (exitCode == BATTLE_ACT_CODE_D && player->move4)) &&
-                                   menuLevel == 2) || (exitCode != 0 && exitCode != BATTLE_ACT_CODE_W && menuLevel == 1))
+            if ((exitCode > 0 && ((exitCode == BATTLE_ACT_CODE_UP && player->move1) || (exitCode == BATTLE_ACT_CODE_LEFT && player->move2) ||
+                                  (exitCode == BATTLE_ACT_CODE_DOWN && player->move3) || (exitCode == BATTLE_ACT_CODE_RIGHT && player->move4)) &&
+                                   menuLevel == 2) || (exitCode != 0 && exitCode != BATTLE_ACT_CODE_UP && menuLevel == 1))
                 actFlag = true;
         }
         //proceed with attacks here
         int attackCode = 0;
         if (menuLevel == 2)
         {
-            if (exitCode == BATTLE_ACT_CODE_W)
+            if (exitCode == BATTLE_ACT_CODE_UP)
                 attackCode = player->move1;
-            if (exitCode == BATTLE_ACT_CODE_A)
+            if (exitCode == BATTLE_ACT_CODE_LEFT)
                 attackCode = player->move2;
-            if (exitCode == BATTLE_ACT_CODE_S)
+            if (exitCode == BATTLE_ACT_CODE_DOWN)
                 attackCode = player->move3;
-            if (exitCode == BATTLE_ACT_CODE_D)
+            if (exitCode == BATTLE_ACT_CODE_RIGHT)
                 attackCode = player->move4;
         }
         if (menuLevel == 1)
         {
-            if (exitCode == BATTLE_ACT_CODE_LSHIFT || exitCode == ANYWHERE_QUIT)
+            if (exitCode == BATTLE_ACT_CODE_MENU || exitCode == ANYWHERE_QUIT)
             {
                 attackCode = ATTACK_CODE_RUN;
                 //not(boss) and 3>randInt(1,U-100fPart(A
-                if (3 > (rand() % abs(enemyIndex)) - player->speed)
+                if (3 > (rand() % abs(enemyIndex)) - player->speed && enemyIndex % 3 != 0)
                 {
                     won = false;
                     run = true;
                 }
             }
-            if (exitCode == BATTLE_ACT_CODE_S)
+            if (exitCode == BATTLE_ACT_CODE_DOWN)
                 attackCode = ATTACK_CODE_BLOCK;
 
         }
@@ -1486,7 +1407,7 @@ bool doBattle(player* player, bool isBoss)
         {
             int itemLocation = findItem(player, TILE_ID_STONE * 10 + player->worldNum - 1);
             if (itemLocation == -1)
-                pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1);
+                pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false);
             else
                 player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
             player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 2.3); // <-reg boss beaten = +10, world 7 alt boss = +1
@@ -1494,12 +1415,15 @@ bool doBattle(player* player, bool isBoss)
     }
     return won || run;
 }
-bool pickupItem(player* player, int itemCode, int chestID)
+bool pickupItem(player* player, int itemCode, int chestID, bool redraw)
 {
     int firstOpenSlot = findItem(player, 0);
-    drawTilemap(player->spr.x / TILE_SIZE, player->spr.y, 1 + player->spr.x / TILE_SIZE, 1 + player->spr.y / TILE_SIZE, false);
-    drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
-    SDL_RenderPresent(mainRenderer);
+    if (redraw)
+    {
+        drawTilemap(player->spr.x / TILE_SIZE, player->spr.y, 1 + player->spr.x / TILE_SIZE, 1 + player->spr.y / TILE_SIZE, false);
+        drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
+        SDL_RenderPresent(mainRenderer);
+    }
     if (firstOpenSlot > -1)
     {
         player->items[firstOpenSlot] = itemCode;
@@ -1517,7 +1441,7 @@ bool pickupItem(player* player, int itemCode, int chestID)
         drawTextBox(text, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
         if (chestID >= 0)
             player->pickedUpChests[chestID] = 1;
-        if (!(itemCode / 10 == TILE_ID_STONE))
+        if (!(itemCode / 10 == TILE_ID_STONE) && redraw)
         {
             drawTilemap(player->spr.x / TILE_SIZE, player->spr.y / TILE_SIZE, player->spr.x / TILE_SIZE + 1, player->spr.y / TILE_SIZE + 1, true);
             drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
@@ -1531,7 +1455,7 @@ bool pickupItem(player* player, int itemCode, int chestID)
     }
     SDL_Delay(400);
     waitForKey();
-    if (!(itemCode / 10 == TILE_ID_STONE))
+    if (!(itemCode / 10 == TILE_ID_STONE) && redraw)
         drawTilemap(0, 8, WIDTH_IN_TILES, HEIGHT_IN_TILES, true);
     return firstOpenSlot > -1;
 }

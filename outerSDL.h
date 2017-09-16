@@ -127,7 +127,7 @@ int aWallOfText(char* title, char* text, bool showHelpInfo);  //draws a wall of 
 int showStats(player* player);  //opens stats display
 int showItems(player* player);  //shows list of player items
 bool doBattle(player* player, bool isBoss);  //does a battle
-bool pickupItem(player* player, int itemCode, int chestID);  //player picks up an item
+bool pickupItem(player* player, int itemCode, int chestID, bool redraw);  //player picks up an item
 int findItem(player* player, int itemToFind);  //tries to find item in player's inventory. Use 0 for empty slot
 
 int init();  //inits SDL and necessary game systems
