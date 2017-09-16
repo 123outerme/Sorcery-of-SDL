@@ -85,6 +85,11 @@
 #define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 8, 2, 9, 5, 12, 4, 5, 10, 5, 7, 7, 10, 10}
 #define SIZE_OF_CHESTCOORD_ARRAY 21
 
+#define ARRAY_OF_BOSS_XS {14, 11, 7, 10, 5, 12, 14, 7, 11}
+#define ARRAY_OF_BOSS_YS {7, 7, 8, 6, 5, 7, 7, 3, 7}
+#define ARRAY_OF_BOSS_TILEIDS {TILE_ID_APEMAN, TILE_ID_FEENIX, TILE_ID_TARANT, TILE_ID_POLARA, TILE_ID_HYDROA, TILE_ID_SWURM, TILE_ID_SENTRY, TILE_ID_DREGOH, TILE_ID_DREGOH}
+#define SIZE_OF_BOSSCOORD_ARRAY 9
+
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
 #define ARRAY_OF_TOME_NAMES {"WOOD TOME", "BURNT TOME", "STONE TOME", "COLD TOME", "STORM TOME", "SMELLY TOME", "DARK TOME", "ALPHA TOME", "POWER TOME"}
@@ -153,7 +158,7 @@ int main(int argc, char* argv[])
                 }
 
             }
-            printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 10));
+            printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
             savePlayerData(&player, SAVE_FILE_NAME);
             saveConfig(CONFIG_FILE_NAME);
         }
@@ -295,7 +300,7 @@ int mainLoop(player* playerSprite)
     char* textInput = "Did you know that this is placeholder text? Me neither.";
     {
         double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
-        int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+        int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
         //use the int "map" when testing if user is in a map with a boss/chest?
     }
@@ -318,7 +323,7 @@ int mainLoop(player* playerSprite)
         if (playerSprite->worldNum == 7)
             index = TILE_ID_EARL;
         double arrayOfMaps[SIZE_OF_UPGRADER_ARRAY] = ARRAY_OF_UPGRADER_IDS;
-        int isUpgraderMap = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->lastScreen / 10.0), arrayOfMaps, SIZE_OF_UPGRADER_ARRAY);
+        int isUpgraderMap = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->lastScreen / 100.0), arrayOfMaps, SIZE_OF_UPGRADER_ARRAY);
         if (isUpgraderMap != -1)
         {
             index = TILE_ID_BESERKERJ;
@@ -335,42 +340,41 @@ int mainLoop(player* playerSprite)
         if (pickFromLocation)
         {
             //all NPC text; maybe store the desired values in 4 seperate arrays and iterate instead of this?
-            printf("playerSprite->worldNum == %d && playerSprite->lastScreen == %f && playerSprite->overworldX / TILE_SIZE == %d && playerSprite->overworldY / TILE_SIZE == %d\ntextLocation = %d", playerSprite->worldNum, playerSprite->lastScreen, playerSprite->overworldX / TILE_SIZE, playerSprite->overworldY / TILE_SIZE, textLocation);
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 9)
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 9)
                 textLocation = 0;
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 3)
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 3)
                 textLocation = 1;
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 16 && playerSprite->overworldY / TILE_SIZE == 7)
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 16 && playerSprite->overworldY / TILE_SIZE == 7)
                 textLocation = 2;
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 3.2)
+            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 32)
                 textLocation = 3;
-            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 6)
+            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 6)
                 textLocation = 4;
-            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
+            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
                 textLocation = 5;
-            if (playerSprite->worldNum == 3 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 8 && playerSprite->overworldY / TILE_SIZE == 5)
+            if (playerSprite->worldNum == 3 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 8 && playerSprite->overworldY / TILE_SIZE == 5)
                 textLocation = 6;
-            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 14 && playerSprite->overworldY / TILE_SIZE == 6)
+            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 14 && playerSprite->overworldY / TILE_SIZE == 6)
                 textLocation = 7;
-            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 15 && playerSprite->overworldY / TILE_SIZE == 3)
+            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 15 && playerSprite->overworldY / TILE_SIZE == 3)
                 textLocation = 8;
-            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
+            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
                 textLocation = 9;
-            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 17 && playerSprite->overworldY / TILE_SIZE == 6)
+            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 17 && playerSprite->overworldY / TILE_SIZE == 6)
                 textLocation = 10;
-            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 2.1)
+            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 21)
                 textLocation = 11;
-            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 7)
+            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 7)
                 textLocation = 12;
-            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
+            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
                 textLocation = 13;
-            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 1.2)
+            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 12)
                 textLocation = 14;
-            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 5 && playerSprite->overworldY / TILE_SIZE == 11)
+            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 5 && playerSprite->overworldY / TILE_SIZE == 11)
                 textLocation = 15;
-            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 13 && playerSprite->overworldY / TILE_SIZE == 11)
+            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 13 && playerSprite->overworldY / TILE_SIZE == 11)
                 textLocation = 16;
-            if (playerSprite->worldNum == 8 && playerSprite->lastScreen == 1.0 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
+            if (playerSprite->worldNum == 8 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
                 textLocation = 17;
             char* stringArray[] = ALL_NPC_TEXT_ARRAY;
             textInput = stringArray[textLocation];
@@ -380,7 +384,7 @@ int mainLoop(player* playerSprite)
     {
         {
             double arrayOfMaps[SIZE_OF_CHEST_ARRAY] = ARRAY_OF_CHEST_IDS;
-            found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
+            found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
         }
         if (found != -1)
         {
@@ -398,63 +402,18 @@ int mainLoop(player* playerSprite)
             type = type_boss;
             {
                 double arrayOfMaps[SIZE_OF_BOSS_ARRAY] = ARRAY_OF_BOSS_IDS;
-                found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
+                found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
             }
             if (found != -1 && playerSprite->beatenBosses / 10 < playerSprite->worldNum)
             {
-                if (found == 0)
+                int bossX[SIZE_OF_BOSSCOORD_ARRAY] = ARRAY_OF_BOSS_XS;
+                int bossY[SIZE_OF_BOSSCOORD_ARRAY] = ARRAY_OF_BOSS_YS;
+                int bossIndex[SIZE_OF_BOSSCOORD_ARRAY] = ARRAY_OF_BOSS_TILEIDS;
+                if ((found == 7 && fPart(playerSprite->beatenBosses / 10.0) == .1) || found != 7)
                 {
-                    index = TILE_ID_APEMAN;
-                    x *= -14;
-                    y *= -7;
-                }
-                if (found == 1)
-                {
-                    index = TILE_ID_FEENIX;
-                    x *= -11;
-                    y *= -7;
-                }
-                if (found == 2)
-                {
-                    index = TILE_ID_TARANT;
-                    x *= -7;
-                    y *= -8;
-                }
-                if (found == 3)
-                {
-                    index = TILE_ID_POLARA;
-                    x *= -10;
-                    y *= -6;
-                }
-                if (found == 4)
-                {
-                    index = TILE_ID_HYDROA;
-                    x *= -5;
-                    y *= -5;
-                }
-                if (found == 5)
-                {
-                    index = TILE_ID_SWURM;
-                    x *= -12;
-                    y *= -7;
-                }
-                if (found == 6)
-                {
-                    index = TILE_ID_SENTRY;
-                    x *= -14;
-                    y *= -7;
-                }
-                if (found == 7 && fPart((playerSprite->beatenBosses / 10.0)) == .1)
-                {
-                    index = TILE_ID_DREGOH;
-                    x *= -7;
-                    y *= -3;
-                }
-                if (found == 8)
-                {
-                    index = TILE_ID_DREGOH;
-                    x *= -11;
-                    y *= -7;
+                    index = bossIndex[found];
+                    x *= -1 * bossX[found];
+                    y *= -1 * bossY[found];
                 }
             }
         }
@@ -491,6 +450,11 @@ int mainLoop(player* playerSprite)
             exitCode = LOOP_GOTO_BATTLE;
             quit = true;
         }
+        if (press == KEYPRESS_RETURN_TEXTACTION && entity.tileIndex == TILE_ID_BESERKERJ)
+        {
+            //check if user has enough money, what move they're trying to upgrade, and upgrade
+        }
+
         if (playerSprite->spr.x == entity.x && playerSprite->spr.y == entity.y)
         {
             if (entity.type == type_boss)
@@ -960,7 +924,7 @@ bool doBattle(player* player, bool isBoss)
     if (!isBoss)
         enemyIndex = (rand() % 2) + 1 + 3 * (player->worldNum - 1);
     else
-        enemyIndex = 3 * player->worldNum + 3 * (player->worldNum == 7 && player->mapScreen == 2.3);
+        enemyIndex = 3 * player->worldNum + 3 * (player->worldNum == 7 && player->mapScreen == 23);
     int enemyHP = 14 + iPart(pow((double) enemyIndex, 1.22)) + (int) pow((5 + 1), player->worldNum) * (!enemyIndex % 3);
     //14+int(U^1.22)+40(M=8.33 and U/3=int(U/3))+(5+1^int(M))(U/3=int(U/3
     initSprite(&enemy, 15 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, enemyIndex + 71, type_na);
@@ -1260,7 +1224,7 @@ bool doBattle(player* player, bool isBoss)
     {
         //if you lost
         player->HP = player->maxHP;
-        player->mapScreen = 1.0;
+        player->mapScreen = 10;
         player->spr.x = 4 * TILE_SIZE;
         player->spr.y = 6 * TILE_SIZE;
         SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
@@ -1410,7 +1374,7 @@ bool doBattle(player* player, bool isBoss)
                 pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false);
             else
                 player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
-            player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 2.3); // <-reg boss beaten = +10, world 7 alt boss = +1
+            player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 23); // <-reg boss beaten = +10, world 7 alt boss = +1
         }
     }
     return won || run;

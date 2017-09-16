@@ -190,8 +190,8 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->move4 = 0;
 	player->steps = 0;
 	player->worldNum = 1;
-	player->mapScreen = 1.0;
-	player->lastScreen = 1.0;
+	player->mapScreen = 10;
+	player->lastScreen = 10;
 	player->overworldX = x;
 	player->overworldY = y;
 	player->beatenBosses = 0;
@@ -252,8 +252,8 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         player->steps = 0;
         player->spr.clipRect = &((SDL_Rect){.x = (player->spr.tileIndex / 8) * player->spr.w, .y = (player->spr.tileIndex % 8) * player->spr.w, .w = player->spr.w, .h = player->spr.w});
         player->worldNum = strtol(readLine(filePath, 15, &buffer), NULL, 10);
-        player->mapScreen = (double) strtol(readLine(filePath, 16, &buffer), NULL, 10) / 10.0;
-        player->lastScreen = (double) strtol(readLine(filePath, 17, &buffer), NULL, 10) / 10.0;
+        player->mapScreen = strtol(readLine(filePath, 16, &buffer), NULL, 10);
+        player->lastScreen = strtol(readLine(filePath, 17, &buffer), NULL, 10);
         player->overworldX = strtol(readLine(filePath, 18, &buffer), NULL, 10);
         player->overworldY = strtol(readLine(filePath, 19, &buffer), NULL, 10);
         player->beatenBosses = strtol(readLine(filePath, 20, &buffer), NULL, 10);
@@ -453,7 +453,7 @@ bool checkKeyPress(player* playerSprite)
         if (checkSKRight)
             playerSprite->flip = SDL_FLIP_NONE;
         int thisTile = tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (playerSprite->worldNum <= playerSprite->beatenBosses / 10 ? 14 : 9) && playerSprite->mapScreen > 1.0)
+        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (playerSprite->worldNum <= playerSprite->beatenBosses / 10 ? 14 : 9) && playerSprite->mapScreen > 10)
             battleFlag = true;
         if (thisTile == TILE_ID_DOOR || !playerSprite->spr.x || playerSprite->spr.y == TILE_SIZE || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
         {
@@ -483,32 +483,33 @@ bool checkKeyPress(player* playerSprite)
                 if (!playerSprite->spr.x)
                 {
                     playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
-                    if (fPart(playerSprite->mapScreen) > 0)
-                        playerSprite->mapScreen = playerSprite->mapScreen - .1;
+                    printf("%d -> %f\n", playerSprite->mapScreen, playerSprite->mapScreen / 10.0);
+                    if (fPart(playerSprite->mapScreen / 10.0) > 0)
+                        playerSprite->mapScreen = playerSprite->mapScreen - 1;
 
                 }
                 if (playerSprite->spr.y == TILE_SIZE)
                 {
                     playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
-                    if (iPart(playerSprite->mapScreen) > 0)
-                        playerSprite->mapScreen = playerSprite->mapScreen - 1;
+                    if (iPart(playerSprite->mapScreen / 10.0) > 0)
+                        playerSprite->mapScreen = playerSprite->mapScreen - 10;
                 }
                 if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE)
                 {
                     playerSprite->spr.x = TILE_SIZE;
-                    if (10 * fPart(playerSprite->mapScreen) < 9)
-                        playerSprite->mapScreen = playerSprite->mapScreen + .1;
+                    if (10 * fPart(playerSprite->mapScreen / 10.0) < 9)
+                        playerSprite->mapScreen = playerSprite->mapScreen + 1;
 
                 }
                 if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
                 {
                     playerSprite->spr.y = TILE_SIZE * 2;
-                    if (iPart(playerSprite->mapScreen) < 9)
-                        playerSprite->mapScreen = playerSprite->mapScreen + 1;
+                    if (iPart(playerSprite->mapScreen / 10.0) < 9)
+                        playerSprite->mapScreen = playerSprite->mapScreen + 10;
                 }
             }
             double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
-            int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 10.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+            int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
             loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             return KEYPRESS_RETURN_BREAK;
         }
@@ -525,7 +526,7 @@ bool checkKeyPress(player* playerSprite)
             return KEYPRESS_RETURN_TEXTACTION;
         return true;
     }
-    if (checkSKInteract && fPart(playerSprite->mapScreen) == playerSprite->mapScreen && playerSprite->spr.x == 9 * TILE_SIZE && playerSprite->spr.y == 6 * TILE_SIZE)
+    if (checkSKInteract && fPart(playerSprite->mapScreen / 10.0) == playerSprite->mapScreen && playerSprite->spr.x == 9 * TILE_SIZE && playerSprite->spr.y == 6 * TILE_SIZE)
     {
         textBoxOn = true;
         playerSprite->movementLocked = true;
@@ -599,8 +600,8 @@ void savePlayerData(player* player, char* filePath)
     writeLine(filePath, toString(player->move3, buffer));
     writeLine(filePath, toString(player->move4, buffer));
     writeLine(filePath, toString(player->worldNum, buffer));
-    writeLine(filePath, toString((int) (10 * player->mapScreen), buffer));
-    writeLine(filePath, toString((int) (10 * player->lastScreen), buffer));
+    writeLine(filePath, toString(player->mapScreen, buffer));
+    writeLine(filePath, toString(player->lastScreen, buffer));
     writeLine(filePath, toString(player->overworldX, buffer));
     writeLine(filePath, toString(player->overworldY, buffer));
     writeLine(filePath, toString(player->beatenBosses, buffer));
@@ -621,7 +622,7 @@ void savePlayerData(player* player, char* filePath)
 
 void saveConfig(char* filePath)
 {
-    char* buffer;
+    char* buffer = "";
     createFile(filePath);
     writeLine(filePath, toString(SC_UP, buffer));
     writeLine(filePath, toString(SC_DOWN, buffer));
@@ -695,7 +696,7 @@ void freeThisMem(int ** x)
 char* removeChar(char input[], char removing, size_t length, bool foreToBack)
 {
     static char sansChar[255];
-    int i, start, finish;
+    int i;
     length = strlen(input);
     if (foreToBack)
     {

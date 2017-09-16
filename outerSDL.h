@@ -48,8 +48,8 @@
 #define KCMenu SDL_GetKeyFromScancode(SC_MENU)
 
 #define printBool(x) x == true ? "true" : "false"
-#define iPart(x) ((int) x)
-#define fPart(x) ((x) - iPart(x))
+#define iPart(x) (int) (x)
+#define fPart(x) (x) - iPart(x)
 
 #define PLAYER_NAME_LIMIT 8
 #define PLAYER_ITEMS_LIMIT 11
@@ -103,8 +103,8 @@ typedef struct {
     int move4;  //
     int steps;  //
     int worldNum;  //
-    double mapScreen;  //8 bytes
-    double lastScreen;  //8 bytes
+    int mapScreen;  //8 bytes
+    int lastScreen;  //8 bytes
     int overworldX;  //
     int overworldY;  //
     int beatenBosses;  // <-reg boss beaten = +10, world 7 alt boss = +1
