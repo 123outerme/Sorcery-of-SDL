@@ -73,6 +73,7 @@
 #define SIZE_OF_BOSS_ARRAY 9
 
 #define ARRAY_OF_UPGRADER_IDS {1.22, 3.1, 4.22, 5.1, 6.32, 7.1, 8.1}
+#define ALL_UPGRADER_MOVES_ARRAY {"SLICE or THORN. ", "BURN or FLARE. ", "CRACK or ROCK. ", "CHILL or FROST. ", "FLOW or STORM. ", "WHACK or SMELL. ", "STAB or DARK."}
 #define SIZE_OF_UPGRADER_ARRAY 7
 
 #define ALL_NPC_TEXT_ARRAY {"BLOCK REDUCES YOUR DMG A BIT, BUT HALVES ENEMY DMG.", "A CRITICAL IS SHOWN WITH RED, AND A WEAKNESS WITH YELLOW!", "I SAW AN APEMAN DEEP IN THE WOODS.", "I FOUND THE APEMAN FIRST. HE'S MINE! BUT HE'S ANGRY.", "THESE CREATURES ARE WEAK TO WATER!", "SOME SAY THESE MONSTERS FIGHT US BECAUSE THEY SERVE THE DRAGONS KING.", "IF YOU GROW SOME WEEDS, THEY'LL BREAK THROUGH THE MONSTERS.", "MAN, IF I HAD A FIRE, I COULD MELT THE SNOW HERE!", "I KNEW I SHOULD'VE MOVED TO THE EAST POLE. THEY HAVE NO MONSTERS.", "WE SHOULD PUT SOME PLANTS AROUND HERE TO HOLD THE SAND IN PLACE.", "THE MONSTER OF THE SEA HAS TURNED THE FISH AGAINST US! BUT WHO WOKE HIM?", "THIS IS MY MANSION. SINCE IT'S BY THE WATER, IT WAS VERY EXPENSIVE. BUT NOW IF I GO OUTSIDE, I'LL GET HURT.", "WE HAVE TO LIVE HERE NOW. IT'S BECAUSE OF THAT DARN WORM! HE SAYS HE SERVES THE GREEDY DRAGONS KING.", "MAYBE IF WE COULD GET RUNNING WATER, WE COULD SCARE THESE DIRTY MONSTERS.", "THE GENERAL HAS A MESSAGE FOR YOU: EITHER FIGHT AND THE KING WILL KILL YOUR PEOPLE, or JOIN HIM IN HIS ARMORY.", "HERE MONSTERS DON'T ATTACK US. ONLY OUR THOUGHTS OF GREED DO. THEY HATE DIRTY ATTACKS.", "THIS IS A REALLY NICE PLACE TO LIVE. EXCEPT FOR THE STRICT LAWS.", "AAH! WE'RE UNDER ATTACK! THE DRAGONS KING IS HERE! HELP US, "}
@@ -83,12 +84,13 @@
 
 #define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 10, 14, 6, 2, 1, 5, 6, 4, 16, 5, 18, 3, 3}
 #define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 8, 2, 9, 5, 12, 4, 5, 10, 5, 7, 7, 10, 10}
-#define SIZE_OF_CHESTCOORD_ARRAY 21
+#define ARRAY_OF_CHEST_ITEMS {991, 981, 971, 961, 972}
+#define SIZE_OF_CHESTDATA_ARRAY 21
 
 #define ARRAY_OF_BOSS_XS {14, 11, 7, 10, 5, 12, 14, 7, 11}
 #define ARRAY_OF_BOSS_YS {7, 7, 8, 6, 5, 7, 7, 3, 7}
 #define ARRAY_OF_BOSS_TILEIDS {TILE_ID_APEMAN, TILE_ID_FEENIX, TILE_ID_TARANT, TILE_ID_POLARA, TILE_ID_HYDROA, TILE_ID_SWURM, TILE_ID_SENTRY, TILE_ID_DREGOH, TILE_ID_DREGOH}
-#define SIZE_OF_BOSSCOORD_ARRAY 9
+#define SIZE_OF_BOSSDATA_ARRAY 9
 
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
@@ -115,7 +117,6 @@
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
 //* Add in teleport stone functionality
-//* Add in move upgrader fully
 
 int main(int argc, char* argv[])
 {
@@ -308,7 +309,7 @@ int mainLoop(player* playerSprite)
     drawHUD(playerSprite);
     sprite entity;
     entityType type = type_na;
-    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127, found = -1, textLocation = 0;
+    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127, found = -1, textLocation = 0, foundPhys = -1, foundMag = -1, upgrCost = 15;
     bool drawEntityFlag = true, pickFromLocation = true;
     if (!playerSprite->mapScreen)
     {
@@ -327,8 +328,40 @@ int mainLoop(player* playerSprite)
         if (isUpgraderMap != -1)
         {
             index = TILE_ID_BESERKERJ;
+            int moveArray[4] = {playerSprite->move1, playerSprite->move2, playerSprite->move3, playerSprite->move4};
+            char* nameArray[SIZE_OF_UPGRADER_ARRAY] = ALL_UPGRADER_MOVES_ARRAY;
+            for(int i = 0; i < 4; i++)
+            {
+                if (moveArray[i] == 38 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
+                    foundPhys = i;
+                if (moveArray[i] == 54 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
+                    foundMag = i;
+            }
+            if (foundPhys > -1 && foundMag > -1)
+                upgrCost = 30;
             textInput = "PRESS 2nd TO UPGRADE A MOVE. PLEASE PROGRAM BETTER DIALOGUE FOR ME.";
-            //do other stuff to ensure upgrader is fully functional
+            char temp[99] = "";
+            char* moves = nameArray[playerSprite->worldNum - (playerSprite->worldNum > 2) - 1];
+            if ((foundPhys > -1 || foundMag > -1) && playerSprite->money > upgrCost - 1)
+            {
+                strcpy(temp, "FOR 15 COINS EACH I CAN UPGRADE YOUR ");
+                strcat(temp, moves);
+                strcat(temp, "Confirm - YES.     Any other key - NO\0");
+            }
+            else
+            {
+                strcpy(temp, "YOU NEED 15 COINS TO UPGRADE YOUR ");
+                strcat(temp, moves);
+                strcat(temp, "\0");
+            }
+            if (foundPhys == -1 && foundMag == -1)
+            {
+                strcpy(temp, "YOU DON'T SEEM TO BE ABLE TO USE ");
+                strcat(temp, moves);
+                strcat(temp, "\0");
+            }
+            if (strlen(temp))
+                textInput = temp;
             pickFromLocation = false;
         }
         if (playerSprite->overworldX == 192 && playerSprite->overworldY == 240)
@@ -390,8 +423,8 @@ int mainLoop(player* playerSprite)
         {
             type = type_chest;
             index = TILE_ID_CHEST;
-            int chestX[SIZE_OF_CHESTCOORD_ARRAY] = ARRAY_OF_CHEST_XS;
-            int chestY[SIZE_OF_CHESTCOORD_ARRAY] = ARRAY_OF_CHEST_YS;
+            int chestX[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_XS;
+            int chestY[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_YS;
             x *= -1 * chestX[found];
             y *= -1 * chestY[found];
             if (playerSprite->pickedUpChests[found])
@@ -406,9 +439,9 @@ int mainLoop(player* playerSprite)
             }
             if (found != -1 && playerSprite->beatenBosses / 10 < playerSprite->worldNum)
             {
-                int bossX[SIZE_OF_BOSSCOORD_ARRAY] = ARRAY_OF_BOSS_XS;
-                int bossY[SIZE_OF_BOSSCOORD_ARRAY] = ARRAY_OF_BOSS_YS;
-                int bossIndex[SIZE_OF_BOSSCOORD_ARRAY] = ARRAY_OF_BOSS_TILEIDS;
+                int bossX[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_XS;
+                int bossY[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_YS;
+                int bossIndex[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_TILEIDS;
                 if ((found == 7 && fPart(playerSprite->beatenBosses / 10.0) == .1) || found != 7)
                 {
                     index = bossIndex[found];
@@ -450,9 +483,19 @@ int mainLoop(player* playerSprite)
             exitCode = LOOP_GOTO_BATTLE;
             quit = true;
         }
-        if (press == KEYPRESS_RETURN_TEXTACTION && entity.tileIndex == TILE_ID_BESERKERJ)
+        if (press == KEYPRESS_RETURN_TEXTACTION && entity.tileIndex == TILE_ID_BESERKERJ && playerSprite->money > upgrCost - 1)
         {
-            //check if user has enough money, what move they're trying to upgrade, and upgrade
+            //figure out a way to only upgrade one if they have only enough for one upgrade
+            if (foundPhys == 0 || foundMag == 0)
+                playerSprite->move1++;
+            if (foundPhys == 1 || foundMag == 1)
+                playerSprite->move2++;
+            if (foundPhys == 2 || foundMag == 2)
+                playerSprite->move3++;
+            if (foundPhys == 3 || foundMag == 3)
+                playerSprite->move4++;
+            playerSprite->money -= upgrCost;
+            press = 0;
         }
 
         if (playerSprite->spr.x == entity.x && playerSprite->spr.y == entity.y)
@@ -464,19 +507,9 @@ int mainLoop(player* playerSprite)
             }
             if (entity.type == type_chest)
             {
-                int item = 0;
-                if (found == 0)
-                    item = 991;
-                if (found == 1)
-                    item = 981;
-                if (found == 2)
-                    item = 971;
-                if (found == 3)
-                    item = 961;
-                if (found == 4)
-                    item = 972;
+                int itemArray[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_ITEMS;
                 if (!playerSprite->pickedUpChests[found] && pickedUp)
-                    pickedUp = pickupItem(playerSprite, item, found, true);
+                    pickedUp = pickupItem(playerSprite, itemArray[found], found, true);
                 //pick up chest here
             }
         }
@@ -849,7 +882,7 @@ bool doBattle(player* player, bool isBoss)
 {
     bool won = false, run = false;
     int menuLevel = 1;
-    printf("Did battle after %d steps.\n", player->steps);
+    //printf("Did battle after %d steps.\n", player->steps);
     player->steps = 0;
     SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
     for(int i = 0; i < SCREEN_WIDTH; i += 2)

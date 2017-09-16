@@ -483,7 +483,6 @@ bool checkKeyPress(player* playerSprite)
                 if (!playerSprite->spr.x)
                 {
                     playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
-                    printf("%d -> %f\n", playerSprite->mapScreen, playerSprite->mapScreen / 10.0);
                     if (fPart(playerSprite->mapScreen / 10.0) > 0)
                         playerSprite->mapScreen = playerSprite->mapScreen - 1;
 
@@ -491,20 +490,20 @@ bool checkKeyPress(player* playerSprite)
                 if (playerSprite->spr.y == TILE_SIZE)
                 {
                     playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
-                    if (iPart(playerSprite->mapScreen / 10.0) > 0)
+                    if (playerSprite->mapScreen / 10 > 0)
                         playerSprite->mapScreen = playerSprite->mapScreen - 10;
                 }
                 if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE)
                 {
                     playerSprite->spr.x = TILE_SIZE;
-                    if (10 * fPart(playerSprite->mapScreen / 10.0) < 9)
+                    if (playerSprite->mapScreen - (playerSprite->mapScreen / 10) * 10 < 9)
                         playerSprite->mapScreen = playerSprite->mapScreen + 1;
 
                 }
                 if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
                 {
                     playerSprite->spr.y = TILE_SIZE * 2;
-                    if (iPart(playerSprite->mapScreen / 10.0) < 9)
+                    if (playerSprite->mapScreen / 10 < 9)
                         playerSprite->mapScreen = playerSprite->mapScreen + 10;
                 }
             }
