@@ -79,6 +79,12 @@
 #define ALL_NPC_TEXT_ARRAY {"BLOCK REDUCES YOUR DMG A BIT, BUT HALVES ENEMY DMG.", "A CRITICAL IS SHOWN WITH RED, AND A WEAKNESS WITH YELLOW!", "I SAW AN APEMAN DEEP IN THE WOODS.", "I FOUND THE APEMAN FIRST. HE'S MINE! BUT HE'S ANGRY.", "THESE CREATURES ARE WEAK TO WATER!", "SOME SAY THESE MONSTERS FIGHT US BECAUSE THEY SERVE THE DRAGONS KING.", "IF YOU GROW SOME WEEDS, THEY'LL BREAK THROUGH THE MONSTERS.", "MAN, IF I HAD A FIRE, I COULD MELT THE SNOW HERE!", "I KNEW I SHOULD'VE MOVED TO THE EAST POLE. THEY HAVE NO MONSTERS.", "WE SHOULD PUT SOME PLANTS AROUND HERE TO HOLD THE SAND IN PLACE.", "THE MONSTER OF THE SEA HAS TURNED THE FISH AGAINST US! BUT WHO WOKE HIM?", "THIS IS MY MANSION. SINCE IT'S BY THE WATER, IT WAS VERY EXPENSIVE. BUT NOW IF I GO OUTSIDE, I'LL GET HURT.", "WE HAVE TO LIVE HERE NOW. IT'S BECAUSE OF THAT DARN WORM! HE SAYS HE SERVES THE GREEDY DRAGONS KING.", "MAYBE IF WE COULD GET RUNNING WATER, WE COULD SCARE THESE DIRTY MONSTERS.", "THE GENERAL HAS A MESSAGE FOR YOU: EITHER FIGHT AND THE KING WILL KILL YOUR PEOPLE, or JOIN HIM IN HIS ARMORY.", "HERE MONSTERS DON'T ATTACK US. ONLY OUR THOUGHTS OF GREED DO. THEY HATE DIRTY ATTACKS.", "THIS IS A REALLY NICE PLACE TO LIVE. EXCEPT FOR THE STRICT LAWS.", "AAH! WE'RE UNDER ATTACK! THE DRAGONS KING IS HERE! HELP US, "}
 #define SIZE_OF_NPC_TEXT_ARRAY 17
 
+#define ARRAY_OF_NPC_WORLDNUMS {1, 1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7, 8}
+#define ARRAY_OF_NPC_LASTSCREENS {10, 10, 10, 32, 10, 10, 10, 10, 10, 10, 10, 21, 10, 10, 12, 10, 10, 10}
+#define ARRAY_OF_NPC_OVERWORLDXS {6, 12, 16, playerSprite->overworldX / TILE_SIZE, 12, 12, 8, 14, 15, 11, 17, playerSprite->overworldX / TILE_SIZE, 11, 6, playerSprite->overworldX / TILE_SIZE, 5, 13, 11}
+#define ARRAY_OF_NPC_OVERWORLDYS {9, 3, 7, playerSprite->overworldY / TILE_SIZE, 6, 10, 5, 6, 3, 6, 6, playerSprite->overworldY / TILE_SIZE, 7, 10, playerSprite->overworldY / TILE_SIZE, 11, 11, 6}
+#define SIZE_OF_NPCDATA_ARRAY 18
+
 #define ALL_BOSS_QUIP_ARRAY {"LEAF ME ALONE! I/WOOD-N'T DO THAT!", "I'M ON FIRE TODAY!/DON'T BE SO/HOT-HEADED!", "DON'T TRY TO BE/STONEFACED. I KNOW/YOU WANT TO RUN!", "I'M A COOL, COLD-/HEARTED CREATURE./ICY YOUR FEAR!" , "GO WITH THE FLOW/DUDE. YOU ARE IN/THE WAKE OF RUIN!", "WRIGGLE ALL YOU/WANT, YOU CAN'T/SQUISH ME!", "So this is your/choice? PREPARE TO/BE CRUSHED!", "Here, I will crush/you and your people!"}
 #define SIZE_OF_BOSS_QUIP_ARRAY 8
 
@@ -372,35 +378,23 @@ int mainLoop(player* playerSprite)
         }
         if (pickFromLocation)
         {
-            //all NPC text; maybe store the desired values in 4 seperate arrays and iterate instead of this?
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 9)
-                textLocation = 0;
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 3)
-                textLocation = 1;
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 16 && playerSprite->overworldY / TILE_SIZE == 7)
-                textLocation = 2;
-            if (playerSprite->worldNum == 1 && playerSprite->lastScreen == 32)
-                textLocation = 3;
-            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 6)
-                textLocation = 4;
-            if (playerSprite->worldNum == 2 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 12 && playerSprite->overworldY / TILE_SIZE == 10)
-                textLocation = 5;
-            if (playerSprite->worldNum == 3 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 8 && playerSprite->overworldY / TILE_SIZE == 5)
-                textLocation = 6;
-            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 14 && playerSprite->overworldY / TILE_SIZE == 6)
-                textLocation = 7;
-            if (playerSprite->worldNum == 4 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 15 && playerSprite->overworldY / TILE_SIZE == 3)
-                textLocation = 8;
-            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
-                textLocation = 9;
-            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 17 && playerSprite->overworldY / TILE_SIZE == 6)
-                textLocation = 10;
-            if (playerSprite->worldNum == 5 && playerSprite->lastScreen == 21)
-                textLocation = 11;
-            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 7)
-                textLocation = 12;
-            if (playerSprite->worldNum == 6 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 6 && playerSprite->overworldY / TILE_SIZE == 10)
-                textLocation = 13;
+            int npcWorldNums[SIZE_OF_NPCDATA_ARRAY] = ARRAY_OF_NPC_WORLDNUMS;
+            int npcLastScreens[SIZE_OF_NPCDATA_ARRAY] = ARRAY_OF_NPC_LASTSCREENS;
+            int npcOverworldXs[SIZE_OF_NPCDATA_ARRAY] = ARRAY_OF_NPC_OVERWORLDXS;
+            int npcOverworldYs[SIZE_OF_NPCDATA_ARRAY] = ARRAY_OF_NPC_OVERWORLDYS;
+            for(int i = 0; i < SIZE_OF_NPCDATA_ARRAY; i++)
+            {
+                if (playerSprite->worldNum == npcWorldNums[i] &&
+                    playerSprite->lastScreen == npcLastScreens[i] &&
+                    playerSprite->overworldX / TILE_SIZE == npcOverworldXs[i] &&
+                    playerSprite->overworldY / TILE_SIZE == npcOverworldYs[i])
+                {
+                    /*
+                     */
+                    textLocation = i;
+                    break;
+                }
+            } //all NPC text
             if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 12)
                 textLocation = 14;
             if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 5 && playerSprite->overworldY / TILE_SIZE == 11)
