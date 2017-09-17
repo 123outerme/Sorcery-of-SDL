@@ -301,17 +301,19 @@ void drawGame(player* player, char* textInput)
 
 int mainLoop(player* playerSprite)
 {
+    printf("started main loop\n");
     bool quit = false, press = false;
     SDL_Event e;
     int frame = 0, exitCode = LOOP_QUIT;
     static int pickedUp = 1;
     char* textInput = "Did you know that this is placeholder text? Me neither.";
     {
-        double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
+        double arrayOfMaps[SIZE_OF_MAP_ARRAY] = ARRAY_OF_MAP_IDS;
         int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
         //use the int "map" when testing if user is in a map with a boss/chest?
     }
+    //on Linux, seg fault after calling drawTile
     drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false);
     drawHUD(playerSprite);
     sprite entity;
@@ -411,29 +413,36 @@ int mainLoop(player* playerSprite)
     else
     {
         {
+            printf("finding if chest exists: ");
             double arrayOfMaps[SIZE_OF_CHEST_ARRAY] = ARRAY_OF_CHEST_IDS;
             found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
+            printf("found\n");
         }
         if (found != -1)
         {
+            printf("finding chest: ");
             type = type_chest;
             index = TILE_ID_CHEST;
             int chestX[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_XS;
             int chestY[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_YS;
             x *= -1 * chestX[found];
             y *= -1 * chestY[found];
+            printf("found\n");
             if (playerSprite->pickedUpChests[found])
                 drawEntityFlag = false;
         }
         else
         {
-            type = type_boss;
             {
+                printf("finding if boss exists: ");
                 double arrayOfMaps[SIZE_OF_BOSS_ARRAY] = ARRAY_OF_BOSS_IDS;
                 found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
+                printf("found\n");
             }
             if (found != -1 && playerSprite->beatenBosses / 10 < playerSprite->worldNum)
             {
+                printf("finding boss: ");
+                type = type_boss;
                 int bossX[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_XS;
                 int bossY[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_YS;
                 int bossIndex[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_TILEIDS;
@@ -443,9 +452,11 @@ int mainLoop(player* playerSprite)
                     x *= -1 * bossX[found];
                     y *= -1 * bossY[found];
                 }
+                printf("found\n");
             }
         }
     }
+    printf("loaded sprite\n");
     initSprite(&entity, x, y, TILE_SIZE, index, type);
     if (drawEntityFlag)
         drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
@@ -1416,39 +1427,36 @@ bool doBattle(player* player, bool isBoss)
                         else
                             if(e.type == SDL_KEYDOWN)
                             {
-                                switch (e.key.keysym.sym)
+                                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                                 {
-                                    case SDLK_w:
-                                        if (cursor.y > 9 * TILE_SIZE + TILE_SIZE / 4)
-                                            cursor.y -= TILE_SIZE;
-                                    break;
+                                    if (cursor.y > 9 * TILE_SIZE + TILE_SIZE / 4)
+                                        cursor.y -= TILE_SIZE;
+                                }
 
-                                    case SDLK_s:
-                                        if (cursor.y < 12 * TILE_SIZE + TILE_SIZE / 4)
-                                            cursor.y += TILE_SIZE;
-                                    break;
-                                    case SDLK_SPACE:
-                                        if (cursor.y == 12 * TILE_SIZE + TILE_SIZE / 4)
-                                            quit = true;
-                                        else
+                                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                                {
+                                    if (cursor.y < 12 * TILE_SIZE + TILE_SIZE / 4)
+                                        cursor.y += TILE_SIZE;
+                                }
+                                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                                {
+                                    if (cursor.y == 12 * TILE_SIZE + TILE_SIZE / 4)
+                                        quit = true;
+                                    else
+                                    {
+                                        if (player->statPts)
                                         {
-                                            if (player->statPts)
+                                            if (cursor.y == 9 * TILE_SIZE + TILE_SIZE / 4)
+                                                player->attack++;
+                                            if (cursor.y == 10 * TILE_SIZE + TILE_SIZE / 4)
+                                                player->speed++;
+                                            if (cursor.y != 11 * TILE_SIZE + TILE_SIZE / 4)
                                             {
-                                                if (cursor.y == 9 * TILE_SIZE + TILE_SIZE / 4)
-                                                    player->attack++;
-                                                if (cursor.y == 10 * TILE_SIZE + TILE_SIZE / 4)
-                                                    player->speed++;
-                                                if (cursor.y != 11 * TILE_SIZE + TILE_SIZE / 4)
-                                                {
-                                                    player->statPts--;
-                                                    quit = true;
-                                                }
+                                                player->statPts--;
+                                                quit = true;
                                             }
                                         }
-                                    break;
-
-                                    default:
-                                    break;
+                                    }
                                 }
                             }
                     }

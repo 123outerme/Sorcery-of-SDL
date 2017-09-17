@@ -175,6 +175,7 @@ void initSprite(sprite* spr, int x, int y, int size, int tileIndex, entityType t
 void initPlayer(player* player, int x, int y, int size, int tileIndex)
 {
     inputName(player);  //custom text input routine to get player->name
+    printf("Passed player name input.\n");
     initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
 	player->level = 1;
 	player->experience = 0;
@@ -205,7 +206,9 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     {
         player->pickedUpChests[i] = 0;
     }
+    printf("Got to the wall of text.");
     aWallOfText("Intro", "A long time ago, the nameless One of the Prophesy made a choice that would seemingly change everything. Sadly, a new King came to power, and Uvutu crumbled. The One lived to have a child, whom you are. Save your homeland.", false);
+    SDL_Delay(600);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
@@ -341,14 +344,16 @@ void inputName(player* player)
             SDL_RenderPresent(mainRenderer);
         }
     }
-    char* buffer = removeChar(playerName, ' ', 7, true);
+    printf("made it to name cleaning\n");
+    char* buffer = removeChar(playerName, ' ', PLAYER_NAME_LIMIT, true);
     buffer = removeChar(buffer, ' ', strlen(buffer), false);
     strcpy(playerName, buffer);
     if (!strlen(playerName))
         hasTyped = false;
     if (!hasTyped)
         strcpy(playerName, "STEVO\0");
-    strcpy(player->name, playerName);
+    printf("made it to name ready\n");
+    strncpy(player->name, playerName, PLAYER_NAME_LIMIT);
 }
 
 void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x)
@@ -699,7 +704,7 @@ char* removeChar(char input[], char removing, size_t length, bool foreToBack)
     length = strlen(input);
     if (foreToBack)
     {
-        for(i = 0; i < input; i++)
+        for(i = 0; i < length; i++)
         {
             //printf("%c at %d\n", input[i], i);
             if (input[i] != removing)

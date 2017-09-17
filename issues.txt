@@ -1,0 +1,8 @@
+Windows:
+* Not saving/loading keymaps sometimes?
+
+Linux:
+* Seg fault whenever drawTilemap/drawTile is called
+
+Game:
+* Two chests, one in W3 and another in W4, have issues displaying item names
