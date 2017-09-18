@@ -301,7 +301,6 @@ void drawGame(player* player, char* textInput)
 
 int mainLoop(player* playerSprite)
 {
-    printf("started main loop\n");
     bool quit = false, press = false;
     SDL_Event e;
     int frame = 0, exitCode = LOOP_QUIT;
@@ -313,7 +312,7 @@ int mainLoop(player* playerSprite)
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
         //use the int "map" when testing if user is in a map with a boss/chest?
     }
-    //on Linux, seg fault after calling drawTile
+    //on Linux, seg fault after calling drawTile/map
     drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false);
     drawHUD(playerSprite);
     sprite entity;
@@ -413,35 +412,35 @@ int mainLoop(player* playerSprite)
     else
     {
         {
-            printf("finding if chest exists: ");
+            //printf("finding if chest exists: ");
             double arrayOfMaps[SIZE_OF_CHEST_ARRAY] = ARRAY_OF_CHEST_IDS;
             found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
-            printf("found\n");
+            //printf("found\n");
         }
         if (found != -1)
         {
-            printf("finding chest: ");
+            //printf("finding chest: ");
             type = type_chest;
             index = TILE_ID_CHEST;
             int chestX[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_XS;
             int chestY[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_YS;
             x *= -1 * chestX[found];
             y *= -1 * chestY[found];
-            printf("found\n");
+            //printf("found\n");
             if (playerSprite->pickedUpChests[found])
                 drawEntityFlag = false;
         }
         else
         {
             {
-                printf("finding if boss exists: ");
+                //printf("finding if boss exists: ");
                 double arrayOfMaps[SIZE_OF_BOSS_ARRAY] = ARRAY_OF_BOSS_IDS;
                 found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
-                printf("found\n");
+                //printf("found\n");
             }
             if (found != -1 && playerSprite->beatenBosses / 10 < playerSprite->worldNum)
             {
-                printf("finding boss: ");
+                //printf("finding boss: ");
                 type = type_boss;
                 int bossX[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_XS;
                 int bossY[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_YS;
@@ -452,11 +451,11 @@ int mainLoop(player* playerSprite)
                     x *= -1 * bossX[found];
                     y *= -1 * bossY[found];
                 }
-                printf("found\n");
+                //printf("found\n");
             }
         }
     }
-    printf("loaded sprite\n");
+    //printf("loaded sprite\n");
     initSprite(&entity, x, y, TILE_SIZE, index, type);
     if (drawEntityFlag)
         drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
@@ -1485,6 +1484,15 @@ bool doBattle(player* player, bool isBoss)
             else
                 player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
             player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 23); // <-reg boss beaten = +10, world 7 alt boss = +1
+        }
+        else
+        {
+            if (isBoss && player->worldNum == 8)
+            {
+                aWallOfText("And...", "With the vanquish of the Dragons King, peace is restored to wounded Uvutu. You take the throne yourself, leading your nation justly.   ~THE END~", false);
+                savePlayerData(player, SAVE_FILE_NAME);
+                player->beatenBosses += 10;
+            }
         }
     }
     return won || run;

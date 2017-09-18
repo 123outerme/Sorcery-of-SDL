@@ -408,20 +408,19 @@ void loadConfig(char* filePath)
 void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
-    {
         for(int dx = startX; dx < endX; dx++)
             drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-    }
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
 
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
 {
+    SDL_Rect rect1 = {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width};
+    SDL_Rect rect2 = {.x = xCoord, .y = yCoord, .w = width, .h = width};
+    SDL_Point center = {.x = width / 2, .y = width / 2};
     //printf("%d , %d\n", id  / 8, (id % 8));
-    SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect){.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}),
-                   &((SDL_Rect){.x = xCoord, .y = yCoord, .w = width, .h = width}), 0 , NULL, flip);
-
+    SDL_RenderCopyEx(mainRenderer, tilesetTexture, &rect1, &rect2, 0, &center, flip);
     //SDL_RenderPresent(mainRenderer);
 }
 

@@ -1,3 +1,12 @@
+18 September 2017
+   released version 1.0.1 Release of SorcerySDL
+
+     Change log:
+        -Fixed: World 8 Boss erroneously dropped a Teleport Stone; fixed that
+        -Fixed: Teleport Stone menu bounds checking
+        -Fixed: Issues with collecting chests past W3; added all items into chests
+        -Added: Game ending wall of text
+
 17 September 2017
    released version 1.0.1 Release of SorcerySDL
 
