@@ -90,7 +90,7 @@
 
 #define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 10, 14, 6, 2, 1, 5, 6, 4, 16, 5, 18, 3, 3}
 #define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 8, 2, 9, 5, 12, 4, 5, 10, 5, 7, 7, 10, 10}
-#define ARRAY_OF_CHEST_ITEMS {991, 981, 971, 961, 972}
+#define ARRAY_OF_CHEST_ITEMS {991, 981, 971, 961, 972, 992, 973, 972, 962, 963, 974, 964, 993, 975, 976, 994, 966, 978, 994, 977, 978}
 #define SIZE_OF_CHESTDATA_ARRAY 21
 
 #define ARRAY_OF_BOSS_XS {14, 11, 7, 10, 5, 12, 14, 7, 11}
@@ -889,7 +889,7 @@ int showItems(player* player)
 
                             if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
                             {
-                                if (cursor.y < (player->beatenBosses / 10 + 6) * TILE_SIZE)
+                                if (cursor.y < (player->beatenBosses / 10 + 5) * TILE_SIZE)
                                     cursor.y += TILE_SIZE;
                             }
 
@@ -1355,7 +1355,7 @@ bool doBattle(player* player, bool isBoss)
     {
         //if you won
         int acquiredGold = 4 - (player->level - enemyIndex);
-        int acquiredExp = 23 + 3 * enemyIndex + (3 * player->worldNum) * (enemyIndex % 3 == 0) - 4 * (player->level - enemyIndex);
+        int acquiredExp = 23 + 3 * enemyIndex + 3 * (player->worldNum * (enemyIndex % 3 == 0)) - 4 * (player->level - enemyIndex);
         if (acquiredGold < 0)
             acquiredGold = 0;
         if (acquiredExp < 0)
@@ -1477,7 +1477,7 @@ bool doBattle(player* player, bool isBoss)
                 }
             }
         }
-        if (isBoss)
+        if (isBoss && player->worldNum != 8)
         {
             int itemLocation = findItem(player, TILE_ID_STONE * 10 + player->worldNum - 1);
             if (itemLocation == -1)
