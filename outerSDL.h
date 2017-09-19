@@ -120,6 +120,7 @@ void configureKeys();  //opens keybinding menu
 void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int selection);  //gets a new key
 void drawGame(player* player, char* textInput);  //draws overworld stuff
 int mainLoop(player* playerSprite);  //does main overworld loop
+void drawEntity(sprite entity, bool doDraw, bool saveEntity, bool loadEntity);  //draws an entity, and can save it as well
 void drawHUD(player* player);  //draws HUD in overworld
 void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect);  //draws the NPC-style text box
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //menu

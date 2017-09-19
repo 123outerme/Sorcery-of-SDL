@@ -457,8 +457,7 @@ int mainLoop(player* playerSprite)
     }
     //printf("loaded sprite\n");
     initSprite(&entity, x, y, TILE_SIZE, index, type);
-    if (drawEntityFlag)
-        drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
+    drawEntity(entity, drawEntityFlag, true, false);
     drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
     SDL_RenderPresent(mainRenderer);
     SDL_Delay(220);
@@ -530,6 +529,27 @@ int mainLoop(player* playerSprite)
         SDL_Delay(1000 / FRAMERATE);
     }
     return exitCode;
+}
+
+void drawEntity(sprite entity, bool doDraw, bool saveEntity, bool loadEntity)
+{
+    static sprite entitySaved;
+    static bool drawIt;
+    if (saveEntity)
+    {
+        initSprite(&entitySaved, entity.x, entity.y, TILE_SIZE, entity.tileIndex, entity.type);
+        drawIt = doDraw;
+    }
+        if (saveEntity || loadEntity)
+        {
+            if (drawIt)
+                drawTile(entitySaved.tileIndex, entitySaved.x, entitySaved.y, TILE_SIZE, SDL_FLIP_NONE);
+        }
+        else
+        {
+            if (doDraw)
+                drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
+        }
 }
 
 void drawHUD(player* player)
