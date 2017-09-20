@@ -1,8 +1,8 @@
 Windows:
-* Not saving/loading keymaps sometimes?
+* None reported so far
 
 Linux:
-* Seg fault whenever drawTilemap/drawTile is called (VM?)
+* Seg fault whenever drawTilemap/drawTile is called (VM problem?)
 
 Game:
 * Exp gain too fast (fixed?)
