@@ -122,7 +122,6 @@
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
-//* Add in ending text, forcing a save, and returning to overworld to battle code
 
 int main(int argc, char* argv[])
 {
@@ -131,46 +130,52 @@ int main(int argc, char* argv[])
 	if (!succeeded)
     {
         int selection = 0;
-        do
+        while(selection != MENU_QUIT && selection != ANYWHERE_QUIT)
         {
-            selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "SETTINGS", "QUIT", " ", 4, selection, MAIN_MENU_PALETTE, false, true);
-            if (selection == MENU_SETTINGS)
-                selection = showSettings();
-        }
-        while (selection == MENU_SETTINGS);
-        if (selection < MENU_SETTINGS && selection != ANYWHERE_QUIT)
-        {
-            succeeded = startGame(&player, selection == MENU_NEW_SAVE);
-            int loopCode = LOOP_GOTO_MENU;
-            while (loopCode)
+            do
             {
-                loopCode = mainLoop(&player);
-                if (loopCode == LOOP_GOTO_BATTLE || loopCode == LOOP_GOTO_BATTLE_BOSS)
-                    doBattle(&player, loopCode == LOOP_GOTO_BATTLE_BOSS);
-                if (loopCode == LOOP_GOTO_MENU)
+                selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "SETTINGS", "QUIT", " ", 4, selection, MAIN_MENU_PALETTE, false, true);
+                if (selection == MENU_SETTINGS)
+                    selection = showSettings();
+            }
+            while (selection == MENU_SETTINGS);
+            if (selection < MENU_SETTINGS && selection != ANYWHERE_QUIT)
+            {
+                succeeded = startGame(&player, selection == MENU_NEW_SAVE);
+                int loopCode = LOOP_GOTO_MENU;
+                while (loopCode > 0)
                 {
-                    loopCode = -2;
-                    while (loopCode == OVERWORLD_STATS || loopCode == OVERWORLD_ITEMS || loopCode == -2)
+                    loopCode = mainLoop(&player);
+                    if (loopCode == LOOP_GOTO_BATTLE || loopCode == LOOP_GOTO_BATTLE_BOSS)
+                        doBattle(&player, loopCode == LOOP_GOTO_BATTLE_BOSS);
+                    if (loopCode == ANYWHERE_QUIT)
+                        selection = MENU_QUIT;
+                    if (loopCode == LOOP_GOTO_MENU)
                     {
-                        loopCode = aMenu(player.name, "BACK", "STATS", "ITEMS", "SAVE + CONTINUE", "SAVE + QUIT", 5, loopCode, OVERWORLD_MENU_PALETTE, true, false);
-                        if (loopCode == OVERWORLD_SAVE_RETURN)
-                            savePlayerData(&player, SAVE_FILE_NAME);
-                        if (loopCode == OVERWORLD_STATS)
-                            loopCode = showStats(&player);
-                        if (loopCode == OVERWORLD_ITEMS)
-                            loopCode = showItems(&player);
-                        if (loopCode == OVERWORLD_QUIT || loopCode == ANYWHERE_QUIT)
-                            loopCode = LOOP_QUIT;
+                        loopCode = -2;
+                        while (loopCode == OVERWORLD_STATS || loopCode == OVERWORLD_ITEMS || loopCode == -2)
+                        {
+                            loopCode = aMenu(player.name, "BACK", "STATS", "ITEMS", "SAVE + CONTINUE", "SAVE + QUIT", 5, loopCode, OVERWORLD_MENU_PALETTE, true, false);
+                            if (loopCode == OVERWORLD_SAVE_RETURN)
+                                savePlayerData(&player, SAVE_FILE_NAME);
+                            if (loopCode == OVERWORLD_STATS)
+                                loopCode = showStats(&player);
+                            if (loopCode == OVERWORLD_ITEMS)
+                                loopCode = showItems(&player);
+                            if (loopCode == OVERWORLD_QUIT)
+                                loopCode = LOOP_QUIT;
+                            if (loopCode == ANYWHERE_QUIT)
+                                selection = loopCode;
+                        }
                     }
                 }
-
+                //printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
+                savePlayerData(&player, SAVE_FILE_NAME);
+                saveConfig(CONFIG_FILE_NAME);
             }
-            //printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
-            savePlayerData(&player, SAVE_FILE_NAME);
-            saveConfig(CONFIG_FILE_NAME);
         }
-        closeSDL();
-	}
+            closeSDL();
+    }
 	return succeeded;
 }
 
@@ -181,11 +186,13 @@ int showSettings()
     {
         selection = aMenu("SETTINGS", "CONFIGURE KEYS", "HELP", "BACK", " ", " ", 3, 1, MAIN_MENU_PALETTE, false, false);
         if (selection == 2)
-            aWallOfText("Sorcery of Uvutu", "^<V> to move. Use ESC to enter menu. Spacebar to talk to people. Spacebar in the Menu to select an option. Critical Hits are marked by a RED X, and Weakness by a YELLOW +. See the README.", true);
+            aWallOfText("Sorcery of Uvutu", "Default keys are ^<V> to move, ESC to enter menu, Spacebar to talk to people & in the Menu to select an option. Critical Hits are marked by a RED X, and Weakness by a YELLOW +. See the README for more.", true, false);
         if (selection == 1)
             configureKeys();
+        if (selection > 0)
+            selection = MENU_SETTINGS;
     }
-    return MENU_SETTINGS;
+    return selection;
 }
 
 void configureKeys()
@@ -202,27 +209,27 @@ void configureKeys()
         //foreground text
         drawText("CONFIGURE KEYS", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, textColor, false);
 
-        char* buffer = "";
-        char firstText[99];
-        strcpy(firstText, "UP: ");
-        drawText(strcat(firstText, toString(SC_UP, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+        char keyText[99];
+        strcpy(keyText, "UP: ");
+        drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_UP))), 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+        //we don't use SDL_GetScancodeName() because the SDL documentation warns that it isn't a stable way to get key names
 
-        strcpy(firstText, "DOWN: ");
-        drawText(strcat(firstText, toString(SC_DOWN, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+        strcpy(keyText, "DOWN: ");
+        drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_DOWN))), 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
 
-        strcpy(firstText, "LEFT: ");
-        drawText(strcat(firstText, toString(SC_LEFT, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+        strcpy(keyText, "LEFT: ");
+        drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_LEFT))), 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
 
-        strcpy(firstText, "RIGHT: ");
-        drawText(strcat(firstText, toString(SC_RIGHT, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+        strcpy(keyText, "RIGHT: ");
+        drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_RIGHT))), 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
 
-        strcpy(firstText, "CONFIRM: ");
-        drawText(strcat(firstText, toString(SC_INTERACT, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
+        strcpy(keyText, "CONFIRM: ");
+        drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_INTERACT))), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
 
-        strcpy(firstText, "MENU: ");
-        drawText(strcat(firstText, toString(SC_MENU, buffer)), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
+        strcpy(keyText, "MENU: ");
+        drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_MENU))), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
         drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, true);
-        drawText("Default is W, S,   A, D, Space, Esc", 1 * TILE_SIZE + TILE_SIZE / 4, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, true);
+        drawText("Default is W/S/A/D, Space, Esc", 3 * TILE_SIZE / 4, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, true);
         SDL_Event e;
         bool quit = false;
         //While application is running
@@ -467,7 +474,10 @@ int mainLoop(player* playerSprite)
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
             if (e.type == SDL_QUIT)
+            {
                 quit = true;
+                exitCode = ANYWHERE_QUIT;
+            }
         }
         if (frame == 0)
             press = checkKeyPress(playerSprite);
@@ -506,6 +516,7 @@ int mainLoop(player* playerSprite)
         {
             if (entity.type == type_boss)
             {
+                drawEntity(entity, false, true, false);
                 exitCode = LOOP_GOTO_BATTLE_BOSS;
                 quit = true;
             }
@@ -513,19 +524,21 @@ int mainLoop(player* playerSprite)
             {
                 int itemArray[SIZE_OF_CHESTDATA_ARRAY] = ARRAY_OF_CHEST_ITEMS;
                 if (!playerSprite->pickedUpChests[found] && pickedUp)
+                {
                     pickedUp = pickupItem(playerSprite, itemArray[found], found, true);
-                //pick up chest here
+                    drawEntity(entity, false, true, false);
+                    //pick up chest here
+                }
             }
         }
 
         frame += press;
 
-        if (frame % 6 == 0)
+        if (frame % 7 == 0)
         {
             frame = 0;
             press = false;
         }
-
         SDL_Delay(1000 / FRAMERATE);
     }
     return exitCode;
@@ -540,16 +553,16 @@ void drawEntity(sprite entity, bool doDraw, bool saveEntity, bool loadEntity)
         initSprite(&entitySaved, entity.x, entity.y, TILE_SIZE, entity.tileIndex, entity.type);
         drawIt = doDraw;
     }
-        if (saveEntity || loadEntity)
-        {
-            if (drawIt)
-                drawTile(entitySaved.tileIndex, entitySaved.x, entitySaved.y, TILE_SIZE, SDL_FLIP_NONE);
-        }
-        else
-        {
-            if (doDraw)
-                drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
-        }
+    if (saveEntity || loadEntity)
+    {
+        if (drawIt)
+            drawTile(entitySaved.tileIndex, entitySaved.x, entitySaved.y, TILE_SIZE, SDL_FLIP_NONE);
+    }
+    else
+    {
+        if (doDraw)
+            drawTile(entity.tileIndex, entity.x, entity.y, TILE_SIZE, SDL_FLIP_NONE);
+    }
 }
 
 void drawHUD(player* player)
@@ -670,19 +683,32 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
     return selection;
 }
 
-int aWallOfText(char* title, char* text, bool showHelpInfo)
+int aWallOfText(char* title, char* text, bool showHelpInfo, bool fadeIn)
 {
-    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
-    SDL_RenderFillRect(mainRenderer, NULL);
-    //background text (drawn first)
-    drawText(title, 21 * SCREEN_WIDTH / 128, 1 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 127 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
-    //foreground text
-    drawText(title, 10 * SCREEN_WIDTH / 64, 0, 54 * SCREEN_WIDTH / 64, SCREEN_HEIGHT, (SDL_Color){24, 162, 239}, false);
+    if (fadeIn)
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+    for(int i = 255; i > (fadeIn ? 0 : 254); i--)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        //background text (drawn first)
+        drawText(title, 21 * SCREEN_WIDTH / 128, 1 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 127 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
+        //foreground text
+        drawText(title, 10 * SCREEN_WIDTH / 64, 0, 54 * SCREEN_WIDTH / 64, SCREEN_HEIGHT, (SDL_Color){24, 162, 239}, false);
 
-    drawText(text, 0, TILE_SIZE + TILE_SIZE / 2, SCREEN_WIDTH, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){24, 195, 247}, !showHelpInfo);
-    if (showHelpInfo)
-        drawText("By Stephen Policelli", 0, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
-
+        drawText(text, 0, TILE_SIZE + TILE_SIZE / 2, SCREEN_WIDTH, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+        if (showHelpInfo)
+            drawText("By Stephen Policelli", 0, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){24, 195, 247}, false);
+        if (fadeIn)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) i);
+            SDL_RenderFillRect(mainRenderer, NULL);
+            SDL_Delay(2);
+        }
+        SDL_RenderPresent(mainRenderer);
+    }
+    if (fadeIn)
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
     waitForKey();
     return MENU_SETTINGS;
 }
@@ -720,29 +746,29 @@ int showStats(player* player)
 
     char* allAttacks = ALL_ATTACKS, thisAttack[6] = "     \0";
     if (player->move1)
-        {
-        drawText(strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 9 * TILE_SIZE, (WIDTH_IN_TILES - 6) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 9) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-        drawTile(player->move1, 12 * TILE_SIZE, 9 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        }
+    {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5), 10 * TILE_SIZE +  TILE_SIZE / 4, 9 * TILE_SIZE, (WIDTH_IN_TILES - 10) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 9) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move1, 16 * TILE_SIZE, 9 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    }
     if (player->move2)
-        {
-        drawText(strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 10 * TILE_SIZE, (WIDTH_IN_TILES - 6) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 10) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-        drawTile(player->move2, 12 * TILE_SIZE, 10 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        }
+    {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5), 10 * TILE_SIZE +  TILE_SIZE / 4, 10 * TILE_SIZE, (WIDTH_IN_TILES - 10) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 10) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move2, 16 * TILE_SIZE, 10 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    }
     if (player->move3)
-        {
-        drawText(strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (WIDTH_IN_TILES - 6) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-        drawTile(player->move3, 12 * TILE_SIZE, 11 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        }
+    {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5), 10 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (WIDTH_IN_TILES - 10) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move3, 16 * TILE_SIZE, 11 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    }
     if (player->move4)
-        {
-        drawText(strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5), 6 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (WIDTH_IN_TILES - 6) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-        drawTile(player->move4, 12 * TILE_SIZE, 12 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        }
-    drawText("W:", 4 * TILE_SIZE +  TILE_SIZE / 4, 9 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 9) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-    drawText("A:", 4 * TILE_SIZE +  TILE_SIZE / 4, 10 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 10) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-    drawText("S:", 4 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-    drawText("D:", 4 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (WIDTH_IN_TILES - 4) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+    {
+        drawText(strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5), 10 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (WIDTH_IN_TILES - 10) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+        drawTile(player->move4, 16 * TILE_SIZE, 12 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    }
+    drawText("Up:", 3 * TILE_SIZE +  TILE_SIZE / 4, 9 * TILE_SIZE, (WIDTH_IN_TILES - 3) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 9) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("Left:", 3 * TILE_SIZE +  TILE_SIZE / 4, 10 * TILE_SIZE, (WIDTH_IN_TILES - 3) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 10) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("Down:", 3 * TILE_SIZE +  TILE_SIZE / 4, 11 * TILE_SIZE, (WIDTH_IN_TILES - 3) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("Right:", 3 * TILE_SIZE +  TILE_SIZE / 4, 12 * TILE_SIZE, (WIDTH_IN_TILES - 3) * TILE_SIZE - TILE_SIZE / 4, (HEIGHT_IN_TILES - 12) * TILE_SIZE, (SDL_Color){0, 0, 0}, true);
 
     if (waitForKey() == KCMenu)
         exitCode = ANYWHERE_QUIT;
@@ -767,7 +793,7 @@ int showItems(player* player)
         {
             if (player->items[i] > 0)
             {
-                char* itemName;
+                char* itemName = "";
                 {
                     if (player->items[i] / 10 == TILE_ID_POTION)
                     {
@@ -950,13 +976,13 @@ int showItems(player* player)
             {
                 char* allAttacks = ALL_ATTACKS;
                 char thisAttack[6] = "     \0";
-                char wArray[9] = "W: ";
+                char wArray[9] = "Up:    ";
                 strcat(wArray, strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5));
-                char aArray[9] = "A: ";
+                char aArray[9] = "Left:  ";
                 strcat(aArray, player->move2 ? strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5) : "     ");
-                char sArray[9] = "S: ";
+                char sArray[9] = "Down:  ";
                 strcat(sArray, player->move3 ? strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5) : "     ");
-                char dArray[9] = "D: ";
+                char dArray[9] = "Right: ";
                 strcat(dArray, player->move4 ? strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5) : "     ");
                 int retCode = aMenu("Which Slot?", wArray, aArray, sArray, dArray, "BACK", 5, 0, OVERWORLD_MENU_PALETTE, true, false);
                 //use aMenu() to do the move replacement menu
@@ -1230,7 +1256,54 @@ bool doBattle(player* player, bool isBoss)
                 playerTurn = true;
                 if (player->HP > 0)
                 {
-                    crit = 0 < ((rand() % (11 + 2 * (attackCode > 55) + 5 * (attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN))) - 9);
+                    if (attackCode != ATTACK_CODE_RUN && attackCode != ATTACK_CODE_BLOCK)
+                    {
+                        if (attackCode > ATTACK_CODE_BLOCK)
+                        {
+                            //if it's a magic attack
+                            for(int x = 1; x < TILE_SIZE + 1; x++)
+                            {
+                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE, .y = 7 * TILE_SIZE, .w = 2 * TILE_SIZE, .h = TILE_SIZE}));
+                                drawTile(TILE_ID_TOME, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                                drawTile(player->spr.tileIndex, 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                                SDL_RenderPresent(mainRenderer);
+                                SDL_Delay(1);
+                            }
+                            //quickly presenting tome follow by spell cast
+                            SDL_Delay(200);
+                        }
+                        else
+                        {
+                            //if it's a physical attack
+                            for(int x = 0; x > -6; x--)
+                            {
+                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE + x + 1, .y = 7 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                                drawTile(player->spr.tileIndex, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                                SDL_RenderPresent(mainRenderer);
+                                SDL_Delay(15);
+                            }
+                            SDL_Delay(15);
+                            //quick backstep animation
+                            for(int x = -6; x < TILE_SIZE; x++)
+                            {
+                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE + x - 1, .y = 7 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                                drawTile(player->spr.tileIndex, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                                SDL_RenderPresent(mainRenderer);
+                                SDL_Delay(1);
+                            }
+                            //from backstep, pushing foward
+                            for (int x = TILE_SIZE; x > -1; x--)
+                            {
+                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE + x + 1, .y = 7 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                                drawTile(player->spr.tileIndex, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                                SDL_RenderPresent(mainRenderer);
+                                SDL_Delay(1);
+                            }
+                            //retreating to neutral after attack
+                            //the reason for x > -1 is because it'll display at x == 0, fully resetting the position.
+                        }
+                    }
+                    crit = 0 < ((rand() % (11 + 2 * (attackCode > ATTACK_CODE_BLOCK) + 5 * (attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN))) - 9);
                     if (crit && attackCode != ATTACK_CODE_BLOCK && attackCode != ATTACK_CODE_RUN)
                     drawTile(TILE_ID_CRITICAL, enemy.x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                     drawTile(attackCode, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 4 * TILE_SIZE : enemy.x, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 7 * TILE_SIZE : enemy.y, TILE_SIZE, SDL_FLIP_NONE);
@@ -1239,14 +1312,14 @@ bool doBattle(player* player, bool isBoss)
                     char input[6];
                     if (attackCode != ATTACK_CODE_RUN && attackCode != ATTACK_CODE_BLOCK)
                     {
-                        strncpy(input, (allAttacks + (attackCode - 40) * 5), 5);
                         input[5] = '\0';
+                        strncpy(input, (allAttacks + (attackCode - 40) * 5), 5);
 
                         double rawDMG;
                         if (attackCode < 55)
-                            rawDMG = iPart( 7 + pow(((player->attack - 1.0) * 1.2), 1.3));
+                            rawDMG = iPart(7 + pow(((player->attack - 1.0) * 1.2), 1.3));
                         if (attackCode > 55)
-                            rawDMG = iPart(6 + pow(((player->attack - 1) * 1.2), 1.25));
+                            rawDMG = iPart(6 + pow(((player->attack - 1.0) * 1.2), 1.25));
                         if (attackCode % 2 == 1)
                         {
                             if (attackCode < 54)
@@ -1293,6 +1366,32 @@ bool doBattle(player* player, bool isBoss)
                 playerTurn = false;
                 if (enemyHP > 0 && !run)
                 {
+                    for(int x = 0; x < 6; x++)
+                    {
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = enemy.x + x - 1, .y = enemy.y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        drawTile(enemy.tileIndex, enemy.x + x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
+                        SDL_RenderPresent(mainRenderer);
+                        SDL_Delay(15);
+                    }
+                    SDL_Delay(40);
+                    //heavier backstep
+                    for(int x = 6; x > -TILE_SIZE; x--)
+                    {
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = enemy.x + x + 1, .y = enemy.y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        drawTile(enemy.tileIndex, enemy.x + x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
+                        SDL_RenderPresent(mainRenderer);
+                        SDL_Delay(2);
+                    }
+                    //from backstep, pushing forward
+                    for (int x = -TILE_SIZE; x < 1; x++)
+                    {
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = enemy.x + x - 1, .y = enemy.y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        drawTile(enemy.tileIndex, enemy.x + x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
+                        SDL_RenderPresent(mainRenderer);
+                        SDL_Delay(1);
+                    }
+                    //going back to neutral
+                    //the reason for x < 1 is because it'll update for x == 0, fully resetting the position.
                     drawTile(39 + enemyIndex - (enemyIndex % 3 == 0), 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                     strcpy(textBoxText, enemyName);
                     strcat(textBoxText, " USED ");
@@ -1339,7 +1438,9 @@ bool doBattle(player* player, bool isBoss)
                     drawText(toString(blockTurns, buffer), 13 * TILE_SIZE + 2 * TILE_SIZE / 8, (10 + dispDamage) * TILE_SIZE + 2 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
                 }
                 SDL_Delay(750);
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = redrawX, .y = redrawY, .w = TILE_SIZE, .h = TILE_SIZE}));
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = redrawX, .y = redrawY, .w =  TILE_SIZE, .h = TILE_SIZE}));
+                if (attackCode > ATTACK_CODE_BLOCK && playerTurn)
+                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 5 * TILE_SIZE, .y = 7 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
                 drawTile(redrawIndex, redrawX, redrawY, TILE_SIZE, SDL_FLIP_NONE);
                 SDL_RenderPresent(mainRenderer);
                 waitForKey();
@@ -1359,14 +1460,19 @@ bool doBattle(player* player, bool isBoss)
         player->mapScreen = 10;
         player->spr.x = 4 * TILE_SIZE;
         player->spr.y = 6 * TILE_SIZE;
-        SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
-        for(int i = 0; i <= TILE_SIZE * 9; i += 2)
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+        for(int i = 0; i <= (TILE_SIZE * 9 + 4); i += 2)
         {
+            SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, ((double) i / (TILE_SIZE * 18) * 255));
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.w = SCREEN_WIDTH, .h = i}));
             SDL_RenderPresent(mainRenderer);
             SDL_Delay(2);
         }
-    SDL_Delay(650);
+        SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.w = SCREEN_WIDTH, .h = 9 * TILE_SIZE + 2}));
+        SDL_RenderPresent(mainRenderer);
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
+        SDL_Delay(650);
     }
     drawTextBox(won ? "You won!" : run ? "You fled!" : "You lost!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
     waitForKey();
@@ -1489,7 +1595,7 @@ bool doBattle(player* player, bool isBoss)
                 {
                     if (player->statPts)
                     {
-                        drawTextBox("QUIT WITHOUT USING ALL PTS?        SPACE = YES      ANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                        drawTextBox("QUIT WITHOUT USING ALL PTS?        Confirm = YES    ANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
                         SDL_Delay(400);
                         quit = waitForKey() == KCInteract;
                     }
@@ -1500,7 +1606,7 @@ bool doBattle(player* player, bool isBoss)
         {
             int itemLocation = findItem(player, TILE_ID_STONE * 10 + player->worldNum - 1);
             if (itemLocation == -1)
-                pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false);
+                /*pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false)*/;
             else
                 player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
             player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 23); // <-reg boss beaten = +10, world 7 alt boss = +1
@@ -1509,9 +1615,9 @@ bool doBattle(player* player, bool isBoss)
         {
             if (isBoss && player->worldNum == 8)
             {
-                aWallOfText("And...", "With the vanquish of the Dragons King, peace is restored to wounded Uvutu. You take the throne yourself, leading your nation justly.   ~THE END~", false);
-                savePlayerData(player, SAVE_FILE_NAME);
+                aWallOfText("And...", "With the vanquish of the Dragons King, peace is restored to wounded Uvutu. You take the throne yourself, leading your nation justly.   ~THE END~", false, true);
                 player->beatenBosses += 10;
+                savePlayerData(player, SAVE_FILE_NAME);
             }
         }
     }

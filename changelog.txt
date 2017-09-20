@@ -1,4 +1,16 @@
 19 September 2017
+   released version 1.1.0 Release Candidate of SorcerySDL
+
+     Change log:
+        -Added: Fade in, in the Intro & outro text walls
+        -Added: Code to return to the main menu after you save + quit, instead of just exiting. Clicking X will still stop execution entirely
+        -Fixed: Opening cmd prompt when game is run; has to be compiled with a -mwindows flag, and then no longer opens cmd prompt
+        -Fixed: Attack displays in Stats menu and when adding a move: Changed from WASD to Up/Left/Right/Down/just like battle menu
+        -Added: New attack animations: Whenever you do a phys. attack or the enemy attacks, they do a "rush forward" animation followed by their attack. When you do a magic attack, you pull out your tome and cast it.
+        -Added: Text describing the keybindings instead of numbers
+        -Added: Transparency to the "You lost" animation; now has a fuzzy border near the top
+
+19 September 2017
    released version 1.0.3 Release Candidate of SorcerySDL
 
      Change log:
@@ -27,87 +39,3 @@
         -Cleaned: Battle display setup
         -Cleaned: NPC text selection
         -Added: Teleport stone functionality
-
-15 September 2017
-   released version 0.1.1 Beta of SorcerySDL
-
-     Change log:
-        -Added: Extra param to removeChar that allows it to search and remove chars back-to-front or front-to-back
-        -Added: Used extra param to remove any spaces before player name
-        -Added: Full custom input code
-
-14 September 2017
-   released version 0.1.11 of SorcerySDL
-
-     Change log:
-        -Added: Intro text wall
-        -Added: Minor bits of code that I'll fill in later to help me implement NPC text
-
-11 September 2017
-   released version 0.1.11 of SorcerySDL
-
-     Change log:
-        -Added: code for custom keymapping
-        -Added: sorceryConfig.ini; config file to store various settings
-
-11 September 2017
-   released version 0.1.10 of SorcerySDL
-
-     Change log:
-        -Cleaned: text box code: specifically NPC text boxes
-
-5 September 2016
-   released version 0.1.9 of SorcerySDL
-
-    Change log:
-        -Added: Fully-functioning items, chest pickups, etc.
-        -Added: Boss and chest trigger/display code
-
-26 August 2017
-   released version 0.1.8 of SorcerySDL
-
-     Change log:
-        -Fixed: loading a save file that wasn't correctly formatted (ex. too few lines, etc.); now creates a new game upon detecting such an issue
-        -Added: Stat point upgrade code
-
-25 August 2017
-   released version 0.1.7 of SorcerySDL
-
-     Change log:
-        -Added: Actual attacks, win/loss events (such as gaining exp), and level up code (no stat increases or visual for level ups yet)
-
-25 August 2017
-   released version 0.1.6 of SorcerySDL
-
-     Change log:
-        -Added: Added full battle mechanics (still have to give winning rewards, do level ups, etc.)
-        -Added: Added blinking cursor to the player name input code
-
-24 August 2017
-   released version 0.1.5 of SorcerySDL
-
-     Change log:
-     Added: Added ability to put space in names
-     Added:	Added to the maximum character limit on names (is now 9)
-     Changed: drawTile() now renders by screen coords, not by tile
-     Changed: drawText(), drawTextbox(), and loadTextTexture() all now have additional arguments for a max width
-
-23 August 2017
-   released version 0.1.2 of SorcerySDL
-
-     Change log:
-        -Added: Basic items menu
-        -Fixed: Custom name input menu
-
-23 August 2017
-   released version 0.1.1 of SorcerySDL
-
-     Change log:
-        -Added: Custom string input (done in under 30 mins!)
-
-23 August 2017
-   released version 0.1.0 of NewTxtrTst
-
-     Change log:
-        -Added: Added status of v0.1
-

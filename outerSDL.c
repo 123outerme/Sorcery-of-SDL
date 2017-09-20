@@ -207,8 +207,8 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
         player->pickedUpChests[i] = 0;
     }
     printf("Got to the wall of text.");
-    aWallOfText("Intro", "A long time ago, the nameless One of the Prophesy made a choice that would seemingly change everything. Sadly, a new King came to power, and Uvutu crumbled. The One lived to have a child, whom you are. Save your homeland.", false);
-    SDL_Delay(600);
+    aWallOfText("Intro", "A long time ago, the nameless One of the Prophesy made a choice that would seemingly change everything. Sadly, a new King came to power, and Uvutu crumbled. The One lived to have a child, whom you are. Save your homeland.", false, true);
+    SDL_Delay(300);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
@@ -470,7 +470,7 @@ bool checkKeyPress(player* playerSprite)
                 sprite entity;
                 for(int i = 0; i < TILE_SIZE; i++)
                 {
-                    SDL_Delay(1);
+                    //SDL_Delay(1);
                     //delay for a more visually fluid timing
                     drawTile(tilemap[thisY][thisX], thisX * TILE_SIZE, thisY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                     drawTile(tilemap[nextY][nextX], nextX * TILE_SIZE, nextY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
@@ -798,7 +798,7 @@ bool checkFile(char* filePath, int desiredLines)
 	if (!filePtr)
 		return 0;
     char ch;
-    int lines;
+    int lines = 0;
     while(!feof(filePtr))
     {
       ch = fgetc(filePtr);

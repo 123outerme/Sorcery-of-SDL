@@ -5,4 +5,4 @@ Linux:
 * Seg fault whenever drawTilemap/drawTile is called (VM?)
 
 Game:
-* Exp gain too fast
+* Exp gain too fast (fixed?)

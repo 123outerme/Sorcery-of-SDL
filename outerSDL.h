@@ -124,7 +124,7 @@ void drawEntity(sprite entity, bool doDraw, bool saveEntity, bool loadEntity);  
 void drawHUD(player* player);  //draws HUD in overworld
 void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect);  //draws the NPC-style text box
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //menu
-int aWallOfText(char* title, char* text, bool showHelpInfo);  //draws a wall of text for the player to read & dismiss
+int aWallOfText(char* title, char* text, bool showHelpInfo, bool fadeIn);  //draws a wall of text for the player to read & dismiss
 int showStats(player* player);  //opens stats display
 int showItems(player* player);  //shows list of player items
 bool doBattle(player* player, bool isBoss);  //does a battle
@@ -141,7 +141,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex);  //initi
 void initConfig(char* filePath);  //resets config data
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void inputName(player* player);  //gets the name of the sprite by prompting player
-void loadMapFile();  //loads a map from a file
+void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x);  //loads a map from a file
 void loadConfig(char* filePath);  //loads config data into the public variables
 void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap to the screen
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile to the screen
