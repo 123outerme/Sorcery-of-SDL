@@ -1,4 +1,4 @@
-# ->~ ~=> Sorcery of Uvutu <=~ ~<-
+# ->\~\~=> Sorcery of Uvutu <=\~\~<-
 Thanks for downloading Sorcery of Uvutu! This was a passion project of mine I started in 2015, developing
 at that time on the TI-84+CSE calculator. I ported it to the TI-84+ monochrome series in 2016, and
 ported to the PC in 2017.
