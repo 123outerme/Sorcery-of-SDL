@@ -122,6 +122,7 @@
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
+//* Change the Up/Down/Left/Right text in the stats menu and changing attacks menu to ^/V/</> for a better text fit
 
 int main(int argc, char* argv[])
 {
@@ -130,9 +131,8 @@ int main(int argc, char* argv[])
 	if (!succeeded)
     {
         int selection = 0;
-        //while(selection != MENU_QUIT && selection != ANYWHERE_QUIT)
-        //{
-        //we can't let the user come back into the main loop anymore; the savefile doesn't update until after the program exits
+        while(selection != MENU_QUIT && selection != ANYWHERE_QUIT)
+        {
             do
             {
                 selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "SETTINGS", "QUIT", " ", 4, selection, MAIN_MENU_PALETTE, false, true);
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
                 //printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
                 savePlayerData(&player, SAVE_FILE_NAME);
                 saveConfig(CONFIG_FILE_NAME);
-            //}
+            }
         }
             closeSDL();
     }

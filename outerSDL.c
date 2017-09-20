@@ -789,7 +789,10 @@ int createFile(char* filePath)
 		return -1;
 	}
 	else
+    {
+        fclose(filePtr);
 		return 0;
+    }
 }
 
 bool checkFile(char* filePath, int desiredLines)
@@ -807,6 +810,7 @@ bool checkFile(char* filePath, int desiredLines)
         lines++;
       }
     }
+    fclose(filePtr);
     return lines >= desiredLines;
 }
 
@@ -822,6 +826,7 @@ int writeLine(char* filePath, char* stuff)
 	else
 	{
 		fprintf(filePtr, "%s\n", stuff);
+		fclose(filePtr);
 		return 0;
 	}
 }
