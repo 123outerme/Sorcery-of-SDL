@@ -124,7 +124,6 @@
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
-//* Add in weaknesses
 
 int main(int argc, char* argv[])
 {
@@ -318,7 +317,7 @@ int mainLoop(player* playerSprite)
     char* textInput = "Did you know that this is placeholder text? Me neither.";
     {
         double arrayOfMaps[SIZE_OF_MAP_ARRAY] = ARRAY_OF_MAP_IDS;
-        int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+        int map = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
         //use the int "map" when testing if user is in a map with a boss/chest?
     }
@@ -342,7 +341,7 @@ int mainLoop(player* playerSprite)
         if (playerSprite->worldNum == 7)
             index = TILE_ID_EARL;
         double arrayOfMaps[SIZE_OF_UPGRADER_ARRAY] = ARRAY_OF_UPGRADER_IDS;
-        int isUpgraderMap = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->lastScreen / 100.0), arrayOfMaps, SIZE_OF_UPGRADER_ARRAY);
+        int isUpgraderMap = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->lastScreen / 100.0), arrayOfMaps, SIZE_OF_UPGRADER_ARRAY);
         if (isUpgraderMap != -1)
         {
             index = TILE_ID_BESERKERJ;
@@ -422,7 +421,7 @@ int mainLoop(player* playerSprite)
         {
             //printf("finding if chest exists: ");
             double arrayOfMaps[SIZE_OF_CHEST_ARRAY] = ARRAY_OF_CHEST_IDS;
-            found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
+            found = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_CHEST_ARRAY);
             //printf("found\n");
         }
         if (found != -1)
@@ -443,7 +442,7 @@ int mainLoop(player* playerSprite)
             {
                 //printf("finding if boss exists: ");
                 double arrayOfMaps[SIZE_OF_BOSS_ARRAY] = ARRAY_OF_BOSS_IDS;
-                found = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
+                found = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
                 //printf("found\n");
             }
             if (found != -1 && playerSprite->beatenBosses / 10 < playerSprite->worldNum)
@@ -1344,15 +1343,31 @@ bool doBattle(player* player, bool isBoss)
                             //the reason for x > -1 is because it'll display at x == 0, fully resetting the position.
                         }
                     }
-                    crit = 0 < ((rand() % (11 + 2 * (attackCode > ATTACK_CODE_BLOCK) + 5 * (attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN))) - 9);
-                    if (crit && attackCode != ATTACK_CODE_BLOCK && attackCode != ATTACK_CODE_RUN)
-                    drawTile(TILE_ID_CRITICAL, enemy.x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                     drawTile(attackCode, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 4 * TILE_SIZE : enemy.x, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 7 * TILE_SIZE : enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                     strcpy(textBoxText, player->name);
                     strcat(textBoxText, " USED ");
                     char input[6];
                     if (attackCode != ATTACK_CODE_RUN && attackCode != ATTACK_CODE_BLOCK)
                     {
+                        crit = 0 < ((rand() % (11 + 2 * (attackCode > ATTACK_CODE_BLOCK) + 5 * (attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN))) - 9);
+                        if (crit && attackCode != ATTACK_CODE_BLOCK && attackCode != ATTACK_CODE_RUN)
+                            drawTile(TILE_ID_CRITICAL, enemy.x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
+                        {
+                            int enemy1[5] = {4, 5, 16, 17, 18};
+                            int weakness1[4] = {48, 49, 64, 65};
+                            int enemy2[6] = {7, 8, 9, 13, 14, 15};
+                            int weakness2[4] = {42, 43, 58, 59};
+                            int weakness3[4] = {50, 51, 66, 67};
+                            superEffective = (-1 != checkArrayForIVal(enemyIndex, enemy1, 5) && -1 != checkArrayForIVal(attackCode, weakness1, 4))
+                            || (-1 != checkArrayForIVal(enemyIndex, enemy2, 6) && (attackCode == 56 || attackCode == 57))
+                            || ((enemyIndex == 10 || enemyIndex == 11 || enemyIndex == 12) && -1 != checkArrayForIVal(attackCode, weakness2, 4))
+                            || ((enemyIndex == 19 || enemyIndex == 20 || enemyIndex == 21) && -1 != checkArrayForIVal(attackCode, weakness3, 4))
+                            || (enemyIndex != 21 && (attackCode == 54 || attackCode == 70));
+                            //if (superEffective)
+                                //printf("Attack ID %d is super effective against enemy ID %d.\n", attackCode, enemyIndex);
+                        }
+                        if (superEffective)
+                            drawTile(TILE_ID_SUPEREFFECTIVE, enemy.x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                         input[5] = '\0';
                         strncpy(input, (allAttacks + (attackCode - 40) * 5), 5);
 
@@ -1500,18 +1515,14 @@ bool doBattle(player* player, bool isBoss)
         player->spr.x = 4 * TILE_SIZE;
         player->spr.y = 6 * TILE_SIZE;
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
-        for(int i = 0; i <= (TILE_SIZE * 9 + 4); i += 2)
+        for(int i = 0; i <= 255; i += 2)
         {
-            SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, ((double) i / (TILE_SIZE * 18) * 255));
-            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.w = SCREEN_WIDTH, .h = i}));
+            SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, i);
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.w = SCREEN_WIDTH, .h = 9 * TILE_SIZE}));
             SDL_RenderPresent(mainRenderer);
-            SDL_Delay(2);
+            SDL_Delay(18 - 16 * (i > 90));
         }
-        SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.w = SCREEN_WIDTH, .h = 9 * TILE_SIZE + 2}));
-        SDL_RenderPresent(mainRenderer);
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
-        SDL_Delay(650);
     }
     drawTextBox(won ? "You won!" : run ? "You fled!" : "You lost!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
     waitForKey();

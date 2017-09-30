@@ -142,7 +142,7 @@ bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts)
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended)
 {
     static int wh[] = {0, 0};
-    SDL_Surface* txtSurface;
+    SDL_Surface* txtSurface = NULL;
     if (isBlended)
         txtSurface = TTF_RenderText_Blended_Wrapped(mainFont, text, color, maxW);
 //    else
@@ -547,7 +547,7 @@ bool checkKeyPress(player* playerSprite)
                 }
             }
             double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
-            int map = checkArrayForVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
+            int map = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
             loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             return KEYPRESS_RETURN_BREAK;
         }
@@ -767,7 +767,7 @@ char* removeChar(char input[], char removing, size_t length, bool foreToBack)
     return sansChar;
 }
 
-int checkArrayForVal(double value, double* array, size_t arraySize)
+int checkArrayForDVal(double value, double* array, size_t arraySize)
 {
 	bool found = -1;
 	for(int i = 0; i < arraySize; i++)
@@ -780,6 +780,20 @@ int checkArrayForVal(double value, double* array, size_t arraySize)
 		}
 	}
 	return found;
+}
+
+int checkArrayForIVal(int value, int array[], size_t arraySize)
+{
+    bool found = -1;
+    for(int i = 0; i < arraySize; i++)
+    {
+        if (value == array[i])
+        {
+            found = i;
+            break;
+        }
+    }
+    return found;
 }
 
 int createFile(char* filePath)

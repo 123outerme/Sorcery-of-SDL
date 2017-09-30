@@ -1,3 +1,11 @@
+20 September 2017
+   released version 1.1.1 Release Candidate of SorcerySDL
+
+     Change log:
+        -Fixed: Issues with saving savefile and config and it not loading properly on next relaunch
+        -Added: The ability to save + quit from the overworld, back to the main menu
+        -Updated: Text in Stats & Move Replace Menu from Up/Down/Left/Right to ^/V/</>
+
 19 September 2017
    released version 1.1.0 Release Candidate of SorcerySDL
 
@@ -8,7 +16,7 @@
         -Fixed: Attack displays in Stats menu and when adding a move: Changed from WASD to Up/Left/Right/Down/just like battle menu
         -Added: New attack animations: Whenever you do a phys. attack or the enemy attacks, they do a "rush forward" animation followed by their attack. When you do a magic attack, you pull out your tome and cast it.
         -Added: Text describing the keybindings instead of numbers
-        -Added: Transparency to the "You lost" animation; now has a fuzzy border near the top
+        -Added: Transparency to the "You lost" animation; now has a fuzzy border near the top of the animation
 
 19 September 2017
    released version 1.0.3 Release Candidate of SorcerySDL

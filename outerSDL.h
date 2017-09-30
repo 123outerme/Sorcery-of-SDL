@@ -27,7 +27,7 @@
 #define bool char
 #define false 0
 #define true 1
-#define windowName "Sorcery of SDL"
+#define windowName "Sorcery of Uvutu"
 #define TILESET_FILE_NAME "SOUVUTU0.png"
 #define MAP_FILE_NAME "maps.bin"
 #define SAVE_FILE_NAME "SAVUVUTU.bin"
@@ -160,7 +160,7 @@ int digits(int num);  //gets the number of digits an int has
 int pwrOf10(int power);  //gets 10 ^ input
 void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls its pointer.
 char* removeChar(char input[], char removing, size_t length, bool foreToBack);  //removes the the first specified character from a string
-int checkArrayForVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float
+int checkArrayForDVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float
 int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
 bool checkFile(char* filePath, int desiredLines);  //checks if a file exists
 int writeLine(char* filePath, char* stuff);  //appends a line to a file
