@@ -117,6 +117,8 @@
 #define ATTACK_CODE_RUN TILE_ID_RUN
 #define ATTACK_CODE_BLOCK TILE_ID_BLOCK
 
+#define UPGRADE_COST 15
+
 //Todo for 9/21:
 //* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
@@ -324,7 +326,7 @@ int mainLoop(player* playerSprite)
     drawHUD(playerSprite);
     sprite entity;
     entityType type = type_na;
-    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127, found = -1, textLocation = 0, foundPhys = -1, foundMag = -1, upgrCost = 15;
+    int x = -TILE_SIZE, y = -TILE_SIZE, index = 127, found = -1, textLocation = 0, foundPhys = -1, foundMag = -1;
     bool drawEntityFlag = true, pickFromLocation = true;
     if (!playerSprite->mapScreen)
     {
@@ -352,12 +354,10 @@ int mainLoop(player* playerSprite)
                 if (moveArray[i] == 54 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
                     foundMag = i;
             }
-            if (foundPhys > -1 && foundMag > -1)
-                upgrCost = 30;
             textInput = "PRESS 2nd TO UPGRADE A MOVE. PLEASE PROGRAM BETTER DIALOGUE FOR ME.";
             char temp[99] = "";
             char* moves = nameArray[playerSprite->worldNum - (playerSprite->worldNum > 2) - 1];
-            if ((foundPhys > -1 || foundMag > -1) && playerSprite->money > upgrCost - 1)
+            if ((foundPhys > -1 || foundMag > -1) && playerSprite->money > UPGRADE_COST - 1)
             {
                 strcpy(temp, "FOR 15 COINS EACH I CAN UPGRADE YOUR ");
                 strcat(temp, moves);
@@ -497,18 +497,31 @@ int mainLoop(player* playerSprite)
             exitCode = LOOP_GOTO_BATTLE;
             quit = true;
         }
-        if (press == KEYPRESS_RETURN_TEXTACTION && entity.tileIndex == TILE_ID_BESERKERJ && playerSprite->money > upgrCost - 1)
+        if (press == KEYPRESS_RETURN_TEXTACTION && entity.tileIndex == TILE_ID_BESERKERJ && playerSprite->money > UPGRADE_COST - 1)
         {
+            int movesToUpgrade = 0;
             //figure out a way to only upgrade one if they have only enough for one upgrade
             if (foundPhys == 0 || foundMag == 0)
+            {
                 playerSprite->move1++;
-            if (foundPhys == 1 || foundMag == 1)
+                movesToUpgrade++;
+            }
+            if ((foundPhys == 1 || foundMag == 1) && playerSprite->money > (UPGRADE_COST * (1 + movesToUpgrade)) - 1)
+            {
                 playerSprite->move2++;
-            if (foundPhys == 2 || foundMag == 2)
+                movesToUpgrade++;
+            }
+            if ((foundPhys == 2 || foundMag == 2) && playerSprite->money > (UPGRADE_COST * (1 + movesToUpgrade)) - 1)
+            {
                 playerSprite->move3++;
-            if (foundPhys == 3 || foundMag == 3)
+                movesToUpgrade++;
+            }
+            if ((foundPhys == 3 || foundMag == 3) && playerSprite->money > (UPGRADE_COST * (1 + movesToUpgrade)) - 1)
+            {
                 playerSprite->move4++;
-            playerSprite->money -= upgrCost;
+                movesToUpgrade++;
+            }
+            playerSprite->money -= UPGRADE_COST * movesToUpgrade;
             press = 0;
         }
 
@@ -1606,7 +1619,11 @@ bool doBattle(player* player, bool isBoss)
             if (itemLocation == -1)
                 pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false);
             else
+            {
                 player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
+                drawTextBox("Your fight seemed to change your teleport stone!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                waitForKey();
+            }
             player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 23); // <-reg boss beaten = +10, world 7 alt boss = +1
         }
         else
@@ -1633,18 +1650,17 @@ bool pickupItem(player* player, int itemCode, int chestID, bool redraw)
     if (firstOpenSlot > -1)
     {
         player->items[firstOpenSlot] = itemCode;
-        char text[24] = "Found a ";
+        char text[24] = "Found ";
         if (itemCode / 10 == TILE_ID_SWORD)
-            strcat(text, "Sword!\0");
+            strcat(text, "a Sword!\0");
         if (itemCode / 10 == TILE_ID_TOME)
-            strcat(text, "Tome!\0");
+            strcat(text, "a Tome!\0");
         if (itemCode / 10 == TILE_ID_ARMOR)
-            strcat(text, "Armor!\0");
+            strcat(text, "some Armor!\0");
         if (itemCode / 10 == TILE_ID_POTION)
-            strcat(text, "Potion!\0");
+            strcat(text, "a Potion!\0");
         if (itemCode / 10 == TILE_ID_STONE)
-            strcat(text, "Teleport Stone!\0");
-        drawTextBox(text, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+            strcat(text, "a Teleport Stone!\0");
         if (chestID >= 0)
             player->pickedUpChests[chestID] = 1;
         if (!(itemCode / 10 == TILE_ID_STONE) && redraw)
@@ -1653,6 +1669,7 @@ bool pickupItem(player* player, int itemCode, int chestID, bool redraw)
             drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
             SDL_RenderPresent(mainRenderer);
         }
+        drawTextBox(text, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
     }
     else
     {

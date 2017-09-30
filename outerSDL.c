@@ -442,49 +442,52 @@ bool checkKeyPress(player* playerSprite)
     bool battleFlag = false;
     if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight))
     {
-        int incY = 0, incX = 0;
-        playerSprite->steps++;
-        drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, SDL_FLIP_NONE);
-        if (playerSprite->spr.y > 0 && checkSKUp)
-            incY = -TILE_SIZE;
-        if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
-            incY = TILE_SIZE;
-        if (playerSprite->spr.x > 0 && checkSKLeft)
-            incX = -TILE_SIZE;
-        if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
-            incX = TILE_SIZE;
-        if (checkSKLeft)
-            playerSprite->flip = SDL_FLIP_HORIZONTAL;
-        if (checkSKRight)
-            playerSprite->flip = SDL_FLIP_NONE;
-        if (incY || incX)
+        if (!((checkSKUp && checkSKDown) || (checkSKLeft && checkSKRight)))
         {
-            int thisX = playerSprite->spr.x / TILE_SIZE, thisY = playerSprite->spr.y / TILE_SIZE;
-            playerSprite->spr.y += incY;
-            playerSprite->spr.x += incX;
-            int nextX = playerSprite->spr.x / TILE_SIZE, nextY = playerSprite->spr.y / TILE_SIZE;
-            if (!checkCollision(playerSprite, tilemap[nextY][nextX], checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp))
+            int incY = 0, incX = 0;
+            playerSprite->steps++;
+            drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, SDL_FLIP_NONE);
+            if (playerSprite->spr.y > 0 && checkSKUp)
+                incY = -TILE_SIZE;
+            if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
+                incY = TILE_SIZE;
+            if (playerSprite->spr.x > 0 && checkSKLeft)
+                incX = -TILE_SIZE;
+            if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
+                incX = TILE_SIZE;
+            if (checkSKLeft)
+                playerSprite->flip = SDL_FLIP_HORIZONTAL;
+            if (checkSKRight)
+                playerSprite->flip = SDL_FLIP_NONE;
+            if (incY || incX)
             {
-                playerSprite->spr.y -= incY;
-                playerSprite->spr.x -= incX;
-                sprite entity;
-                for(int i = 0; i < TILE_SIZE; i++)
+                int thisX = playerSprite->spr.x / TILE_SIZE, thisY = playerSprite->spr.y / TILE_SIZE;
+                playerSprite->spr.y += incY;
+                playerSprite->spr.x += incX;
+                int nextX = playerSprite->spr.x / TILE_SIZE, nextY = playerSprite->spr.y / TILE_SIZE;
+                if (!checkCollision(playerSprite, tilemap[nextY][nextX], checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp))
                 {
-                    //SDL_Delay(1);
-                    //delay for a more visually fluid timing
-                    drawTile(tilemap[thisY][thisX], thisX * TILE_SIZE, thisY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-                    drawTile(tilemap[nextY][nextX], nextX * TILE_SIZE, nextY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-                    drawTile(tilemap[thisY][nextX], nextX * TILE_SIZE, thisY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-                    drawTile(tilemap[nextY][thisX], thisX * TILE_SIZE, nextY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-                    //redrawing the background ^ : be careful; could redraw chests?
-                    drawEntity(entity, false, false, true);
-                    //this loads the entity to be drawn; since entities aren't a part of the tilemap, they get erased whenever we draw
-                    //on the tile that they rest on. Now, they won't be erased.
-                    playerSprite->spr.y += (incY / TILE_SIZE);
-                    playerSprite->spr.x += (incX / TILE_SIZE);
-                    //the reason it's incX / TILE_SIZE is to keep the direction data
-                    drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->flip);
-                    SDL_RenderPresent(mainRenderer);
+                    playerSprite->spr.y -= incY;
+                    playerSprite->spr.x -= incX;
+                    sprite entity;
+                    for(int i = 0; i < TILE_SIZE; i++)
+                    {
+                        //SDL_Delay(1);
+                        //delay for a more visually fluid timing
+                        drawTile(tilemap[thisY][thisX], thisX * TILE_SIZE, thisY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                        drawTile(tilemap[nextY][nextX], nextX * TILE_SIZE, nextY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                        drawTile(tilemap[thisY][nextX], nextX * TILE_SIZE, thisY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                        drawTile(tilemap[nextY][thisX], thisX * TILE_SIZE, nextY * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                        //redrawing the background ^ : be careful; could redraw chests?
+                        drawEntity(entity, false, false, true);
+                        //this loads the entity to be drawn; since entities aren't a part of the tilemap, they get erased whenever we draw
+                        //on the tile that they rest on. Now, they won't be erased.
+                        playerSprite->spr.y += (incY / TILE_SIZE);
+                        playerSprite->spr.x += (incX / TILE_SIZE);
+                        //the reason it's incX / TILE_SIZE is to keep the direction data
+                        drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->flip);
+                        SDL_RenderPresent(mainRenderer);
+                    }
                 }
             }
         }

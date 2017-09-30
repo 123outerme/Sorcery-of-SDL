@@ -5,8 +5,7 @@ Linux:
 * Seg fault whenever drawTilemap/drawTile is called (VM problem?)
 
 Game:
-* Exp gain too fast (fixed?)
-* Character can be redrawn over "get item" text
+* Exp gain too fast
 * Move upgrader text doesn't update unless break from main loop
-* 2nd Boss and up doesn't alert player of new TP stone
-* Pressing Left + Right can glitch out collision
+* 2nd Boss and up doesn't alert player of new TP stone (fixed?)
+* Movement (holding left/right + up & down alternating) is not smooth
