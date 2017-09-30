@@ -119,11 +119,12 @@
 
 #define UPGRADE_COST 15
 
-//Todo for 9/21:
+//Todo for 10/1:
 //* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
+//* Add in weaknesses
 
 int main(int argc, char* argv[])
 {
@@ -523,6 +524,41 @@ int mainLoop(player* playerSprite)
             }
             playerSprite->money -= UPGRADE_COST * movesToUpgrade;
             press = 0;
+            //refactoring move upgrader text
+            {
+                int moveArray[4] = {playerSprite->move1, playerSprite->move2, playerSprite->move3, playerSprite->move4};
+                char* nameArray[SIZE_OF_UPGRADER_ARRAY] = ALL_UPGRADER_MOVES_ARRAY;
+                for(int i = 0; i < 4; i++)
+                {
+                    if (moveArray[i] == 38 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
+                        foundPhys = i;
+                    if (moveArray[i] == 54 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
+                        foundMag = i;
+                }
+                textInput = "PRESS 2nd TO UPGRADE A MOVE. PLEASE PROGRAM BETTER DIALOGUE FOR ME.";
+                char temp[99] = "";
+                char* moves = nameArray[playerSprite->worldNum - (playerSprite->worldNum > 2) - 1];
+                if ((foundPhys > -1 || foundMag > -1) && playerSprite->money > UPGRADE_COST - 1)
+                {
+                    strcpy(temp, "FOR 15 COINS EACH I CAN UPGRADE YOUR ");
+                    strcat(temp, moves);
+                    strcat(temp, "Confirm - YES.     Any other key - NO\0");
+                }
+                else
+                {
+                    strcpy(temp, "YOU NEED 15 COINS TO UPGRADE YOUR ");
+                    strcat(temp, moves);
+                    strcat(temp, "\0");
+                }
+                if (foundPhys == -1 && foundMag == -1)
+                {
+                    strcpy(temp, "YOU DON'T SEEM TO BE ABLE TO USE ");
+                    strcat(temp, moves);
+                    strcat(temp, "\0");
+                }
+                if (strlen(temp))
+                    textInput = temp;
+            }
         }
 
         if (playerSprite->spr.x == entity.x && playerSprite->spr.y == entity.y)
@@ -897,9 +933,10 @@ int showItems(player* player)
                 SDL_Color textColor = (SDL_Color){16, 32, 140};
                 SDL_Color bgColor = (SDL_Color){181, 182, 173};
                 initSprite(&cursor, TILE_SIZE, 4 * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
-
-                SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+                SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
                 SDL_RenderFillRect(mainRenderer, NULL);
+                SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
                 //foreground text
                 drawText("TELEPORT TO WHERE?", 1 * TILE_SIZE + TILE_SIZE / 4, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 51 * SCREEN_HEIGHT / 64, textColor, false);
 
@@ -923,20 +960,16 @@ int showItems(player* player)
                 SDL_Event e;
                 bool quit = false;
                 int tpSelection = -1;
-                //While application is running
                 while(!quit)
                 {
                     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
-                    //Handle events on queue
                     while(SDL_PollEvent(&e) != 0)
                     {
-                        //User requests quit
                         if(e.type == SDL_QUIT)
                         {
                             quit = true;
                             tpSelection = 4;
                         }
-                        //User presses a key
                         else if(e.type == SDL_KEYDOWN)
                         {
                             if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
@@ -1147,7 +1180,6 @@ bool doBattle(player* player, bool isBoss)
                 strcat(input, player->move4 ? strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5) : "     ");
                 strcat(input, "        Menu:  BACK\0");
                 //3 + 5 chars + 11 spaces --> 88 total chars
-                //don't forget move1 -> w, move -> a, move3 ->s, move4 -> d
                 textBoxText = input;
             }
             drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
@@ -1156,19 +1188,15 @@ bool doBattle(player* player, bool isBoss)
             SDL_Delay(500);
             while(!quit)
             {
-                //Handle events on queue
                 while(SDL_PollEvent(&e) != 0)
                 {
-                    //User requests quit
                     if(e.type == SDL_QUIT)
                     {
                         quit = true;
                         exitCode = ANYWHERE_QUIT;
                     }
-                    //User presses a key
                     else if(e.type == SDL_KEYDOWN)
                     {
-                        //Select surfaces based on key press
                         if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                         {
                             exitCode = BATTLE_ACT_CODE_UP;

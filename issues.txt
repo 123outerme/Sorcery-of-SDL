@@ -6,6 +6,4 @@ Linux:
 
 Game:
 * Exp gain too fast
-* Move upgrader text doesn't update unless break from main loop
-* 2nd Boss and up doesn't alert player of new TP stone (fixed?)
 * Movement (holding left/right + up & down alternating) is not smooth

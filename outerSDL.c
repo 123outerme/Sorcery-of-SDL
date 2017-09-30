@@ -576,8 +576,8 @@ bool checkKeyPress(player* playerSprite)
     if (battleFlag)
         return KEYPRESS_RETURN_BATTLE;
 
-    if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract)
-            return true;
+    if (checkSKUp != checkSKDown || checkSKLeft != checkSKRight || checkSKInteract)
+            return true; //returns true if a key is pressed, but not if two directions on the same axis are pressed
         return false;
 }
 
