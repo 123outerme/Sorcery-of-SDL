@@ -6,3 +6,7 @@ Linux:
 
 Game:
 * Exp gain too fast (fixed?)
+* Character can be redrawn over "get item" text
+* Move upgrader text doesn't update unless break from main loop
+* 2nd Boss and up doesn't alert player of new TP stone
+* Pressing Left + Right can glitch out collision

@@ -1392,7 +1392,7 @@ bool doBattle(player* player, bool isBoss)
                     }
                     //going back to neutral
                     //the reason for x < 1 is because it'll update for x == 0, fully resetting the position.
-                    drawTile(39 + enemyIndex - (enemyIndex % 3 == 0), 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                    drawTile(39 + enemyIndex - (enemyIndex / 3), 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                     strcpy(textBoxText, enemyName);
                     strcat(textBoxText, " USED ");
                     char input[6];
@@ -1407,9 +1407,7 @@ bool doBattle(player* player, bool isBoss)
                     }
                     player->HP -= enemyDMG;
                     if (player->HP < 1)
-                    {
                         player->HP = 0;
-                    }
                     char* buffer = "";
                     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
                     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 26 * TILE_SIZE / 8, .y = 39 * TILE_SIZE / 8, .w = 3 * TILE_SIZE, .h = TILE_SIZE}));
@@ -1606,7 +1604,7 @@ bool doBattle(player* player, bool isBoss)
         {
             int itemLocation = findItem(player, TILE_ID_STONE * 10 + player->worldNum - 1);
             if (itemLocation == -1)
-                /*pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false)*/;
+                pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false);
             else
                 player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
             player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 23); // <-reg boss beaten = +10, world 7 alt boss = +1
