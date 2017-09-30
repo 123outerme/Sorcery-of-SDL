@@ -31,6 +31,7 @@
 #define TILESET_FILE_NAME "SOUVUTU0.png"
 #define MAP_FILE_NAME "maps.bin"
 #define SAVE_FILE_NAME "SAVUVUTU.bin"
+#define SAVE_FILE_LINES 54
 #define CONFIG_FILE_NAME "sorceryConfig.ini"
 #define FONT_FILE_NAME "Px437_ITT_BIOS_X.ttf"
 #define FRAMERATE 60

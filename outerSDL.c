@@ -110,7 +110,7 @@ int init()
 
 bool startGame(player* playerSprite, bool newSave)
 {
-    loadPlayerData(playerSprite, SAVE_FILE_NAME, newSave ? 2 - aMenu("Are you sure you       want to start a     new save?", "YES", "NO", " ", " ", " ", 2, 2, MAIN_MENU_PALETTE, false, false) : newSave);
+    loadPlayerData(playerSprite, SAVE_FILE_NAME, newSave || !checkFile(SAVE_FILE_NAME, SAVE_FILE_LINES) ? 2 - aMenu("Are you sure you       want to start a     new save?", "YES", "NO", " ", " ", " ", 2, 2, MAIN_MENU_PALETTE, false, false) : newSave);
     return 0;
 }
 
@@ -226,7 +226,7 @@ void initConfig(char* filePath)
 
 void loadPlayerData(player* player, char* filePath, bool forceNew)
 {
-    if (!checkFile(filePath, 21) || forceNew)
+    if (!checkFile(filePath, SAVE_FILE_LINES) || forceNew)
 	{
 	    initPlayer(player, 4 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
 	}
@@ -799,7 +799,7 @@ bool checkFile(char* filePath, int desiredLines)
 {
     FILE* filePtr = fopen(filePath,"r");
 	if (!filePtr)
-		return 0;
+		return false;
     char ch;
     int lines = 0;
     while(!feof(filePtr))
@@ -835,7 +835,7 @@ char* readLine(char* filePath, int lineNum, char** output)
 {
 	FILE* filePtr = fopen(filePath,"r");
 	if (!filePtr)
-		return 0;
+		return NULL;
 	else
 	{
 	static char thisLine[512];
