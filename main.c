@@ -21,7 +21,9 @@
 #define TILE_ID_SUPEREFFECTIVE 37
 #define TILE_ID_RUN 38
 #define TILE_ID_CRITICAL 39
+#define TILE_ID_SMASH 54
 #define TILE_ID_BLOCK 55
+#define TILE_ID_ALPHA 70
 #define TILE_ID_APEMAN 74
 #define TILE_ID_FEENIX 77
 #define TILE_ID_TARANT 80
@@ -29,6 +31,8 @@
 #define TILE_ID_HYDROA 86
 #define TILE_ID_SWURM 89
 #define TILE_ID_SENTRY 92
+#define TILE_ID_ARCHER 93
+#define TILE_ID_SOLDIER 94
 #define TILE_ID_DREGOH 95
 #define TILE_ID_SWORD 96
 #define TILE_ID_TOME 97
@@ -64,7 +68,7 @@
 #define OVERWORLD_QUIT 5
 
 #define ALL_ATTACKS "SLICESLASHBURN ROASTCRACKBREAKCHILLICE  FLOW SWEEPWHACKBASH STAB GASH SMASH     THORNVINE FLAREBLAZEROCK STONEFROSTHAIL STORMVOLT SMELLSTINKDARK EVIL ALPHAARROW"
-#define ALL_ENEMIES_ARRAY {"Ant", "Rat", "APEMAN", "Firant", "Pyre", "FEENIX", "Gemdog", "Golem", "TARANT", "Pengin", "Snoman", "POLARA", "C Gull", "C Star", "HYDROA", "Rodent", "Crow", "SWURM", "Midas", "Greed", "SENTRY", "Archer", "Knight", "- DREGOH -"}
+#define ALL_ENEMIES_ARRAY {"Ant", "Rat", "APEMAN", "Firant", "Pyre", "FEENIX", "Gemdog", "Golem", "TARANT", "Pengin", "Snoman", "POLARA", "C Gull", "C Star", "HYDROA", "Rodent", "Crow", "SWURM", "Midas", "Greed", "SENTRY", "Archer", "Knight", "-DREGOH-"}
 
 #define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.11, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 58
@@ -78,8 +82,8 @@
 #define SIZE_OF_BOSSDATA_ARRAY 9
 
 #define ARRAY_OF_UPGRADER_IDS {1.22, 3.1, 4.22, 5.1, 6.32, 7.1, 8.1}
-#define ARRAY_OF_UPGRADER_OVERWORLDXS {playerSprite->overworldX / TILE_SIZE, 13, playerSprite->overworldX / TILE_SIZE, 10, playerSprite->overworldX / TILE_SIZE, 13, 0}
-#define ARRAY_OF_UPGRADER_OVERWORLDYS {playerSprite->overworldY / TILE_SIZE, 6, playerSprite->overworldY / TILE_SIZE, 11, playerSprite->overworldY / TILE_SIZE, 6, 0}
+#define ARRAY_OF_UPGRADER_OVERWORLDXS {playerSprite->overworldX / TILE_SIZE, 13, playerSprite->overworldX / TILE_SIZE, 10, playerSprite->overworldX / TILE_SIZE, 13, 11}
+#define ARRAY_OF_UPGRADER_OVERWORLDYS {playerSprite->overworldY / TILE_SIZE, 6, playerSprite->overworldY / TILE_SIZE, 11, playerSprite->overworldY / TILE_SIZE, 6, 6}
 #define ALL_UPGRADER_MOVES_ARRAY {"SLICE or THORN. ", "BURN or FLARE. ", "CRACK or ROCK. ", "CHILL or FROST. ", "FLOW or STORM. ", "WHACK or SMELL. ", "STAB or DARK."}
 #define SIZE_OF_UPGRADER_ARRAY 7
 
@@ -88,8 +92,8 @@
 
 #define ARRAY_OF_NPC_WORLDNUMS {1, 1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5, 6, 6, 7, 7, 7, 8}
 #define ARRAY_OF_NPC_LASTSCREENS {10, 10, 10, 32, 10, 10, 10, 10, 10, 10, 10, 21, 10, 10, 12, 10, 10, 10}
-#define ARRAY_OF_NPC_OVERWORLDXS {6, 12, 16, playerSprite->overworldX / TILE_SIZE, 12, 12, 8, 14, 15, 11, 17, playerSprite->overworldX / TILE_SIZE, 11, 6, playerSprite->overworldX / TILE_SIZE, 5, 13, 11}
-#define ARRAY_OF_NPC_OVERWORLDYS {9, 3, 7, playerSprite->overworldY / TILE_SIZE, 6, 10, 5, 6, 3, 6, 6, playerSprite->overworldY / TILE_SIZE, 7, 10, playerSprite->overworldY / TILE_SIZE, 11, 11, 6}
+#define ARRAY_OF_NPC_OVERWORLDXS {6, 12, 16, playerSprite->overworldX / TILE_SIZE, 12, 12, 8, 14, 15, 11, 17, playerSprite->overworldX / TILE_SIZE, 11, 6, playerSprite->overworldX / TILE_SIZE, 5, 13, 15}
+#define ARRAY_OF_NPC_OVERWORLDYS {9, 3, 7, playerSprite->overworldY / TILE_SIZE, 6, 10, 5, 6, 3, 6, 6, playerSprite->overworldY / TILE_SIZE, 7, 10, playerSprite->overworldY / TILE_SIZE, 11, 11, 7}
 #define SIZE_OF_NPCDATA_ARRAY 18
 
 #define ALL_BOSS_QUIP_ARRAY {"LEAF ME ALONE! I WOOD-N'T DO THAT!", "I'M ON FIRE TODAY! DON'T BE SO HOT-HEADED!", "DON'T TRY TO BE STONEFACED. I KNOW YOU WANT TO RUN!", "I'M A COOL, COLD-HEARTED CREATURE. ICY YOUR FEAR!" , "GO WITH THE FLOW DUDE. YOU ARE IN THE WAKE OF RUIN!", "WRIGGLE ALL YOU WANT, YOU CAN'T SQUISH ME!", "So this is your choice? PREPARE TO BE CRUSHED!", "Here, I will crush you and your people!"}
@@ -98,10 +102,10 @@
 #define ARRAY_OF_CHEST_IDS {1.2, 1.21, 2.11, 2.23, 3.2, 3.32, 4.11, 4.12, 5.1, 5.2, 5.12, 6.2, 6.22, 6.32, 7.1, 7.12, 7.2, 7.21, 7.24, 8.11, 8.2, 8.32}
 #define SIZE_OF_CHEST_ARRAY SIZE_OF_CHESTID_ARRAY
 
-#define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 14, 10, 6, 2, 5, 1, 6, 4, 16, 5, 18, 3, 3}
-#define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 2, 8, 9, 5, 4, 12, 5, 10, 5, 7, 7, 10, 10}
-#define ARRAY_OF_CHEST_ITEMS {991, 981, 971, 961, 972, 992, 973, 972, 962, 963, 974, 964, 993, 975, 976, 994, 966, 978, 994, 977, 978}
-#define SIZE_OF_CHESTDATA_ARRAY 21
+#define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 14, 10, 6, 2, 5, 1, 5, 6, 4, 16, 5, 18, 3, 3}
+#define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 2, 8, 9, 5, 4, 12, 4, 5, 10, 5, 7, 7, 10, 10}
+#define ARRAY_OF_CHEST_ITEMS {991, 981, 971, 961, 972, 992, 973, 962, 963, 974, 964, 993, 975, 965, 976, 994, 966, 968, 994, 978, 977, 978}
+#define SIZE_OF_CHESTDATA_ARRAY SIZE_OF_CHESTID_ARRAY
 
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
@@ -324,7 +328,6 @@ int mainLoop(player* playerSprite)
         double arrayOfMaps[SIZE_OF_MAP_ARRAY] = ARRAY_OF_MAP_IDS;
         int map = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-        //use the int "map" when testing if user is in a map with a boss/chest?
     }
     //on Linux, seg fault after calling drawTile/map
     drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false);
@@ -416,8 +419,15 @@ int mainLoop(player* playerSprite)
             //all NPC text
             char* stringArray[] = ALL_NPC_TEXT_ARRAY;
             textInput = stringArray[textLocation];
+
             if (textLocation == SIZE_OF_NPCDATA_ARRAY - 1)
-                strcat(textInput, playerSprite->name);
+            {
+                char tempString[35] = "";
+                strcpy(tempString, textInput);
+                strcat(tempString, playerSprite->name);
+                strcat(tempString, "!");
+                textInput = tempString;
+            }
         }
     }
     else
@@ -449,14 +459,14 @@ int mainLoop(player* playerSprite)
                 found = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_BOSS_ARRAY);
                 //printf("found\n");
             }
-            if (found != -1 && playerSprite->beatenBosses / 10 < playerSprite->worldNum)
+            if (found != -1 && ((playerSprite->beatenBosses / 10 < playerSprite->worldNum && found != 7) || (playerSprite->beatenBosses % 10 == 0 && found == 7)))
             {
-                //printf("finding boss: ");
+                //printf("finding boss ID %d: ", found);
                 type = type_boss;
                 int bossX[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_XS;
                 int bossY[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_YS;
                 int bossIndex[SIZE_OF_BOSSDATA_ARRAY] = ARRAY_OF_BOSS_TILEIDS;
-                if ((found == 7 && fPart(playerSprite->beatenBosses / 10.0) == .1) || found != 7)
+                if ((found == 7 && playerSprite->beatenBosses % 10 == 0) || found != 7)
                 {
                     index = bossIndex[found];
                     x *= -1 * bossX[found];
@@ -1170,20 +1180,20 @@ bool doBattle(player* player, bool isBoss)
         {
             char* textBoxText = "error\0";
             if (menuLevel == 1)
-                textBoxText = "Up:   ATTACK       Down: BLOCK     Menu: RUN";
+                textBoxText = "Up:   ATTACK\nDown: BLOCK\nMenu: RUN";
             if (menuLevel == 2)
             {
                 char thisAttack[6] = "     \0";
                 char input[89];
                 strcpy(input, "Up:    ");
                 strcat(input, strncpy(thisAttack, (allAttacks + (player->move1 - 40) * 5), 5));
-                strcat(input, "          Left:  ");
+                strcat(input, "\nLeft:  ");
                 strcat(input, player->move2 ? strncpy(thisAttack, (allAttacks + (player->move2 - 40) * 5), 5) : "     ");
-                strcat(input, "        Down:  ");
+                strcat(input, "\nDown:  ");
                 strcat(input, player->move3 ? strncpy(thisAttack, (allAttacks + (player->move3 - 40) * 5), 5) : "     ");
-                strcat(input, "        Right: ");
+                strcat(input, "\nRight: ");
                 strcat(input, player->move4 ? strncpy(thisAttack, (allAttacks + (player->move4 - 40) * 5), 5) : "     ");
-                strcat(input, "        Menu:  BACK\0");
+                strcat(input, "\nMenu:  BACK\0");
                 //3 + 5 chars + 11 spaces --> 88 total chars
                 textBoxText = input;
             }
@@ -1372,7 +1382,7 @@ bool doBattle(player* player, bool isBoss)
                             //if (superEffective)
                                 //printf("Attack ID %d is super effective against enemy ID %d.\n", attackCode, enemyIndex);
                         }
-                        if (superEffective)
+                        if (superEffective && (attackCode != TILE_ID_ALPHA || attackCode != TILE_ID_SMASH))
                             drawTile(TILE_ID_SUPEREFFECTIVE, enemy.x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                         input[5] = '\0';
                         strncpy(input, (allAttacks + (attackCode - 40) * 5), 5);
@@ -1454,11 +1464,11 @@ bool doBattle(player* player, bool isBoss)
                     }
                     //going back to neutral
                     //the reason for x < 1 is because it'll update for x == 0, fully resetting the position.
-                    drawTile(39 + enemyIndex - (enemyIndex / 3), 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+                    drawTile(39 + enemyIndex - (enemyIndex / 3) - (enemy.tileIndex == TILE_ID_DREGOH) + 17 * (enemy.tileIndex == TILE_ID_ARCHER) - 2 * (enemy.tileIndex == TILE_ID_SOLDIER), 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                     strcpy(textBoxText, enemyName);
                     strcat(textBoxText, " USED ");
                     char input[6];
-                    strncpy(input, (allAttacks + (enemyIndex - (enemyIndex / 3) - 1) * 5), 5);
+                    strncpy(input, (allAttacks + (enemyIndex - (enemyIndex / 3) - 1 - (enemy.tileIndex == TILE_ID_DREGOH) + 17 * (enemy.tileIndex == TILE_ID_ARCHER) - 2 * (enemy.tileIndex == TILE_ID_SOLDIER)) * 5), 5);
                     input[5] = '\0';
                     strcat(textBoxText, input);
                     enemyDMG = (int) (6 + (pow((double) enemyIndex, 1.13 + .05 * (enemyIndex % 3 == 0))));
@@ -1537,6 +1547,7 @@ bool doBattle(player* player, bool isBoss)
         //if you won
         int acquiredGold = 4 - (player->level - enemyIndex);
         int acquiredExp = 23 + 3 * enemyIndex + 3 * (player->worldNum * (enemyIndex % 3 == 0)) - 4 * (player->level - enemyIndex);
+        // 23+3U+3int(M)(U/3=int(U/3))-4(L-U->B
         if (acquiredGold < 0)
             acquiredGold = 0;
         if (acquiredExp < 0)
@@ -1651,34 +1662,33 @@ bool doBattle(player* player, bool isBoss)
                 {
                     if (player->statPts)
                     {
-                        drawTextBox("QUIT WITHOUT USING ALL PTS?        Confirm = YES    ANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                        drawTextBox("QUIT WITHOUT USING ALL PTS?\nConfirm = YES\nANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
                         SDL_Delay(400);
                         quit = waitForKey() == KCInteract;
                     }
                 }
             }
         }
-        if (isBoss && enemyIndex != TILE_ID_DREGOH)
+        if (isBoss)
         {
             int itemLocation = findItem(player, TILE_ID_STONE * 10 + player->worldNum - 1);
             if (itemLocation == -1)
                 pickupItem(player, TILE_ID_STONE * 10 + player->worldNum, -1, false);
             else
             {
-                player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
-                drawTextBox("Your fight seemed to change your teleport stone!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-                waitForKey();
+                if (enemy.tileIndex != TILE_ID_DREGOH)
+                {
+                    player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
+                    drawTextBox("Your fight seemed to change your teleport stone!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                    waitForKey();
+                }
             }
             player->beatenBosses += 10 - 9 * (player->worldNum == 7 && player->mapScreen == 23); // <-reg boss beaten = +10, world 7 alt boss = +1
         }
-        else
+        if (isBoss && player->worldNum == 8)
         {
-            if (isBoss && player->worldNum == 8)
-            {
-                aWallOfText("And...", "With the vanquish of the Dragons King, peace is restored to wounded Uvutu. You take the throne yourself, leading your nation justly.   ~THE END~", false, true);
-                player->beatenBosses += 10;
-                savePlayerData(player, SAVE_FILE_NAME);
-            }
+            aWallOfText("And...", ENDING_TEXT, false, true);
+            savePlayerData(player, SAVE_FILE_NAME);
         }
     }
     return won || run;

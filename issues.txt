@@ -7,8 +7,3 @@ Linux:
 Game:
 * Exp gain too fast
 * Movement (holding left/right + up & down alternating) is not smooth
-* World 7 Chests:
-**7.2 is where 7.23 should be
-**7.13 is where 7.2 should be
-**Figure out what's wrong with 7.1 and 7.13
-* No W7 alt boss

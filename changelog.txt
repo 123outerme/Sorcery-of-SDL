@@ -1,3 +1,16 @@
+02 October 2017
+   released version 1.0.0 of SorcerySDL
+
+     Change log:
+        -Cleaned: Some code, custom telport menu
+        -Added: Ability for move upgrader to upgrade both moves if player has enough currency, but only one if they only have enough for one
+        -Fixed: Collision glitch that occurs when holding two keys controlling the same movement axis
+        -Revamped: Loss animation
+        -Added: Weaknesses
+        -Changed: Window name to "Sorcery of Uvutu"; was "Sorcery of SDL"
+        -Fixed: Issues with Move Upgrader, NPCs, chests, and Teleport Stone
+        -Updated: code and stuff for release
+
 20 September 2017
    released version 1.1.1 Release Candidate of SorcerySDL
 

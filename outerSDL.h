@@ -66,6 +66,9 @@
 
 #define SIZE_OF_CHESTID_ARRAY 22
 
+#define OPENING_TEXT "A long time ago, the nameless One of the Prophesy made a choice that would seemingly change everything. Sadly, a new King came to power, and Uvutu crumbled. The One lived to have a child, whom you are. Save your homeland."
+#define ENDING_TEXT "With the vanquish of the Dragons King, peace is restored to wounded Uvutu. You take the throne yourself, leading your nation justly. It seems that this time, peace will really last.\n\n\n~THE END~"
+
 typedef enum
 {
     type_na,  //0

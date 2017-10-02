@@ -207,7 +207,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
         player->pickedUpChests[i] = 0;
     }
     printf("Got to the wall of text.");
-    aWallOfText("Intro", "A long time ago, the nameless One of the Prophesy made a choice that would seemingly change everything. Sadly, a new King came to power, and Uvutu crumbled. The One lived to have a child, whom you are. Save your homeland.", false, true);
+    aWallOfText("Intro", OPENING_TEXT, false, true);
     SDL_Delay(300);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
@@ -492,7 +492,7 @@ bool checkKeyPress(player* playerSprite)
             }
         }
         int thisTile = tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (playerSprite->worldNum <= playerSprite->beatenBosses / 10 ? 14 : 9) && playerSprite->mapScreen > 10)
+        if (!checkCollision(playerSprite, thisTile, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp) && playerSprite->steps > 10 && 1 == rand() % (playerSprite->worldNum <= playerSprite->beatenBosses / 10 ? 14 : 10) && playerSprite->mapScreen > 10)
             battleFlag = true;
         if (thisTile == TILE_ID_DOOR || !playerSprite->spr.x || playerSprite->spr.y == TILE_SIZE || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
         {
