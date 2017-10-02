@@ -202,7 +202,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     {
         player->items[i] = 0;
     }
-	for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
+	for(int i = 0; i < SIZE_OF_CHESTID_ARRAY; i++)
     {
         player->pickedUpChests[i] = 0;
     }
@@ -264,7 +264,7 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         {
             player->items[i] = strtol(readLine(filePath, 21 + i, &buffer), NULL, 10);
         }
-        for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
+        for(int i = 0; i < SIZE_OF_CHESTID_ARRAY; i++)
         {
             player->pickedUpChests[i] = strtol(readLine(filePath, 21 + PLAYER_ITEMS_LIMIT + i, &buffer), NULL, 10);
         }
@@ -647,7 +647,7 @@ void savePlayerData(player* player, char* filePath)
     {
         writeLine(filePath, toString(player->items[i], buffer));
     }
-    for(int i = 0; i < SIZE_OF_CHEST_ARRAY; i++)
+    for(int i = 0; i < SIZE_OF_CHESTID_ARRAY; i++)
     {
         writeLine(filePath, toString(player->pickedUpChests[i], buffer));
     }

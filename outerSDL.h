@@ -64,8 +64,7 @@
 #define MAIN_MENU_PALETTE (SDL_Color){16, 32, 140}, (SDL_Color){24, 65, 214}, (SDL_Color){24, 162, 239}, (SDL_Color){24, 195, 247}
 #define OVERWORLD_MENU_PALETTE (SDL_Color){181, 182, 173}, (SDL_Color){181, 182, 173}, (SDL_Color){16, 32, 140}, (SDL_Color){16, 32, 140}
 
-#define ARRAY_OF_CHEST_IDS {1.2, 1.21, 2.11, 2.23, 3.2, 3.32, 4.11, 4.12, 5.1, 5.2, 5.12, 6.2, 6.22, 6.32, 7.1, 7.12, 7.2, 7.21, 7.24, 8.11, 8.2, 8.32}
-#define SIZE_OF_CHEST_ARRAY 22
+#define SIZE_OF_CHESTID_ARRAY 22
 
 typedef enum
 {
@@ -112,7 +111,7 @@ typedef struct {
     SDL_RendererFlip flip;  //
     bool movementLocked;  // 1 byte
     int items[PLAYER_ITEMS_LIMIT];  // ? bytes * 11
-    int pickedUpChests[SIZE_OF_CHEST_ARRAY]; // ? bytes * 22
+    int pickedUpChests[SIZE_OF_CHESTID_ARRAY]; // ? bytes * 22
     //need to add list of open chests
 } player;
 
@@ -161,6 +160,7 @@ int pwrOf10(int power);  //gets 10 ^ input
 void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls its pointer.
 char* removeChar(char input[], char removing, size_t length, bool foreToBack);  //removes the the first specified character from a string
 int checkArrayForDVal(double value, double* array, size_t arraySize);  //checks a 1D array of floats for a single float
+int checkArrayForIVal(int value, int array[], size_t arraySize);  //checks a 1D array of ints for a single int
 int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
 bool checkFile(char* filePath, int desiredLines);  //checks if a file exists
 int writeLine(char* filePath, char* stuff);  //appends a line to a file

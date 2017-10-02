@@ -72,14 +72,21 @@
 #define ARRAY_OF_BOSS_IDS {1.33, 2.33, 3.22, 4.31, 5.32, 6.31, 7.13, 7.23, 8.33}
 #define SIZE_OF_BOSS_ARRAY 9
 
+#define ARRAY_OF_BOSS_XS {14, 11, 7, 10, 5, 12, 14, 7, 11}
+#define ARRAY_OF_BOSS_YS {7, 7, 8, 6, 5, 7, 7, 3, 7}
+#define ARRAY_OF_BOSS_TILEIDS {TILE_ID_APEMAN, TILE_ID_FEENIX, TILE_ID_TARANT, TILE_ID_POLARA, TILE_ID_HYDROA, TILE_ID_SWURM, TILE_ID_SENTRY, TILE_ID_DREGOH, TILE_ID_DREGOH}
+#define SIZE_OF_BOSSDATA_ARRAY 9
+
 #define ARRAY_OF_UPGRADER_IDS {1.22, 3.1, 4.22, 5.1, 6.32, 7.1, 8.1}
+#define ARRAY_OF_UPGRADER_OVERWORLDXS {playerSprite->overworldX / TILE_SIZE, 13, playerSprite->overworldX / TILE_SIZE, 10, playerSprite->overworldX / TILE_SIZE, 13, 0}
+#define ARRAY_OF_UPGRADER_OVERWORLDYS {playerSprite->overworldY / TILE_SIZE, 6, playerSprite->overworldY / TILE_SIZE, 11, playerSprite->overworldY / TILE_SIZE, 6, 0}
 #define ALL_UPGRADER_MOVES_ARRAY {"SLICE or THORN. ", "BURN or FLARE. ", "CRACK or ROCK. ", "CHILL or FROST. ", "FLOW or STORM. ", "WHACK or SMELL. ", "STAB or DARK."}
 #define SIZE_OF_UPGRADER_ARRAY 7
 
-#define ALL_NPC_TEXT_ARRAY {"BLOCK REDUCES YOUR DMG A BIT, BUT HALVES ENEMY DMG.", "A CRITICAL IS SHOWN WITH RED, AND A WEAKNESS WITH YELLOW!", "I SAW AN APEMAN DEEP IN THE WOODS.", "I FOUND THE APEMAN FIRST. HE'S MINE! BUT HE'S ANGRY.", "THESE CREATURES ARE WEAK TO WATER!", "SOME SAY THESE MONSTERS FIGHT US BECAUSE THEY SERVE THE DRAGONS KING.", "IF YOU GROW SOME WEEDS, THEY'LL BREAK THROUGH THE MONSTERS.", "MAN, IF I HAD A FIRE, I COULD MELT THE SNOW HERE!", "I KNEW I SHOULD'VE MOVED TO THE EAST POLE. THEY HAVE NO MONSTERS.", "WE SHOULD PUT SOME PLANTS AROUND HERE TO HOLD THE SAND IN PLACE.", "THE MONSTER OF THE SEA HAS TURNED THE FISH AGAINST US! BUT WHO WOKE HIM?", "THIS IS MY MANSION. SINCE IT'S BY THE WATER, IT WAS VERY EXPENSIVE. BUT NOW IF I GO OUTSIDE, I'LL GET HURT.", "WE HAVE TO LIVE HERE NOW. IT'S BECAUSE OF THAT DARN WORM! HE SAYS HE SERVES THE GREEDY DRAGONS KING.", "MAYBE IF WE COULD GET RUNNING WATER, WE COULD SCARE THESE DIRTY MONSTERS.", "THE GENERAL HAS A MESSAGE FOR YOU: EITHER FIGHT AND THE KING WILL KILL YOUR PEOPLE, or JOIN HIM IN HIS ARMORY.", "HERE MONSTERS DON'T ATTACK US. ONLY OUR THOUGHTS OF GREED DO. THEY HATE DIRTY ATTACKS.", "THIS IS A REALLY NICE PLACE TO LIVE. EXCEPT FOR THE STRICT LAWS.", "AAH! WE'RE UNDER ATTACK! THE DRAGONS KING IS HERE! HELP US, "}
+#define ALL_NPC_TEXT_ARRAY {"BLOCK REDUCES YOUR DMG A BIT, BUT HALVES ENEMY DMG.", "A CRITICAL IS SHOWN WITH RED, AND A WEAKNESS WITH YELLOW!", "I SAW AN APEMAN DEEP IN THE WOODS.", "I FOUND THE APEMAN FIRST. HE'S MINE! BUT HE'S ANGRY.", "THESE CREATURES ARE WEAK TO WATER!", "SOME SAY THESE MONSTERS FIGHT US BECAUSE THEY SERVE THE DRAGONS KING.", "IF YOU GROW SOME WEEDS, THEY'LL BREAK THROUGH THE MONSTERS.", "MAN, IF I HAD A FIRE, I COULD MELT THE SNOW HERE!", "I KNEW I SHOULD'VE MOVED TO THE EAST POLE. THEY HAVE NO MONSTERS.", "WE SHOULD PUT SOME PLANTS AROUND HERE TO HOLD THE SAND IN PLACE.", "THE MONSTER OF THE SEA HAS TURNED THE FISH AGAINST US! BUT WHO WOKE HIM?", "THIS IS MY MANSION. SINCE IT'S BY THE WATER, IT WAS VERY EXPENSIVE. BUT NOW IF I GO OUTSIDE, I'LL GET HURT.", "WE HAVE TO LIVE HERE. IT'S BECAUSE OF THAT DARN WORM! HE SAYS HE SERVES THE GREEDY DRAGONS KING.", "MAYBE IF WE COULD GET RUNNING WATER, WE COULD SCARE THESE DIRTY MONSTERS.", "THE GENERAL HAS A MESSAGE: EITHER FIGHT AND THE KING WILL KILL YOUR PEOPLE, or JOIN HIM IN HIS ARMORY.", "HERE MONSTERS DON'T ATTACK US. ONLY OUR THOUGHTS OF GREED DO. THEY HATE DIRTY ATTACKS.", "THIS IS A REALLY NICE PLACE TO LIVE. EXCEPT FOR THE STRICT LAWS.", "AAH! WE'RE UNDER ATTACK! THE DRAGONS KING IS HERE! HELP US, "}
 #define SIZE_OF_NPC_TEXT_ARRAY 17
 
-#define ARRAY_OF_NPC_WORLDNUMS {1, 1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7, 8}
+#define ARRAY_OF_NPC_WORLDNUMS {1, 1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5, 6, 6, 7, 7, 7, 8}
 #define ARRAY_OF_NPC_LASTSCREENS {10, 10, 10, 32, 10, 10, 10, 10, 10, 10, 10, 21, 10, 10, 12, 10, 10, 10}
 #define ARRAY_OF_NPC_OVERWORLDXS {6, 12, 16, playerSprite->overworldX / TILE_SIZE, 12, 12, 8, 14, 15, 11, 17, playerSprite->overworldX / TILE_SIZE, 11, 6, playerSprite->overworldX / TILE_SIZE, 5, 13, 11}
 #define ARRAY_OF_NPC_OVERWORLDYS {9, 3, 7, playerSprite->overworldY / TILE_SIZE, 6, 10, 5, 6, 3, 6, 6, playerSprite->overworldY / TILE_SIZE, 7, 10, playerSprite->overworldY / TILE_SIZE, 11, 11, 6}
@@ -88,15 +95,13 @@
 #define ALL_BOSS_QUIP_ARRAY {"LEAF ME ALONE! I WOOD-N'T DO THAT!", "I'M ON FIRE TODAY! DON'T BE SO HOT-HEADED!", "DON'T TRY TO BE STONEFACED. I KNOW YOU WANT TO RUN!", "I'M A COOL, COLD-HEARTED CREATURE. ICY YOUR FEAR!" , "GO WITH THE FLOW DUDE. YOU ARE IN THE WAKE OF RUIN!", "WRIGGLE ALL YOU WANT, YOU CAN'T SQUISH ME!", "So this is your choice? PREPARE TO BE CRUSHED!", "Here, I will crush you and your people!"}
 #define SIZE_OF_BOSS_QUIP_ARRAY 8
 
-#define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 10, 14, 6, 2, 1, 5, 6, 4, 16, 5, 18, 3, 3}
-#define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 8, 2, 9, 5, 12, 4, 5, 10, 5, 7, 7, 10, 10}
+#define ARRAY_OF_CHEST_IDS {1.2, 1.21, 2.11, 2.23, 3.2, 3.32, 4.11, 4.12, 5.1, 5.2, 5.12, 6.2, 6.22, 6.32, 7.1, 7.12, 7.2, 7.21, 7.24, 8.11, 8.2, 8.32}
+#define SIZE_OF_CHEST_ARRAY SIZE_OF_CHESTID_ARRAY
+
+#define ARRAY_OF_CHEST_XS {9, 17, 16, 8, 9, 3, 13, 3, 14, 10, 6, 2, 5, 1, 6, 4, 16, 5, 18, 3, 3}
+#define ARRAY_OF_CHEST_YS {7, 11, 11, 11, 11, 11, 2, 5, 2, 8, 9, 5, 4, 12, 5, 10, 5, 7, 7, 10, 10}
 #define ARRAY_OF_CHEST_ITEMS {991, 981, 971, 961, 972, 992, 973, 972, 962, 963, 974, 964, 993, 975, 976, 994, 966, 978, 994, 977, 978}
 #define SIZE_OF_CHESTDATA_ARRAY 21
-
-#define ARRAY_OF_BOSS_XS {14, 11, 7, 10, 5, 12, 14, 7, 11}
-#define ARRAY_OF_BOSS_YS {7, 7, 8, 6, 5, 7, 7, 3, 7}
-#define ARRAY_OF_BOSS_TILEIDS {TILE_ID_APEMAN, TILE_ID_FEENIX, TILE_ID_TARANT, TILE_ID_POLARA, TILE_ID_HYDROA, TILE_ID_SWURM, TILE_ID_SENTRY, TILE_ID_DREGOH, TILE_ID_DREGOH}
-#define SIZE_OF_BOSSDATA_ARRAY 9
 
 #define ARRAY_OF_SWORD_NAMES {"FLAME SWORD", "ROCK SWORD", "CHILL SWORD", "WATER SWORD", "DUAL KNIFE", "GOLD SWORD", "SMASH SWORD", "MAGIC SWORD"}
 #define SIZE_OF_SWORD_ARRAY 8
@@ -119,7 +124,7 @@
 
 #define UPGRADE_COST 15
 
-//Todo for 10/1:
+//Todo for 10/2:
 //* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
@@ -171,7 +176,7 @@ int main(int argc, char* argv[])
                         }
                     }
                 }
-                //printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
+                printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
                 savePlayerData(&player, SAVE_FILE_NAME);
                 saveConfig(CONFIG_FILE_NAME);
             }
@@ -310,7 +315,7 @@ void drawGame(player* player, char* textInput)
 
 int mainLoop(player* playerSprite)
 {
-    bool quit = false, press = false;
+    bool quit = false, press = false, upgradeMoves = false;
     SDL_Event e;
     int frame = 0, exitCode = LOOP_QUIT;
     static int pickedUp = 1;
@@ -341,8 +346,13 @@ int mainLoop(player* playerSprite)
         if (playerSprite->worldNum == 7)
             index = TILE_ID_EARL;
         double arrayOfMaps[SIZE_OF_UPGRADER_ARRAY] = ARRAY_OF_UPGRADER_IDS;
+        int arrayOfXs[SIZE_OF_UPGRADER_ARRAY] = ARRAY_OF_UPGRADER_OVERWORLDXS;
+        int arrayOfYs[SIZE_OF_UPGRADER_ARRAY] = ARRAY_OF_UPGRADER_OVERWORLDYS;
         int isUpgraderMap = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->lastScreen / 100.0), arrayOfMaps, SIZE_OF_UPGRADER_ARRAY);
-        if (isUpgraderMap != -1)
+        int isUpgraderX = playerSprite->overworldX / TILE_SIZE == arrayOfXs[isUpgraderMap];
+        int isUpgraderY = playerSprite->overworldY / TILE_SIZE == arrayOfYs[isUpgraderMap];
+        //printf("isUpgraderMap = %d, isUpgraderX = %d, isUpgraderY = %d\n", isUpgraderMap, isUpgraderX, isUpgraderY);
+        if (isUpgraderMap != -1 && isUpgraderX && isUpgraderY)
         {
             index = TILE_ID_BESERKERJ;
             int moveArray[4] = {playerSprite->move1, playerSprite->move2, playerSprite->move3, playerSprite->move4};
@@ -362,6 +372,7 @@ int mainLoop(player* playerSprite)
                 strcpy(temp, "FOR 15 COINS EACH I CAN UPGRADE YOUR ");
                 strcat(temp, moves);
                 strcat(temp, "Confirm - YES.     Any other key - NO\0");
+                upgradeMoves = true;
             }
             else
             {
@@ -398,22 +409,15 @@ int mainLoop(player* playerSprite)
                     playerSprite->overworldX / TILE_SIZE == npcOverworldXs[i] &&
                     playerSprite->overworldY / TILE_SIZE == npcOverworldYs[i])
                 {
-                    /*
-                     */
                     textLocation = i;
                     break;
                 }
-            } //all NPC text
-            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 12)
-                textLocation = 14;
-            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 5 && playerSprite->overworldY / TILE_SIZE == 11)
-                textLocation = 15;
-            if (playerSprite->worldNum == 7 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 13 && playerSprite->overworldY / TILE_SIZE == 11)
-                textLocation = 16;
-            if (playerSprite->worldNum == 8 && playerSprite->lastScreen == 10 && playerSprite->overworldX / TILE_SIZE == 11 && playerSprite->overworldY / TILE_SIZE == 6)
-                textLocation = 17;
+            }
+            //all NPC text
             char* stringArray[] = ALL_NPC_TEXT_ARRAY;
             textInput = stringArray[textLocation];
+            if (textLocation == SIZE_OF_NPCDATA_ARRAY - 1)
+                strcat(textInput, playerSprite->name);
         }
     }
     else
@@ -497,7 +501,7 @@ int mainLoop(player* playerSprite)
             exitCode = LOOP_GOTO_BATTLE;
             quit = true;
         }
-        if (press == KEYPRESS_RETURN_TEXTACTION && entity.tileIndex == TILE_ID_BESERKERJ && playerSprite->money > UPGRADE_COST - 1)
+        if (press == KEYPRESS_RETURN_TEXTACTION && entity.tileIndex == TILE_ID_BESERKERJ && playerSprite->money > UPGRADE_COST - 1 && upgradeMoves)
         {
             int movesToUpgrade = 0;
             //figure out a way to only upgrade one if they have only enough for one upgrade
@@ -523,41 +527,41 @@ int mainLoop(player* playerSprite)
             }
             playerSprite->money -= UPGRADE_COST * movesToUpgrade;
             press = 0;
+            upgradeMoves = false;
             //refactoring move upgrader text
+            foundPhys = -1, foundMag = -1;
+            int moveArray[4] = {playerSprite->move1, playerSprite->move2, playerSprite->move3, playerSprite->move4};
+            char* nameArray[SIZE_OF_UPGRADER_ARRAY] = ALL_UPGRADER_MOVES_ARRAY;
+            for(int i = 0; i < 4; i++)
             {
-                int moveArray[4] = {playerSprite->move1, playerSprite->move2, playerSprite->move3, playerSprite->move4};
-                char* nameArray[SIZE_OF_UPGRADER_ARRAY] = ALL_UPGRADER_MOVES_ARRAY;
-                for(int i = 0; i < 4; i++)
-                {
-                    if (moveArray[i] == 38 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
-                        foundPhys = i;
-                    if (moveArray[i] == 54 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
-                        foundMag = i;
-                }
-                textInput = "PRESS 2nd TO UPGRADE A MOVE. PLEASE PROGRAM BETTER DIALOGUE FOR ME.";
-                char temp[99] = "";
-                char* moves = nameArray[playerSprite->worldNum - (playerSprite->worldNum > 2) - 1];
-                if ((foundPhys > -1 || foundMag > -1) && playerSprite->money > UPGRADE_COST - 1)
-                {
-                    strcpy(temp, "FOR 15 COINS EACH I CAN UPGRADE YOUR ");
-                    strcat(temp, moves);
-                    strcat(temp, "Confirm - YES.     Any other key - NO\0");
-                }
-                else
-                {
-                    strcpy(temp, "YOU NEED 15 COINS TO UPGRADE YOUR ");
-                    strcat(temp, moves);
-                    strcat(temp, "\0");
-                }
-                if (foundPhys == -1 && foundMag == -1)
-                {
-                    strcpy(temp, "YOU DON'T SEEM TO BE ABLE TO USE ");
-                    strcat(temp, moves);
-                    strcat(temp, "\0");
-                }
-                if (strlen(temp))
-                    textInput = temp;
+                if (moveArray[i] == 38 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
+                    foundPhys = i;
+                if (moveArray[i] == 54 + 2 * (playerSprite->worldNum - (playerSprite->worldNum > 2)))
+                    foundMag = i;
             }
+            textInput = "PRESS 2nd TO UPGRADE A MOVE. PLEASE PROGRAM BETTER DIALOGUE FOR ME.";
+            char temp[99] = "";
+            char* moves = nameArray[playerSprite->worldNum - (playerSprite->worldNum > 2) - 1];
+            if ((foundPhys > -1 || foundMag > -1) && playerSprite->money > UPGRADE_COST - 1)
+            {
+                strcpy(temp, "FOR 15 COINS EACH I CAN UPGRADE YOUR ");
+                strcat(temp, moves);
+                strcat(temp, "Confirm - YES.     Any other key - NO\0");
+            }
+            else
+            {
+                strcpy(temp, "YOU NEED 15 COINS TO UPGRADE YOUR ");
+                strcat(temp, moves);
+                strcat(temp, "\0");
+            }
+            if (foundPhys == -1 && foundMag == -1)
+            {
+                strcpy(temp, "YOU DON'T SEEM TO BE ABLE TO USE ");
+                strcat(temp, moves);
+                strcat(temp, "\0");
+            }
+            if (strlen(temp))
+                textInput = temp;
         }
 
         if (playerSprite->spr.x == entity.x && playerSprite->spr.y == entity.y)
@@ -951,9 +955,9 @@ int showItems(player* player)
                     drawText("RIVER LAKE", 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
                 if (player->beatenBosses > 40)
                     drawText("UNDER CITY", 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
-                if (player->beatenBosses > 60)
+                if (player->beatenBosses > 50)
                     drawText("UPPER CITY", 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, false);
-                if (player->beatenBosses > 71)
+                if (player->beatenBosses > 61)
                     drawText("BATTLEGROUND", 2 * TILE_SIZE + TILE_SIZE / 4, 12 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 12) * TILE_SIZE, textColor, false);
 
                 SDL_Event e;
@@ -1003,6 +1007,8 @@ int showItems(player* player)
             }
             if (itemCode / 10 == TILE_ID_POTION)
             {
+                if (player->HP == player->maxHP)
+                    player->items[itemIndex] = itemCode;
                 player->HP += 40 + 60 * ((itemCode - 10 * (itemCode / 10)) - 1);
                 if (player->HP > player->maxHP)
                     player->HP = player->maxHP;
@@ -1652,7 +1658,7 @@ bool doBattle(player* player, bool isBoss)
                 }
             }
         }
-        if (isBoss && player->worldNum != 8)
+        if (isBoss && enemyIndex != TILE_ID_DREGOH)
         {
             int itemLocation = findItem(player, TILE_ID_STONE * 10 + player->worldNum - 1);
             if (itemLocation == -1)
