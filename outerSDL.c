@@ -31,7 +31,7 @@
 int init()
 {
     int done = 0;
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO || SDL_INIT_EVENTS);
     int imgFlags = IMG_INIT_PNG;
     if( !( IMG_Init( imgFlags ) & imgFlags ) )
     {
@@ -416,11 +416,8 @@ void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
 
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
 {
-    SDL_Rect rect1 = {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width};
-    SDL_Rect rect2 = {.x = xCoord, .y = yCoord, .w = width, .h = width};
-    SDL_Point center = {.x = width / 2, .y = width / 2};
     //printf("%d , %d\n", id  / 8, (id % 8));
-    SDL_RenderCopyEx(mainRenderer, tilesetTexture, &rect1, &rect2, 0, &center, flip);
+    SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
     //SDL_RenderPresent(mainRenderer);
 }
 

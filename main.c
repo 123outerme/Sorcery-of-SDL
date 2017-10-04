@@ -143,6 +143,7 @@ int main(int argc, char* argv[])
         int selection = 0;
         while(selection != MENU_QUIT && selection != ANYWHERE_QUIT)
         {
+            SDL_RenderClear(mainRenderer);
             do
             {
                 selection = aMenu("Sorcery of Uvutu", "NEW GAME", "LOAD GAME", "SETTINGS", "QUIT", " ", 4, selection, MAIN_MENU_PALETTE, false, true);
@@ -314,7 +315,7 @@ void drawGame(player* player, char* textInput)
     drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
     if (textBoxOn)
         drawTextBox(textInput, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 8.5 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 8.5) * TILE_SIZE});
-    SDL_RenderPresent(mainRenderer);
+    //SDL_RenderPresent(mainRenderer);
 }
 
 int mainLoop(player* playerSprite)
@@ -484,7 +485,12 @@ int mainLoop(player* playerSprite)
     SDL_Delay(220);
     while(!quit)    //this is the literal main loop right here
     {
+        SDL_RenderClear(mainRenderer);
+        drawTilemap(0, 0, 20, 15, false);
         drawGame(playerSprite, textInput);
+        drawEntity(entity, drawEntityFlag, false, false);
+        drawHUD(playerSprite);
+        SDL_RenderPresent(mainRenderer);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
             if (e.type == SDL_QUIT)
@@ -636,7 +642,7 @@ void drawHUD(player* player)
     buffer = toString(player->HP, buffer);
     drawText(buffer, (16 - strlen(buffer)) * TILE_SIZE, 0, SCREEN_WIDTH, TILE_SIZE, ((10 * player->HP / player->maxHP) > 3 ? ((SDL_Color) {231, 223, 49}) : ((SDL_Color) {255, 0, 0})), false);
     drawText("/", 16 * TILE_SIZE, 0, SCREEN_WIDTH, TILE_SIZE, ((SDL_Color) {255, 255, 255}), false);
-    drawText(toString(player->maxHP, buffer), 17 * TILE_SIZE, 0, SCREEN_WIDTH, TILE_SIZE, ((SDL_Color) {231, 223, 49}), true);
+    drawText(toString(player->maxHP, buffer), 17 * TILE_SIZE, 0, SCREEN_WIDTH, TILE_SIZE, ((SDL_Color) {231, 223, 49}), false);
 }
 
 void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect)
