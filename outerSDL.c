@@ -597,7 +597,7 @@ SDL_Keycode waitForKey()
 {
     SDL_Event e;
     bool quit = false;
-    SDL_Scancode scancode = SDLK_ESCAPE;
+    SDL_Keycode keycode = SDLK_ESCAPE;
     while(!quit)
     {
         while(SDL_PollEvent(&e) != 0)
@@ -607,12 +607,12 @@ SDL_Keycode waitForKey()
             else
                 if(e.type == SDL_KEYDOWN)
                 {
-                    scancode = e.key.keysym.sym;
+                    keycode = e.key.keysym.sym;
                     quit = true;
                 }
         }
     }
-    return scancode;
+    return keycode;
 }
 
 void savePlayerData(player* player, char* filePath)

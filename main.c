@@ -247,7 +247,8 @@ void configureKeys()
         //While application is running
         while(!quit)
         {
-            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+            SDL_RenderClear(mainRenderer);
+            //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
             //Handle events on queue
             while(SDL_PollEvent(&e) != 0)
             {
@@ -277,6 +278,30 @@ void configureKeys()
                         selection = cursor.y / TILE_SIZE - 4;
                         quit = true;
                     }
+                    SDL_RenderClear(mainRenderer);
+                    drawText("CONFIGURE KEYS", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, textColor, false);
+
+                    char keyText[99];
+                    strcpy(keyText, "UP: ");
+                    drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_UP))), 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+                    //we don't use SDL_GetScancodeName() because the SDL documentation warns that it isn't a stable way to get key names
+
+                    strcpy(keyText, "DOWN: ");
+                    drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_DOWN))), 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+
+                    strcpy(keyText, "LEFT: ");
+                    drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_LEFT))), 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+
+                    strcpy(keyText, "RIGHT: ");
+                    drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_RIGHT))), 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+
+                    strcpy(keyText, "CONFIRM: ");
+                    drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_INTERACT))), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
+
+                    strcpy(keyText, "MENU: ");
+                    drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_MENU))), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
+                    drawText("BACK", 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, true);
+                    drawText("Default is W/S/A/D, Space, Esc", 3 * TILE_SIZE / 4, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, true);
                 }
             }
             drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
@@ -483,6 +508,7 @@ int mainLoop(player* playerSprite)
     drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
     SDL_RenderPresent(mainRenderer);
     SDL_Delay(220);
+    SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
     while(!quit)    //this is the literal main loop right here
     {
         SDL_RenderClear(mainRenderer);
@@ -702,7 +728,7 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
     //While application is running
     while(!quit)
     {
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+        //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
         //Handle events on queue
         while(SDL_PollEvent(&e) != 0)
         {
@@ -733,6 +759,7 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
                     selection = cursor.y / TILE_SIZE - 4;
                     quit = true;
                 }
+                SDL_RenderClear(mainRenderer);
                 if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R])
                 {
                     SC_UP = SDL_SCANCODE_W;
@@ -742,6 +769,35 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
                     SC_INTERACT = SDL_SCANCODE_SPACE;
                     SC_MENU = SDL_SCANCODE_ESCAPE;
                     saveConfig(CONFIG_FILE_NAME);
+                }
+                if (border)
+                    SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+                else
+                    SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+                //background text (drawn first)
+                drawText(title, 2 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, titleColorUnder, false);
+                //foreground text
+                drawText(title, 2 * TILE_SIZE + TILE_SIZE / 4, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, titleColorOver, false);
+
+                drawText(opt1, 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+                drawText(opt2, 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+                drawText(opt3, 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+                drawText(opt4, 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+                drawText(opt5, 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, !isMain);
+
+                if (isMain)
+                {
+                    char version[12];
+                    strcpy(version, FULLVERSION_STRING);
+                    strcat(version, STATUS_SHORT);
+                    strcat(version, "\0");
+                    drawTile(TILE_ID_TILDA, 0, 0, TILE_SIZE, SDL_FLIP_NONE);
+                    drawTile(TILE_ID_CUBED, 1 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
+                    drawTile(TILE_ID_TILDA, 2 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
+                    drawText(version, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
                 }
             }
         }
@@ -852,6 +908,7 @@ int showItems(player* player)
     bool quit = false;
     while (!quit)
     {
+        SDL_RenderClear(mainRenderer);
         SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
