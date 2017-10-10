@@ -144,7 +144,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex);  //initi
 void initConfig(char* filePath);  //resets config data
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void inputName(player* player);  //gets the name of the sprite by prompting player
-void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x);  //loads a map from a file
+void loadMapFile(char* filePath, int array[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a map from a file
 void loadConfig(char* filePath);  //loads config data into the public variables
 void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap to the screen
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile to the screen

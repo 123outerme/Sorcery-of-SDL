@@ -356,14 +356,13 @@ void inputName(player* player)
     strncpy(player->name, playerName, PLAYER_NAME_LIMIT);
 }
 
-void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, const int x)
+void loadMapFile(char* filePath, int array[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
 {
 	FILE* filePtr;
 	filePtr = fopen(filePath,"r");
 	if (!filePtr)
 	{
 		printf("Error opening file!\n");
-		*array = (int*) 0;
 	}
 	else
 	{
@@ -378,7 +377,7 @@ void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, c
 			sprintf(substring, "%.*s", 2, thisLine + i);
 			//*(array + numsR++ + numsC * x)
 			num = (int)strtol(substring, NULL, 16);
-			sameArray[numsC][numsR++] = num;
+			array[numsC][numsR++] = num;
 			//printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
 			if (numsR > x - 1)
 			{
@@ -387,11 +386,11 @@ void loadMapFile(char* filePath, int* array[], const int lineNum, const int y, c
 			}
 			//printf("%d\n", num);
 		}
-		for(int dy = 0; dy < y; dy++)
+		/*for(int dy = 0; dy < y; dy++)
 		{
 			for(int dx = 0; dx < x; dx++)
 				*(array + dx + dy * x) = sameArray[dy][dx];
-		}
+		}*/
 	}
 	fclose(filePtr);
 }
