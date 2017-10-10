@@ -13,6 +13,7 @@
   error code 5: tilemap failed to load
 */
 #define SDL_MAIN_HANDLED 1
+
 #include "SDL/SDL.h"       //This is included because it's an SDL2 program... duh
 #include "SDL/SDL_image.h" //This is included so we can use PNGs.
 #include "SDL/SDL_ttf.h"   //This is included for text stuff
@@ -23,6 +24,12 @@
 #include <time.h>          //This is included for time() as the seed for rand()
 #include <ctype.h>         //This is included for toupper
 #include "version.h"       //This is included for version display at main menu
+
+#if defined(unix) || defined(__unix__) || defined(__unix)
+#define IS_UNIX 1
+#else
+#define IS_UNIX 0
+#endif
 
 #define bool char
 #define false 0

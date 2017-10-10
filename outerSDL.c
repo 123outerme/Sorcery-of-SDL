@@ -543,7 +543,7 @@ bool checkKeyPress(player* playerSprite)
             }
             double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
             int map = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
-            loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(MAP_FILE_NAME, tilemap, map + IS_UNIX, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             return KEYPRESS_RETURN_BREAK;
         }
     }
