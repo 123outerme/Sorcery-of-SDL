@@ -367,7 +367,6 @@ void loadMapFile(char* filePath, int array[][WIDTH_IN_TILES], const int lineNum,
 	else
 	{
 		int numsC = 0, numsR = 0,  i, num;
-		int sameArray[y][x];
 		char thisLine[601], substring[3];
 		for(int p = 0; p < lineNum + 1; p++)
 			fgets(thisLine, 602, filePtr);
