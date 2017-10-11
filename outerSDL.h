@@ -25,12 +25,6 @@
 #include <ctype.h>         //This is included for toupper
 #include "version.h"       //This is included for version display at main menu
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
-#define IS_UNIX 1
-#else
-#define IS_UNIX 0
-#endif
-
 #define bool char
 #define false 0
 #define true 1

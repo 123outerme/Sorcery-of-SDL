@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
                         }
                     }
                 }
-                printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
+                //printf("%s ended at %d, %d underneath a tile of index %d in map id %f\n", player.name, player.spr.x / player.spr.w, player.spr.y / player.spr.w, tilemap[player.spr.y / TILE_SIZE][player.spr.x / TILE_SIZE], player.worldNum + (player.mapScreen / 100.0));
                 savePlayerData(&player, SAVE_FILE_NAME);
                 saveConfig(CONFIG_FILE_NAME);
             }
@@ -353,7 +353,7 @@ int mainLoop(player* playerSprite)
     {
         double arrayOfMaps[SIZE_OF_MAP_ARRAY] = ARRAY_OF_MAP_IDS;
         int map = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
-        loadMapFile(MAP_FILE_NAME, tilemap, map + IS_UNIX, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+        loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     }
     //on Linux, seg fault after calling drawTile/map
     drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false);
@@ -514,7 +514,7 @@ int mainLoop(player* playerSprite)
         SDL_RenderClear(mainRenderer);
         drawTilemap(0, 0, 20, 15, false);
         drawGame(playerSprite, textInput);
-        drawEntity(entity, drawEntityFlag, false, false);
+        drawEntity(entity, drawEntityFlag, true, false);
         drawHUD(playerSprite);
         SDL_RenderPresent(mainRenderer);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
@@ -620,7 +620,8 @@ int mainLoop(player* playerSprite)
                 if (!playerSprite->pickedUpChests[found] && pickedUp)
                 {
                     pickedUp = pickupItem(playerSprite, itemArray[found], found, true);
-                    drawEntity(entity, false, true, false);
+                    drawEntityFlag = false;
+                    drawEntity(entity, drawEntityFlag, true, false);
                     //pick up chest here
                 }
             }

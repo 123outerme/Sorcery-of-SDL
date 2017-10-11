@@ -175,7 +175,6 @@ void initSprite(sprite* spr, int x, int y, int size, int tileIndex, entityType t
 void initPlayer(player* player, int x, int y, int size, int tileIndex)
 {
     inputName(player);  //custom text input routine to get player->name
-    printf("Passed player name input.\n");
     initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
 	player->level = 1;
 	player->experience = 0;
@@ -206,7 +205,6 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     {
         player->pickedUpChests[i] = 0;
     }
-    printf("Got to the wall of text.");
     aWallOfText("Intro", OPENING_TEXT, false, true);
     SDL_Delay(300);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
@@ -344,7 +342,6 @@ void inputName(player* player)
             SDL_RenderPresent(mainRenderer);
         }
     }
-    printf("made it to name cleaning\n");
     char* buffer = removeChar(playerName, ' ', PLAYER_NAME_LIMIT, true);
     buffer = removeChar(buffer, ' ', strlen(buffer), false);
     strcpy(playerName, buffer);
@@ -352,46 +349,34 @@ void inputName(player* player)
         hasTyped = false;
     if (!hasTyped)
         strcpy(playerName, "STEVO\0");
-    printf("made it to name ready\n");
     strncpy(player->name, playerName, PLAYER_NAME_LIMIT);
 }
 
 void loadMapFile(char* filePath, int array[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
 {
-	FILE* filePtr;
-	filePtr = fopen(filePath,"r");
-	if (!filePtr)
-	{
-		printf("Error opening file!\n");
-	}
-	else
-	{
-		int numsC = 0, numsR = 0,  i, num;
-		char thisLine[601], substring[3];
-		for(int p = 0; p < lineNum + 1; p++)
-			fgets(thisLine, 602, filePtr);
-		//printf("%s\n", thisLine);
-		for(i = 0; i < 600; i += 2)
-		{
-			sprintf(substring, "%.*s", 2, thisLine + i);
-			//*(array + numsR++ + numsC * x)
-			num = (int)strtol(substring, NULL, 16);
-			array[numsC][numsR++] = num;
-			//printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
-			if (numsR > x - 1)
-			{
-				numsC++;
-				numsR = 0;
-			}
-			//printf("%d\n", num);
-		}
-		/*for(int dy = 0; dy < y; dy++)
-		{
-			for(int dx = 0; dx < x; dx++)
-				*(array + dx + dy * x) = sameArray[dy][dx];
-		}*/
-	}
-	fclose(filePtr);
+    int numsC = 0, numsR = 0,  i, num;
+    char thisLine[601], substring[3];
+    strncpy(thisLine, readLine(filePath, lineNum, &thisLine), 601);
+    //printf("%s\n", thisLine);
+    for(i = 0; i < 600; i += 2)
+    {
+        sprintf(substring, "%.*s", 2, thisLine + i);
+        //*(array + numsR++ + numsC * x)
+        num = (int)strtol(substring, NULL, 16);
+        array[numsC][numsR++] = num;
+        //printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
+        if (numsR > x - 1)
+        {
+            numsC++;
+            numsR = 0;
+        }
+        //printf("%d\n", num);
+    }
+    /*for(int dy = 0; dy < y; dy++)
+    {
+        for(int dx = 0; dx < x; dx++)
+            *(array + dx + dy * x) = sameArray[dy][dx];
+    }*/
 }
 
 void loadConfig(char* filePath)
@@ -543,7 +528,7 @@ bool checkKeyPress(player* playerSprite)
             }
             double arrayOfMaps[] = ARRAY_OF_MAP_IDS;
             int map = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
-            loadMapFile(MAP_FILE_NAME, tilemap, map + IS_UNIX, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             return KEYPRESS_RETURN_BREAK;
         }
     }
@@ -850,10 +835,10 @@ char* readLine(char* filePath, int lineNum, char** output)
 		return NULL;
 	else
 	{
-	static char thisLine[512];
+	static char thisLine[1024];
 	fseek(filePtr, 0, SEEK_SET);
 	for(int p = 0; p <= lineNum; p++)
-		fgets(thisLine, 512, filePtr);
+		fgets(thisLine, 1024, filePtr);
 	//printf("%s @ %d\n", thisLine, thisLine);
 	*output = thisLine;
 	//printf("%s @ %d\n", output, output);

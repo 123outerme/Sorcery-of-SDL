@@ -2,8 +2,8 @@ Windows:
 * None reported so far
 
 Linux:
-* Seg fault whenever drawTilemap/drawTile is called (VM problem?)
+* A little slow?
 
 Game:
-* Exp gain too fast
+* Exp gain too fast?
 * Movement (holding left/right + up & down alternating) is not smooth
