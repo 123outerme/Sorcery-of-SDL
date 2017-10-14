@@ -275,19 +275,15 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 void inputName(player* player)
 {
     const long frameOffset = 9999999;
-    SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
-    SDL_RenderFillRect(mainRenderer, NULL);
-    //background text (drawn first)
-    drawText("NAME?", 21 * SCREEN_WIDTH / 128, 13 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
-    //foreground text
-    drawText("NAME?", 10 * SCREEN_WIDTH / 64, 5 * SCREEN_WIDTH / 64, SCREEN_WIDTH, 59 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, true);
-
     SDL_Event e;
     bool quit = false, hasTyped = false;
     char playerName[PLAYER_NAME_LIMIT + 1] = "        \0";
     int i = 0, frame = 0;
     while(!quit)
     {
+        SDL_RenderClear(mainRenderer);
+        SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
+        SDL_RenderFillRect(mainRenderer, NULL);
         //Handle events on queue
         while(SDL_PollEvent(&e) != 0)
         {
@@ -325,7 +321,10 @@ void inputName(player* player)
                     quit = true;
             }
         }
-
+        //background text (drawn first)
+        drawText("NAME?", 21 * SCREEN_WIDTH / 128, 13 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
+        //foreground text
+        drawText("NAME?", 10 * SCREEN_WIDTH / 64, 5 * SCREEN_WIDTH / 64, SCREEN_WIDTH, 59 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, true);
         if (e.type != SDL_KEYDOWN)
             frame++;
 
@@ -334,13 +333,10 @@ void inputName(player* player)
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + i) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
             SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
-            SDL_RenderPresent(mainRenderer);
         }
         if (frame % frameOffset == frameOffset / 2)
-        {
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (PLAYER_NAME_LIMIT + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
-            SDL_RenderPresent(mainRenderer);
-        }
+        SDL_RenderPresent(mainRenderer);
     }
     char* buffer = removeChar(playerName, ' ', PLAYER_NAME_LIMIT, true);
     buffer = removeChar(buffer, ' ', strlen(buffer), false);

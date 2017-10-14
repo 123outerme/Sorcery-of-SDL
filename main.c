@@ -128,11 +128,12 @@
 
 #define UPGRADE_COST 15
 
-//Todo for 10/2:
+//Todo for 10/14:
 //* Make world-sized tilemaps work (and smooth scrolling)?
 //** Create world-sized tilemaps by stitching together the individual CSE map pngs, throw them in the xLIBC map generator, done
 //** Make them work by doing nice scroll animations between map borders
 //** Make sure you only render screen-sized chunks at a time
+//* Fix the battle screen graphics glitchiness
 
 int main(int argc, char* argv[])
 {
@@ -791,6 +792,7 @@ int showStats(player* player)
 {
     int exitCode = OVERWORLD_STATS;
     char* buffer = "";
+    SDL_RenderClear(mainRenderer);
     SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
@@ -1147,6 +1149,7 @@ bool doBattle(player* player, bool isBoss)
         gBG = 0x69;
         bBG = 0x18;
     }
+    SDL_RenderClear(mainRenderer);
     SDL_SetRenderDrawColor(mainRenderer, rBG, gBG, bBG, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     for(int i = 0; i < 20; i++)
