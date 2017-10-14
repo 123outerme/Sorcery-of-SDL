@@ -317,7 +317,7 @@ void drawGame(player* player, char* textInput)
 {
     drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
     if (textBoxOn)
-        drawTextBox(textInput, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 8.5 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 8.5) * TILE_SIZE});
+        drawTextBox(textInput, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 8.5 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 8.5) * TILE_SIZE}, false);
     //SDL_RenderPresent(mainRenderer);
 }
 
@@ -650,7 +650,7 @@ void drawHUD(player* player)
     drawText(toString(player->maxHP, buffer), 17 * TILE_SIZE, 0, SCREEN_WIDTH, TILE_SIZE, ((SDL_Color) {231, 223, 49}), false);
 }
 
-void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect)
+void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw)
 {
     Uint8 oldR, oldG, oldB, oldA;
     SDL_GetRenderDrawColor(mainRenderer, &oldR, &oldG, &oldB, &oldA);
@@ -662,7 +662,7 @@ void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect t
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = textBoxRect.x + TILE_SIZE / 8, .y = textBoxRect.y + TILE_SIZE / 8,
                                                   .w = textBoxRect.w -  2 * TILE_SIZE / 8, .h = textBoxRect.h - 2 * TILE_SIZE / 8}));
-    drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0}, true);
+    drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0}, redraw);
     SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 
@@ -1092,14 +1092,14 @@ bool doBattle(player* player, bool isBoss)
         SDL_RenderPresent(mainRenderer);
     }
     SDL_Delay(350);
-    //W1 = 123, 142, 231 / 7B8EE7 / xLIBC palette color 124
-    //W2 = 198, 121, 24 / C67918 / xLIBC palette color 195
-    //W3 = 132, 113, 24 / 847118 / xLIBC palette color 131
-    //W4 = 16, 227, 189 / 10E3BD / xLIBC palette color 23
-    //W5 = 16, 97, 156 / 10619C / xLIBC palette color 19
-    //W6 = 8, 97, 90 / 08615A / xLIBC palette color 13
-    //W7 = 231, 158, 33 / E79E21 / xLIBC palette color 228
-    //W8 = 66, 105, 24 / 426918 / xLIBC palette color 67
+    /*W1 = 123, 142, 231 / 7B8EE7 / xLIBC palette color 124
+      W2 = 198, 121, 24 / C67918 / xLIBC palette color 195
+      W3 = 132, 113, 24 / 847118 / xLIBC palette color 131
+      W4 = 16, 227, 189 / 10E3BD / xLIBC palette color 23
+      W5 = 16, 97, 156 / 10619C / xLIBC palette color 19
+      W6 = 8, 97, 90 / 08615A / xLIBC palette color 13
+      W7 = 231, 158, 33 / E79E21 / xLIBC palette color 228
+      W8 = 66, 105, 24 / 426918 / xLIBC palette color 67 */
     Uint8 rBG = 0, gBG = 0, bBG = 0;
     if (player->worldNum == 1)
     {
@@ -1149,11 +1149,11 @@ bool doBattle(player* player, bool isBoss)
         gBG = 0x69;
         bBG = 0x18;
     }
-    SDL_RenderClear(mainRenderer);
+    /*SDL_RenderClear(mainRenderer);
     SDL_SetRenderDrawColor(mainRenderer, rBG, gBG, bBG, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     for(int i = 0; i < 20; i++)
-        drawTile(player->worldNum - 1 + 8 * (i == 0 || i == 19), i * TILE_SIZE, 8 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        drawTile(player->worldNum - 1 + 8 * (i == 0 || i == 19), i * TILE_SIZE, 8 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);*/
     sprite enemy;
     int enemyIndex;
     if (!isBoss)
@@ -1171,7 +1171,7 @@ bool doBattle(player* player, bool isBoss)
     char* allAttacks = ALL_ATTACKS;
     bool doneFlag = false;
     bool blockTurns = 0;
-    char* buffer = "";
+    /*char* buffer = "";
     drawTile(player->spr.tileIndex, 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     drawTile(enemy.tileIndex, enemy.x, enemy.y, enemy.w, SDL_FLIP_NONE);
     drawTextBox(player->name, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE});
@@ -1181,17 +1181,19 @@ bool doBattle(player* player, bool isBoss)
     drawText("HP", 2 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
     drawText(toString(player->HP, buffer), 13 * TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
     drawText("HP", 11 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-    drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
+    drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);*/
+    redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 3, true);
     if (isBoss)
     {
         char* quipArray[SIZE_OF_BOSS_QUIP_ARRAY] = ALL_BOSS_QUIP_ARRAY;
-        drawTextBox(quipArray[player->worldNum - 1], player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        drawTextBox(quipArray[player->worldNum - 1], player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //updates screen by itself
         waitForKey();
     }
     while (!doneFlag)
     {
-    bool actFlag = false;
-    int exitCode = 0;
+        redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 3, false);
+        bool actFlag = false;
+        int exitCode = 0;
         while(!actFlag)
         {
             char* textBoxText = "error\0";
@@ -1213,7 +1215,7 @@ bool doBattle(player* player, bool isBoss)
                 //3 + 5 chars + 11 spaces --> 88 total chars
                 textBoxText = input;
             }
-            drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+            redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, textBoxText, 3, true);
             SDL_Event e;
             bool quit = false;
             SDL_Delay(500);
@@ -1335,7 +1337,7 @@ bool doBattle(player* player, bool isBoss)
                             //if it's a magic attack
                             for(int x = 1; x < TILE_SIZE + 1; x++)
                             {
-                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE, .y = 7 * TILE_SIZE, .w = 2 * TILE_SIZE, .h = TILE_SIZE}));
+                                redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 2, false);
                                 drawTile(TILE_ID_TOME, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                                 drawTile(player->spr.tileIndex, 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                                 SDL_RenderPresent(mainRenderer);
@@ -1349,24 +1351,23 @@ bool doBattle(player* player, bool isBoss)
                             //if it's a physical attack
                             for(int x = 0; x > -6; x--)
                             {
-                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE + x + 1, .y = 7 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                                redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 2, false);
                                 drawTile(player->spr.tileIndex, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                                 SDL_RenderPresent(mainRenderer);
-                                SDL_Delay(15);
+                                SDL_Delay(10);
                             }
                             SDL_Delay(15);
                             //quick backstep animation
                             for(int x = -6; x < TILE_SIZE; x++)
                             {
-                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE + x - 1, .y = 7 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                                redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 2, false);
                                 drawTile(player->spr.tileIndex, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                                 SDL_RenderPresent(mainRenderer);
-                                SDL_Delay(1);
                             }
                             //from backstep, pushing foward
                             for (int x = TILE_SIZE; x > -1; x--)
                             {
-                                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 4 * TILE_SIZE + x + 1, .y = 7 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                                redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 2, false);
                                 drawTile(player->spr.tileIndex, 4 * TILE_SIZE + x, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                                 SDL_RenderPresent(mainRenderer);
                                 SDL_Delay(1);
@@ -1375,6 +1376,7 @@ bool doBattle(player* player, bool isBoss)
                             //the reason for x > -1 is because it'll display at x == 0, fully resetting the position.
                         }
                     }
+                    redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 3, false);
                     drawTile(attackCode, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 4 * TILE_SIZE : enemy.x, attackCode == ATTACK_CODE_BLOCK || attackCode == ATTACK_CODE_RUN ? 7 * TILE_SIZE : enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                     strcpy(textBoxText, player->name);
                     strcat(textBoxText, " USED ");
@@ -1456,30 +1458,31 @@ bool doBattle(player* player, bool isBoss)
                 {
                     for(int x = 0; x < 6; x++)
                     {
-                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = enemy.x + x - 1, .y = enemy.y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 1, false);
                         drawTile(enemy.tileIndex, enemy.x + x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                         SDL_RenderPresent(mainRenderer);
-                        SDL_Delay(15);
+                        SDL_Delay(12);
                     }
                     SDL_Delay(40);
                     //heavier backstep
                     for(int x = 6; x > -TILE_SIZE; x--)
                     {
-                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = enemy.x + x + 1, .y = enemy.y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 1, false);
                         drawTile(enemy.tileIndex, enemy.x + x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                         SDL_RenderPresent(mainRenderer);
-                        SDL_Delay(2);
+                        SDL_Delay(1);
                     }
                     //from backstep, pushing forward
                     for (int x = -TILE_SIZE; x < 1; x++)
                     {
-                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = enemy.x + x - 1, .y = enemy.y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 1, false);
                         drawTile(enemy.tileIndex, enemy.x + x, enemy.y, TILE_SIZE, SDL_FLIP_NONE);
                         SDL_RenderPresent(mainRenderer);
                         SDL_Delay(1);
                     }
                     //going back to neutral
                     //the reason for x < 1 is because it'll update for x == 0, fully resetting the position.
+                    redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 3, false);
                     drawTile(39 + enemyIndex - (enemyIndex / 3) - (enemy.tileIndex == TILE_ID_DREGOH) + 17 * (enemy.tileIndex == TILE_ID_ARCHER) - 2 * (enemy.tileIndex == TILE_ID_SOLDIER), 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                     strcpy(textBoxText, enemyName);
                     strcat(textBoxText, " USED ");
@@ -1511,7 +1514,7 @@ bool doBattle(player* player, bool isBoss)
             if ((playerTurn && player->HP > 0) || (!playerTurn && enemyHP > 0 && !run))
             {
                 bool dispDamage = false;
-                drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
                 if (((attackCode !=  ATTACK_CODE_BLOCK && attackCode != ATTACK_CODE_RUN) && playerTurn) || !playerTurn)
                 {
                     drawText("DAMAGE:", TILE_SIZE / 4, 10 * TILE_SIZE + 2 * TILE_SIZE / 8 , SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
@@ -1549,6 +1552,7 @@ bool doBattle(player* player, bool isBoss)
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
         for(int i = 0; i <= 255; i += 2)
         {
+            redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ", 3, false);
             SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, i);
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.w = SCREEN_WIDTH, .h = 9 * TILE_SIZE}));
             SDL_RenderPresent(mainRenderer);
@@ -1556,7 +1560,7 @@ bool doBattle(player* player, bool isBoss)
         }
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
     }
-    drawTextBox(won ? "You won!" : run ? "You fled!" : "You lost!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+    drawTextBox(won ? "You won!" : run ? "You fled!" : "You lost!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
     waitForKey();
     if (won)
     {
@@ -1571,7 +1575,7 @@ bool doBattle(player* player, bool isBoss)
         player->money += acquiredGold;
         player->experience += acquiredExp;
         char* buffer = "";
-        drawTextBox("EXP:", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, "EXP:", 3, false);
         drawText(toString(acquiredExp, buffer), 4 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE + TILE_SIZE / 4, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
 
         drawText("GOLD:", TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
@@ -1601,7 +1605,7 @@ bool doBattle(player* player, bool isBoss)
                 player->statPts++; //random chance for an extra stat pt
             if (player->statPts > 99)
                 player->statPts = 99;
-            drawTextBox("Level up!          Lv", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+            redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, "Level up!\nLv", 3, false);
             drawText(toString(player->level, buffer), 3 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
             SDL_Delay(400);
             waitForKey();
@@ -1615,16 +1619,17 @@ bool doBattle(player* player, bool isBoss)
             SDL_Event e;
             while (!quit)
             {
-                drawTextBox(" ATK:", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
-                drawText(toString(player->attack, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText("SPD:", 5 * TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText(toString(player->speed, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText("STAT PTS=", 5 * TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText(toString(player->statPts, buffer), 10 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
-                drawText("DONE", 5 * TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
                 while(!quit)
                 {
-                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+                    redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, " ATK:", 3, false);
+                    drawText(toString(player->attack, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    drawText("SPD:", 5 * TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    drawText(toString(player->speed, buffer), 5 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    drawText("STAT PTS=", 5 * TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    drawText(toString(player->statPts, buffer), 10 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE + TILE_SIZE / 4, 2 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    drawText("DONE", 5 * TILE_SIZE / 4, 12 * TILE_SIZE + TILE_SIZE / 4, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+                    //SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+                    //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
                     while(SDL_PollEvent(&e) != 0)
                     {
                         if(e.type == SDL_QUIT)
@@ -1678,7 +1683,7 @@ bool doBattle(player* player, bool isBoss)
                 {
                     if (player->statPts)
                     {
-                        drawTextBox("QUIT WITHOUT USING ALL PTS?\nConfirm = YES\nANYTHING ELSE = NO", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+                        redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, "QUIT WITHOUT USING ALL PTS?\nConfirm = YES\nANYTHING ELSE = NO", 3, false);
                         SDL_Delay(400);
                         quit = waitForKey() == KCInteract;
                     }
@@ -1694,8 +1699,8 @@ bool doBattle(player* player, bool isBoss)
             {
                 if (enemy.tileIndex != TILE_ID_DREGOH)
                 {
+                    redrawBattleScene((SDL_Color) {rBG, gBG, bBG}, player, enemy, enemyHP, enemyName, "Your fight seemed to change your teleport stone!", 3, false);
                     player->items[itemLocation] = TILE_ID_STONE * 10 + player->worldNum;
-                    drawTextBox("Your fight seemed to change your teleport stone!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
                     waitForKey();
                 }
             }
@@ -1709,6 +1714,30 @@ bool doBattle(player* player, bool isBoss)
     }
     return won || run;
 }
+
+void redrawBattleScene(SDL_Color bgColor, player* player, sprite enemy, int enemyHP, char* enemyName, char* textBoxText, int drawCombatants, bool updateScreen)
+{
+    char* buffer = "";
+    SDL_RenderClear(mainRenderer);
+    SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    for(int i = 0; i < 20; i++)
+        drawTile(player->worldNum - 1 + 8 * (i == 0 || i == 19), i * TILE_SIZE, 8 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    if (drawCombatants == 1 || drawCombatants == 3)
+        drawTile(player->spr.tileIndex, 4 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    if (drawCombatants == 2 || drawCombatants == 3)
+        drawTile(enemy.tileIndex, enemy.x, enemy.y, enemy.w, SDL_FLIP_NONE);
+    drawTextBox(player->name, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE}, false);
+    drawTextBox(enemyName, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.x = 11 * TILE_SIZE, .y = 2 * TILE_SIZE, .w = 9 * TILE_SIZE, .h = 4 * TILE_SIZE}, false);
+    drawText("Lv", 2 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(player->level, buffer), 26 * TILE_SIZE / 8, 7 * TILE_SIZE / 2, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("HP", 2 * TILE_SIZE / 8, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(player->HP, buffer), 13 * TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText("HP", 11 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 9 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawText(toString(enemyHP, buffer), 14 * TILE_SIZE + TILE_SIZE / 4, 39 * TILE_SIZE / 8, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color){0, 0, 0}, false);
+    drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, updateScreen);
+}
+
 bool pickupItem(player* player, int itemCode, int chestID, bool redraw)
 {
     int firstOpenSlot = findItem(player, 0);
@@ -1740,12 +1769,12 @@ bool pickupItem(player* player, int itemCode, int chestID, bool redraw)
             drawTile(player->spr.tileIndex, player->spr.x, player->spr.y, player->spr.w, player->flip);
             SDL_RenderPresent(mainRenderer);
         }
-        drawTextBox(text, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        drawTextBox(text, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
     }
     else
     {
         firstOpenSlot = -1;
-        drawTextBox("My inventory's too full!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE});
+        drawTextBox("My inventory's too full!", player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
     }
     SDL_Delay(400);
     waitForKey();

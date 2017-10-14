@@ -274,7 +274,7 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 
 void inputName(player* player)
 {
-    const long frameOffset = 9999999;
+    const long frameOffset = 750;
     SDL_Event e;
     bool quit = false, hasTyped = false;
     char playerName[PLAYER_NAME_LIMIT + 1] = "        \0";
@@ -305,7 +305,6 @@ void inputName(player* player)
                         hasTyped = false;
                 }
                 SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 3.5 * TILE_SIZE, .w = PLAYER_NAME_LIMIT * TILE_SIZE, .h = TILE_SIZE}));
-                drawText(playerName, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){255, 255, 255}, true);
 
                 if (i < PLAYER_NAME_LIMIT)
                 {
@@ -324,17 +323,18 @@ void inputName(player* player)
         //background text (drawn first)
         drawText("NAME?", 21 * SCREEN_WIDTH / 128, 13 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color){24, 65, 214}, false);
         //foreground text
-        drawText("NAME?", 10 * SCREEN_WIDTH / 64, 5 * SCREEN_WIDTH / 64, SCREEN_WIDTH, 59 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, true);
+        drawText("NAME?", 10 * SCREEN_WIDTH / 64, 5 * SCREEN_WIDTH / 64, SCREEN_WIDTH, 59 * SCREEN_HEIGHT / 64, (SDL_Color){24, 162, 239}, false);
+        drawText(playerName, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 2) * TILE_SIZE, (SDL_Color){255, 255, 255}, false);
         if (e.type != SDL_KEYDOWN)
             frame++;
 
-        if (frame % frameOffset == 0 && i < PLAYER_NAME_LIMIT)
+        if (frame % frameOffset < frameOffset / 2 && i < PLAYER_NAME_LIMIT)
         {
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + i) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
             SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
         }
-        if (frame % frameOffset == frameOffset / 2)
+        if (frame % frameOffset >= frameOffset / 2)
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (PLAYER_NAME_LIMIT + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
         SDL_RenderPresent(mainRenderer);
     }
@@ -352,7 +352,7 @@ void loadMapFile(char* filePath, int array[][WIDTH_IN_TILES], const int lineNum,
 {
     int numsC = 0, numsR = 0,  i, num;
     char thisLine[601], substring[3];
-    strncpy(thisLine, readLine(filePath, lineNum, &thisLine), 601);
+    strncpy(thisLine, readLine(filePath, lineNum, (char**) &thisLine), 601);
     //printf("%s\n", thisLine);
     for(i = 0; i < 600; i += 2)
     {

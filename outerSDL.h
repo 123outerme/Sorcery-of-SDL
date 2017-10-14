@@ -126,12 +126,13 @@ void drawGame(player* player, char* textInput);  //draws overworld stuff
 int mainLoop(player* playerSprite);  //does main overworld loop
 void drawEntity(sprite entity, bool doDraw, bool saveEntity, bool loadEntity);  //draws an entity, and can save it as well
 void drawHUD(player* player);  //draws HUD in overworld
-void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect);  //draws the NPC-style text box
+void drawTextBox(char* input, player* player, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws the NPC-style text box
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //menu
 int aWallOfText(char* title, char* text, bool showHelpInfo, bool fadeIn);  //draws a wall of text for the player to read & dismiss
 int showStats(player* player);  //opens stats display
 int showItems(player* player);  //shows list of player items
 bool doBattle(player* player, bool isBoss);  //does a battle
+void redrawBattleScene(SDL_Color bgColor, player* player, sprite enemy, int enemyHP, char* enemyName, char* textBoxText, int drawCombatants, bool updateScreen);  //redraws battle scene
 bool pickupItem(player* player, int itemCode, int chestID, bool redraw);  //player picks up an item
 int findItem(player* player, int itemToFind);  //tries to find item in player's inventory. Use 0 for empty slot
 
