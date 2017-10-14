@@ -64,7 +64,6 @@ int init()
         }
         else
         {
-            mainScreen = SDL_GetWindowSurface(mainWindow);
             mainRenderer = SDL_CreateRenderer(mainWindow, -1, SDL_RENDERER_ACCELERATED);
             if(!mainRenderer)
             {
@@ -659,7 +658,7 @@ void closeSDL()
     TTF_CloseFont(mainFont);
     //TTF_CloseFont(smallFont);
 	SDL_DestroyTexture(tilesetTexture);
-	SDL_FreeSurface(mainScreen);
+	//SDL_FreeSurface(mainScreen);
     SDL_DestroyWindow(mainWindow);
     SDL_DestroyRenderer(mainRenderer);
     SDL_Quit();
