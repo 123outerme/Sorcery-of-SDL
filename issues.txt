@@ -6,4 +6,5 @@ Linux:
 
 Game:
 * Exp gain too fast?
-* Movement (holding left/right + up & down alternating) is not smooth
+* Chests were "phased through" sometimes? (See xlibman's stream)
+* "The End" clipped off on the ending text wall

@@ -333,7 +333,6 @@ int mainLoop(player* playerSprite)
         int map = checkArrayForDVal(playerSprite->worldNum + (double)(playerSprite->mapScreen / 100.0), arrayOfMaps, SIZE_OF_MAP_ARRAY);
         loadMapFile(MAP_FILE_NAME, tilemap, map, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     }
-    //on Linux, seg fault after calling drawTile/map
     drawTilemap(0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false);
     drawHUD(playerSprite);
     sprite entity;
@@ -1160,8 +1159,10 @@ bool doBattle(player* player, bool isBoss)
         enemyIndex = (rand() % 2) + 1 + 3 * (player->worldNum - 1);
     else
         enemyIndex = 3 * player->worldNum + 3 * (player->worldNum == 7 && player->mapScreen == 23);
-    int enemyHP = 14 + iPart(pow((double) enemyIndex, 1.22)) + (int) pow((5 + 1), player->worldNum) * (!enemyIndex % 3);
+    int enemyHP = 14 + iPart(pow((double) enemyIndex, 1.22)) + (int) ((5 + pow(1, player->worldNum)) * isBoss);
     //14+int(U^1.22)+40(M=8.33 and U/3=int(U/3))+(5+1^int(M))(U/3=int(U/3
+    if (enemyIndex / 3 == 8)
+        enemyHP += 30;
     initSprite(&enemy, 15 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, enemyIndex + 71, type_na);
     char* enemyName;
     {

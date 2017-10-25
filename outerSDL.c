@@ -340,11 +340,10 @@ void inputName(player* player)
     char* buffer = removeChar(playerName, ' ', PLAYER_NAME_LIMIT, true);
     buffer = removeChar(buffer, ' ', strlen(buffer), false);
     strcpy(playerName, buffer);
-    if (!strlen(playerName))
-        hasTyped = false;
-    if (!hasTyped)
-        strcpy(playerName, "STEVO\0");
-    strncpy(player->name, playerName, PLAYER_NAME_LIMIT);
+    if (!hasTyped || !strlen(playerName))
+        strcpy(playerName, "STEVO");
+    strcat(playerName, "\0");
+    strncpy(player->name, playerName, PLAYER_NAME_LIMIT + 1);
 }
 
 void loadMapFile(char* filePath, int array[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
