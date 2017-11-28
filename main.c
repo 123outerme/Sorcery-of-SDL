@@ -859,7 +859,11 @@ int showItems(player* player)
     bool quit = false;
     while (!quit)
     {
-        SDL_RenderClear(mainRenderer);
+        SDL_Event e;
+        while(!quit)
+        {
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+            SDL_RenderClear(mainRenderer);
         SDL_SetRenderDrawColor(mainRenderer, 0x10, 0x20, 0x8C, 0xFF);
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
@@ -909,11 +913,6 @@ int showItems(player* player)
         drawTile(TILE_ID_COIN, 2 * TILE_SIZE, 13 * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         drawText("x", 3 * TILE_SIZE, 13 * TILE_SIZE, (WIDTH_IN_TILES - 3) * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
         drawText(toString(player->money, buffer), 4 * TILE_SIZE, 13 * TILE_SIZE, 3 * TILE_SIZE, (HEIGHT_IN_TILES - 14) * TILE_SIZE, (SDL_Color){16, 32, 140}, false);
-
-        SDL_Event e;
-        while(!quit)
-        {
-            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
             //Handle events on queue
             while(SDL_PollEvent(&e) != 0)
             {
