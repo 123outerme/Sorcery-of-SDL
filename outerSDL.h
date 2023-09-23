@@ -14,9 +14,9 @@
 */
 #define SDL_MAIN_HANDLED 1
 
-#include "SDL/SDL.h"       //This is included because it's an SDL2 program... duh
-#include "SDL/SDL_image.h" //This is included so we can use PNGs.
-#include "SDL/SDL_ttf.h"   //This is included for text stuff
+#include <SDL2/SDL.h>       //This is included because it's an SDL2 program... duh
+#include <SDL2/SDL_image.h>  //This is included so we can use PNGs.
+#include <SDL2/SDL_ttf.h>   //This is included for text stuff
 #include <stdio.h>         //This is included because it's fundamental always. Even if it ain't needed
 #include <string.h>        //This is included for strncat and other string functions
 #include <stdlib.h>        //This is included for calloc, rand(), and a lot of other stuff
@@ -172,16 +172,16 @@ int writeLine(char* filePath, char* stuff);  //appends a line to a file
 char* readLine(char* filePath, int lineNum, char** output);  //reads a certain line from a file
 
 
-SDL_Window* mainWindow;
-SDL_Surface* mainScreen;
-SDL_Texture* tilesetTexture;
-SDL_Renderer* mainRenderer;
-bool textBoxOn;
-TTF_Font* mainFont;
+extern SDL_Window* mainWindow;
+extern SDL_Surface* mainScreen;
+extern SDL_Texture* tilesetTexture;
+extern SDL_Renderer* mainRenderer;
+extern bool textBoxOn;
+extern TTF_Font* mainFont;
 //TTF_Font* smallFont;
-int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+extern int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 
-int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
+extern int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_UP CUSTOM_SCANCODES[0]
 #define SC_DOWN CUSTOM_SCANCODES[1]
 #define SC_LEFT CUSTOM_SCANCODES[2]

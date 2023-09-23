@@ -1514,7 +1514,7 @@ bool doBattle(player* player, bool isBoss)
             if ((playerTurn && player->HP > 0) || (!playerTurn && enemyHP > 0 && !run))
             {
                 bool dispDamage = false;
-                drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
+                drawTextBox(textBoxText, player, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, false);
                 if (((attackCode !=  ATTACK_CODE_BLOCK && attackCode != ATTACK_CODE_RUN) && playerTurn) || !playerTurn)
                 {
                     drawText("DAMAGE:", TILE_SIZE / 4, 10 * TILE_SIZE + 2 * TILE_SIZE / 8 , SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, false);

@@ -28,6 +28,17 @@
 #define ARRAY_OF_MAP_IDS {playerSprite->worldNum, 1.1, 1.2, 1.21, 1.22, 1.31, 1.32, 1.33, 2.1, 2.11, 2.12, 2.21, 2.22, 2.23, 2.33, 3.1, 3.2, 3.22, 3.3, 3.31, 3.32, 4.1, 4.11, 4.12, 4.21, 4.22, 4.31, 4.32, 5.1, 5.11, 5.12, 5.2, 5.21, 5.22, 5.32, 6.1, 6.11, 6.2, 6.21, 6.22, 6.31, 6.32, 7.1, 7.11, 7.12, 7.13, 7.2, 7.21, 7.22, 7.23, 7.24, 8.1, 8.11, 8.2, 8.21, 8.22, 8.32, 8.33}
 #define SIZE_OF_MAP_ARRAY 58
 
+SDL_Window* mainWindow;
+SDL_Surface* mainScreen;
+SDL_Texture* tilesetTexture;
+SDL_Renderer* mainRenderer;
+bool textBoxOn;
+TTF_Font* mainFont;
+//TTF_Font* smallFont;
+int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+
+int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
+
 int init()
 {
     int done = 0;
